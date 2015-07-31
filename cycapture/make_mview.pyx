@@ -26,3 +26,6 @@ cdef object make_mview_from_uchar_buf(unsigned char* buf, int size):
             raise RuntimeError("PyBuffer_FillInfo failed with -1")
     else:
         raise MemoryError
+
+cdef void* mview_get_addr(void* mview):
+    return <void*> ((<PyMemoryViewObject *> mview).view.buf)

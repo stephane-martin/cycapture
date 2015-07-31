@@ -2,10 +2,14 @@
 # noinspection PyUnresolvedReferences
 from libc.stdint cimport uint16_t, uint32_t, uint8_t
 # noinspection PyUnresolvedReferences
-from ..make_mview cimport make_mview_from_const_uchar_buf, make_mview_from_uchar_buf
+from ..make_mview cimport make_mview_from_const_uchar_buf, make_mview_from_uchar_buf, mview_get_addr
+# noinspection PyUnresolvedReferences
 from cython.view cimport memoryview as cy_memoryview
 
 cdef class IP(object):
+    """
+    IP packet
+    """
     CONTROL = IP_OPT_CLASS_CONTROL
     MEASUREMENT = IP_OPT_CLASS_MEASUREMENT
     END = IP_OPT_NUMBER_END
@@ -29,6 +33,7 @@ cdef class IP(object):
     QS = IP_OPT_NUMBER_QS
 
     def __cinit__(self, buf=None, src_dest=None):
+        cdef void* p
         if buf is None and src_dest is None:
             self.ptr = new cppIP()
         elif buf is not None:
@@ -39,7 +44,8 @@ cdef class IP(object):
                 self.ptr = new cppIP(<uint8_t*> buf, <uint32_t> len(buf))
             elif isinstance(buf, memoryview):
                 # todo: check that buf has the right shape, etc
-                print("memoryview")
+                p = mview_get_addr(<void*> buf)
+                self.ptr = new cppIP(<uint8_t*> p, len(buf))
             elif isinstance(buf, cy_memoryview):
                 # todo: check that buf has the right shape, etc
                 self.ptr = new cppIP(<uint8_t*> (<cy_memoryview>buf).get_item_pointer([]), <uint32_t> len(buf))
@@ -48,8 +54,17 @@ cdef class IP(object):
             pass
         else:
             # todo: build from src and dest IPv4 addresses
-            pass
+            src, dest = src_dest
+            if src is None:
+                src = IPv4Address()
+            if dest is None:
+                dest = IPv4Address()
+            if not isinstance(src, IPv4Address):
+                src = IPv4Address(src)
+            if not isinstance(dest, IPv4Address):
+                dest = IPv4Address(dest)
 
+            self.ptr = new cppIP(<cppIPv4Address> ((<IPv4Address> src).ptr[0]), <cppIPv4Address> ((<IPv4Address> dest).ptr[0]))
 
     def __dealloc__(self):
         if self.ptr != NULL:
@@ -85,7 +100,3 @@ cpdef make_IP_from_typed_memoryview(unsigned char[:] data):
         raise ValueError("data can't be None")
     return IP(buf=<cy_memoryview> data)
 
-
-#IP()
-#IP(cppIPv4Address ip_dst, cppIPv4Address ip_src)
-#IP(const unsigned char *buf, unsigned int total_sz)

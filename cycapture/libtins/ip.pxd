@@ -64,16 +64,16 @@ cdef extern from "tins/ip.h" namespace "Tins":
         uint8_t ttl() const
         uint8_t protocol() const
         uint16_t checksum() const
-        cppHWAddress6 src_addr() const
-        cppHWAddress6 dst_addr() const
+        cppIPv4Address src_addr() const
+        cppIPv4Address dst_addr() const
         small_int4 version() const
         void tos(uint8_t new_tos);
         void id(uint16_t new_id)
         void frag_off(uint16_t new_frag_off)
         void ttl(uint8_t new_ttl)
         void protocol(uint8_t new_protocol)
-        void src_addr(cppHWAddress6 ip)
-        void dst_addr(cppHWAddress6 ip)
+        void src_addr(cppIPv4Address ip)
+        void dst_addr(cppIPv4Address ip)
         void version(small_int4 ver)
         void eol()
         void noop()
