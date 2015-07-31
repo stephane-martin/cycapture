@@ -16,8 +16,9 @@ import struct
 cdef void _do_python_callback(unsigned char* usr, const pcap_pkthdr* pkthdr, const unsigned char* pkt) with gil:
     cdef Py_buffer pybuffer
     cdef int res = PyBuffer_FillInfo(&pybuffer, NULL, <void*> pkt, pkthdr.caplen, 1, PyBUF_FULL_RO)
-    mview = PyMemoryView_FromBuffer(&pybuffer)
-    (<object> (<void*> usr))(pkthdr.ts.tv_sec, pkthdr.ts.tv_usec, pkthdr.caplen, pkthdr.len, mview)
+    if res == 0:
+        mview = PyMemoryView_FromBuffer(&pybuffer)
+        (<object> (<void*> usr))(pkthdr.ts.tv_sec, pkthdr.ts.tv_usec, pkthdr.caplen, pkthdr.len, mview)
 
 
 cdef void _do_c_callback(unsigned char* usr, const pcap_pkthdr* pkthdr, const unsigned char* pkt):
