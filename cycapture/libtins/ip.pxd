@@ -52,38 +52,39 @@ cdef extern from "tins/ip.h" namespace "Tins":
         IP_OPT_NUMBER_UMP "Tins::IP::UMP",
         IP_OPT_NUMBER_QS "Tins::IP::QS"
 
-    cdef cppclass cppIP "Tins::IP":
+    cdef cppclass cppIP "Tins::IP" (cppPDU):
         cppIP()
         cppIP(cppIPv4Address ip_dst, cppIPv4Address ip_src) except +ValueError
-        cppIP(const uint8_t *buf, uint32_t total_sz) except +ValueError
+        cppIP(const uint8_t* buf, uint32_t total_sz) except +ValueError
         small_int4 head_len() const
-        unsigned char tos() const
-        unsigned short tot_len() const
-        unsigned short id() const
+        uint8_t tos() const
+        void tos(uint8_t new_tos)
+        uint16_t tot_len() const
+        #void tot_len(uint16_t new_tot_len)         private
+        uint16_t ident "id"() const
+        void ident "id"(uint16_t new_id)
         uint16_t frag_off() const
-        uint8_t ttl() const
-        uint8_t protocol() const
-        uint16_t checksum() const
-        cppIPv4Address src_addr() const
-        cppIPv4Address dst_addr() const
-        small_int4 version() const
-        void tos(uint8_t new_tos);
-        void id(uint16_t new_id)
         void frag_off(uint16_t new_frag_off)
+        uint8_t ttl() const
         void ttl(uint8_t new_ttl)
+        uint8_t protocol() const
         void protocol(uint8_t new_protocol)
+        uint16_t checksum() const
+        #void checksum(uint16_t new_check)          private
+        cppIPv4Address src_addr() const
         void src_addr(cppIPv4Address ip)
+        cppIPv4Address dst_addr() const
         void dst_addr(cppIPv4Address ip)
+        small_int4 version() const
         void version(small_int4 ver)
+        uint16_t stream_identifier() const
+        void stream_identifier(uint16_t stream_id)
         void eol()
         void noop()
-        void stream_identifier(uint16_t stream_id)
-        uint16_t stream_identifier() const
-        uint32_t header_size() const
+        #uint32_t header_size() const               inherited from cppPDU
         bool is_fragmented() const
-        # noinspection PyUnresolvedReferences
-        PDUType pdu_type() const
-        cppIP *clone() const
+        #PDUType pdu_type() const                   inherited from cppPDU
+        #cppIP* clone() const                       inherited from cppPDU
 
         cppclass option_identifier:
             uint8_t number
@@ -131,7 +132,7 @@ cdef extern from "tins/ip.h" namespace "Tins":
     cppIP.security_type security_type_from_option "Tins::IP::security_type::from_option"(const ip_pdu_option &opt)
     cppIP.generic_route_option_type generic_route_option_type_from_option "Tins::IP::generic_route_option_type::from_option" (const ip_pdu_option &opt)
 
-cdef class IP(object):
+cdef class IP(PDU):
     cdef cppIP* ptr
     cpdef eol(self)
     cpdef noop(self)

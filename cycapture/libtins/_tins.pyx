@@ -8,9 +8,10 @@ from libcpp.list cimport list
 
 include "ip_address.pyx"
 include "hw_address.pyx"
-include "pdu.pyx"
-include "ip.pyx"
 include "networkinterface.pyx"
+include "pdu.pyx"
+include "ethernet.pyx"
+include "ip.pyx"
 
 #cdef EthernetII* eth = new EthernetII()
 #cdef pointer p = eth.find_pdu[EthernetII]()

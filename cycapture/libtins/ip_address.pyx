@@ -1,6 +1,8 @@
 # encoding: utf-8
 
 cdef class IPv4Address(object):
+    broadcast = IPv4Address("255.255.255.255")
+
     def __cinit__(self, object addr=None):
         if addr is None:
             self.ptr = new cppIPv4Address(<const char*> NULL)

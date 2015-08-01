@@ -1,11 +1,15 @@
+# -*- coding: utf-8 -*-
+
 from libcpp.vector cimport vector
+# noinspection PyUnresolvedReferences
+from libc.stdint cimport uint16_t, uint32_t, uint8_t
 
 # noinspection PyUnresolvedReferences
-ctypedef cppPDU* pointer
+ctypedef void* pointer
 
 cdef extern from "tins/pdu.h" namespace "Tins":
-    ctypedef vector[unsigned char] byte_array
-    ctypedef vector[unsigned char] serialization_type "Tins::PDU::serialization_type"
+    ctypedef vector[uint8_t] byte_array
+    ctypedef vector[uint8_t] serialization_type "Tins::PDU::serialization_type"
 
     ctypedef enum endian_type "Tins::PDU::endian_type":
         BE "Tins::PDU::BE",
@@ -15,19 +19,23 @@ cdef extern from "tins/pdu.h" namespace "Tins":
 
     cdef cppclass cppPDU "Tins::PDU":
         cppPDU()
-        unsigned int header_size() const
-        unsigned int trailer_size() const
-        unsigned int size() const
-        cppPDU *inner_pdu() const
-        cppPDU *release_inner_pdu()
+        uint32_t header_size() const
+        uint32_t trailer_size() const
+        uint32_t size() const
+        cppPDU* inner_pdu() const
+        cppPDU* release_inner_pdu()
         void inner_pdu(cppPDU *next_pdu)
         void inner_pdu(const cppPDU &next_pdu)
-        serialization_type serialize()
+        vector[uint8_t] serialize()
         cppPDU *clone() const
         bool matches_flag(PDUType flag) const
         PDUType pdu_type()
         # noinspection PyUnresolvedReferences
         pointer find_pdu[T](PDUType type)
+
+    T slash_op "Tins::PDU::operator/" [T] (T lop, const cppPDU& rop)
+    T slash_equals_op "Tins::PDU::operator/=" [T] (T& lop, const cppPDU& rop)       # NB: instead of T& (Template parameter not a type)
+    pointer pointer_slash_equals_op "Tins::PDU::operator/=" [T] (T* lop, const cppPDU &rop)
 
     ctypedef enum PDUType "Tins::PDU::PDUType":
         PDU_RAW "Tins::PDU::RAW",
@@ -82,3 +90,7 @@ cdef extern from "tins/pdu.h" namespace "Tins":
         PDU_IPSEC_ESP "Tins::PDU::IPSEC_ESP",
         PDU_PKTAP "Tins::PDU::PKTAP",
         PDU_USER_DEFINED_PDU "Tins::PDU::USER_DEFINED_PDU"
+
+cdef class PDU(object):
+    cpdef serialize(self)
+    cdef cppPDU* base_ptr

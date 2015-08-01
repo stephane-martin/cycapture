@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 cdef class HWAddress(object):
-    broadcast = <bytes> hw6_broadcast.to_string()
+    broadcast = HWAddress("ff:ff:ff:ff:ff:ff")
 
     def __cinit__(self, object addr=None):
         if addr is None:
