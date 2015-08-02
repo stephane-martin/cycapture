@@ -3,7 +3,7 @@
 Ethernet packet python class
 """
 # noinspection PyUnresolvedReferences
-from libc.stdint cimport uint16_t, uint32_t, uint8_t
+from libc.stdint cimport uint16_t, uint32_t, uint8_t, uintptr_t
 # noinspection PyUnresolvedReferences
 from ..make_mview cimport make_mview_from_const_uchar_buf, make_mview_from_uchar_buf, mview_get_addr
 # noinspection PyUnresolvedReferences
@@ -17,7 +17,10 @@ cdef class EthernetII(PDU):
     pdu_type = PDU.ETHERNET_II
     broadcast = HWAddress.broadcast
 
-    def __cinit__(self, buf=None, src_dest=None):
+    def __cinit__(self, buf=None, src_dest=None, _no_init=False):
+        if _no_init:
+            self.base_ptr = self.ptr = NULL
+            return
         if buf is None and src_dest is None:
             self.ptr = new cppEthernetII()
         elif buf is not None:
@@ -47,11 +50,15 @@ cdef class EthernetII(PDU):
             self.ptr = new cppEthernetII(<cppHWAddress6> ((<HWAddress> src).ptr[0]), <cppHWAddress6> ((<HWAddress> dest).ptr[0]))
         self.base_ptr = <cppPDU*> self.ptr
 
+    cpdef __set_ptr(self, uintptr_t ptr):
+        self.base_ptr = <cppPDU*> ptr
+        self.ptr = <cppEthernetII*> ptr
+
     def __dealloc__(self):
         if self.ptr != NULL:
             del self.ptr
 
-    def __init__(self, buf=None, src_dest=None):
+    def __init__(self, buf=None, src_dest=None, _no_init=False):
         pass
 
     property src_addr:

@@ -2,7 +2,7 @@
 
 from libcpp.vector cimport vector
 # noinspection PyUnresolvedReferences
-from libc.stdint cimport uint16_t, uint32_t, uint8_t
+from libc.stdint cimport uint16_t, uint32_t, uint8_t, uintptr_t
 
 # noinspection PyUnresolvedReferences
 ctypedef void* pointer
@@ -31,10 +31,12 @@ cdef extern from "tins/pdu.h" namespace "Tins":
         bool matches_flag(PDUType flag) const
         PDUType pdu_type()
         # noinspection PyUnresolvedReferences
-        pointer find_pdu[T](PDUType type)
+        pointer find_pdu[T]()
+        pointer find_pdu[T]() const
+        #T& rfind_pdu[T]()    # cython bug ?
 
     T slash_op "Tins::PDU::operator/" [T] (T lop, const cppPDU& rop)
-    T slash_equals_op "Tins::PDU::operator/=" [T] (T& lop, const cppPDU& rop)       # NB: instead of T& (Template parameter not a type)
+    # T slash_equals_op "Tins::PDU::operator/=" [T] (T& lop, const cppPDU& rop)       # NB: instead of T& (Template parameter not a type)
     pointer pointer_slash_equals_op "Tins::PDU::operator/=" [T] (T* lop, const cppPDU &rop)
 
     ctypedef enum PDUType "Tins::PDU::PDUType":
@@ -91,6 +93,18 @@ cdef extern from "tins/pdu.h" namespace "Tins":
         PDU_PKTAP "Tins::PDU::PKTAP",
         PDU_USER_DEFINED_PDU "Tins::PDU::USER_DEFINED_PDU"
 
+
+cdef extern from "wrap.h" namespace "Tins":
+    void slash_equals_op[T](T& lop, const cppPDU &rop)
+    cppPDU* cpp_find_pdu(const cppPDU* pdu, PDUType t)
+
 cdef class PDU(object):
+    """
+    (Abstract) Protocol Data Unit
+    """
     cpdef serialize(self)
     cdef cppPDU* base_ptr
+    cpdef find_pdu_by_type(self, int t)
+    cpdef find_pdu_by_classname(self, bytes classname)
+    cpdef find_pdu_by_class(self, obj)
+    cpdef __set_ptr(self, uintptr_t ptr)

@@ -54,6 +54,19 @@ namespace Tins {
         small_int24(small_uint<24> val) : small_uint<24>(val) {};
     };
 
+    // workaround cython template function bug
+    template<typename T>
+    void slash_equals_op(T &lop, const PDU &rop) {
+        PDU *last = &lop;
+        while(last->inner_pdu())
+            last = last->inner_pdu();
+        last->inner_pdu(rop.clone());
+    }
+
+    PDU* cpp_find_pdu(const PDU* pdu, PDU::PDUType t);
+
 }
+
+
 
 #endif // TINS_WRAPPER_CY

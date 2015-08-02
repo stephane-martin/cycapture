@@ -3,10 +3,11 @@
 Abstract PDU python class
 """
 # noinspection PyUnresolvedReferences
-from libc.stdint cimport uint16_t, uint32_t, uint8_t
+from libc.stdint cimport uint16_t, uint32_t, uint8_t, uintptr_t
 
 cdef class PDU(object):
     RAW = PDU_RAW
+    ETHERNETII = PDU_ETHERNET_II
     ETHERNET_II = PDU_ETHERNET_II
     IEEE802_3 = PDU_IEEE802_3
     RADIOTAP = PDU_RADIOTAP
@@ -59,7 +60,6 @@ cdef class PDU(object):
     PKTAP = PDU_PKTAP
     USER_DEFINED_PDU = PDU_USER_DEFINED_PDU
 
-
     property header_size:
         def __get__(self):
             return int(self.base_ptr.header_size())
@@ -73,3 +73,63 @@ cdef class PDU(object):
         cdef uint8_t* p = &v[0]
         return <bytes> (p[:v.size()])
 
+    def __cinit__(self):
+        pass
+
+    def __dealloc__(self):
+        pass
+
+    def __init__(self):
+        pass
+
+    cpdef find_pdu_by_type(self, int t):
+        if t not in _pdutypes:
+            raise ValueError("Unknown PDU type")
+        cdef cppPDU* pdu = cpp_find_pdu(<const cppPDU*> self.base_ptr, <PDUType> t)
+        if pdu == NULL:
+            raise NotFound
+        # we create another python object. so that this new object is independant from self, and to prevent
+        # memory freed twice in dealloc, we have to clone... so long for efficiency :(
+        pdu = pdu.clone()
+        klass = _mapping_pdutype_to_class[t]
+        obj = klass(_no_init=True)
+        obj.__set_ptr(<uintptr_t>pdu)
+        return obj
+
+    cpdef find_pdu_by_classname(self, bytes classname):
+        if classname is None:
+            raise ValueError("classname can't be None")
+        classname = classname.lower()
+        t = _mapping_classname_to_pdutype.get(classname)
+        if t is None:
+            raise ValueError("classname '%s' is unknown" % classname)
+        return self.find_pdu_by_type(t)
+
+    cpdef find_pdu_by_class(self, obj):
+        if obj not in _classes:
+            raise ValueError('unknown class')
+        return self.find_pdu_by_type(obj.pdu_type)
+
+    cpdef __set_ptr(self, uintptr_t ptr):
+        self.base_ptr = <cppPDU*> ptr
+
+cdef object _mapping_pdutype_to_class = {
+    PDU_ETHERNET_II: EthernetII,
+    PDU_IP: IP
+}
+
+cdef object _pdutypes = _mapping_pdutype_to_class.keys()
+cdef object _classes = _mapping_pdutype_to_class.values()
+
+_mapping_classname_to_pdutype = {
+    "ethernet": PDU_ETHERNET_II,
+    "ethernet2": PDU_ETHERNET_II,
+    "ethernetii": PDU_ETHERNET_II,
+    "ethernet_2": PDU_ETHERNET_II,
+    "ethernet_ii": PDU_ETHERNET_II,
+    "ip": PDU_IP,
+    "ipv4": PDU_IP
+}
+
+class NotFound(Exception):
+    pass
