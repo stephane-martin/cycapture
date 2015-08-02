@@ -2,10 +2,10 @@
 
 from libcpp.vector cimport vector
 # noinspection PyUnresolvedReferences
-from libc.stdint cimport uint16_t, uint32_t, uint8_t, uintptr_t
+from libc.stdint cimport uint16_t, uint32_t, uint8_t, uintptr_t, int64_t
+from libcpp.unordered_map cimport unordered_map
+from libcpp.pair cimport pair
 
-# noinspection PyUnresolvedReferences
-ctypedef void* pointer
 
 cdef extern from "tins/pdu.h" namespace "Tins":
     ctypedef vector[uint8_t] byte_array
@@ -24,20 +24,21 @@ cdef extern from "tins/pdu.h" namespace "Tins":
         uint32_t size() const
         cppPDU* inner_pdu() const
         cppPDU* release_inner_pdu()
-        void inner_pdu(cppPDU *next_pdu)
-        void inner_pdu(const cppPDU &next_pdu)
+        void inner_pdu(cppPDU *next_pdu) # takes ownership
+        void inner_pdu(const cppPDU &next_pdu) # clone
         vector[uint8_t] serialize()
         cppPDU *clone() const
         bool matches_flag(PDUType flag) const
         PDUType pdu_type()
         # noinspection PyUnresolvedReferences
-        pointer find_pdu[T]()
-        pointer find_pdu[T]() const
-        #T& rfind_pdu[T]()    # cython bug ?
+        (T*) find_pdu[T]()
+        (const T*) find_pdu[T]() const
+        (T&) rfind_pdu[T]()
+        (const T&) rfind_pdu[T]() const
 
     T slash_op "Tins::PDU::operator/" [T] (T lop, const cppPDU& rop)
-    # T slash_equals_op "Tins::PDU::operator/=" [T] (T& lop, const cppPDU& rop)       # NB: instead of T& (Template parameter not a type)
-    pointer pointer_slash_equals_op "Tins::PDU::operator/=" [T] (T* lop, const cppPDU &rop)
+    (T&) slash_equals_op "Tins::PDU::operator/=" [T] (T& lop, const cppPDU& rop)
+    (T*) pointer_slash_equals_op "Tins::PDU::operator/=" [T] (T* lop, const cppPDU &rop)
 
     ctypedef enum PDUType "Tins::PDU::PDUType":
         PDU_RAW "Tins::PDU::RAW",
@@ -93,10 +94,12 @@ cdef extern from "tins/pdu.h" namespace "Tins":
         PDU_PKTAP "Tins::PDU::PKTAP",
         PDU_USER_DEFINED_PDU "Tins::PDU::USER_DEFINED_PDU"
 
+ctypedef object (*factory) (cppPDU * ptr, object parent)
 
 cdef extern from "wrap.h" namespace "Tins":
     void slash_equals_op[T](T& lop, const cppPDU &rop)
     cppPDU* cpp_find_pdu(const cppPDU* pdu, PDUType t)
+
 
 cdef class PDU(object):
     """
@@ -104,7 +107,15 @@ cdef class PDU(object):
     """
     cpdef serialize(self)
     cdef cppPDU* base_ptr
-    cpdef find_pdu_by_type(self, int t)
-    cpdef find_pdu_by_classname(self, bytes classname)
-    cpdef find_pdu_by_class(self, obj)
-    cpdef __set_ptr(self, uintptr_t ptr)
+    cdef object parent
+    cpdef find_pdu_by_type(self, int64_t t)
+    cpdef rfind_pdu_by_type(self, int64_t t)
+    cpdef copy(self)
+    cpdef reference(self)
+    cpdef int64_t get_pdu_type(self)
+    cpdef find_pdu(self, obj)
+    cpdef rfind_pdu(self, obj)
+    cpdef copy_inner_pdu(self)
+    cpdef ref_inner_pdu(self)
+    cpdef set_inner_pdu(self, obj)
+    cpdef set_inner_pdu_copy(self, obj)

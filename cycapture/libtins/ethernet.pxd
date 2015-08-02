@@ -18,12 +18,14 @@ cdef extern from "tins/ethernetII.h" namespace "Tins":
         void dst_addr(const cppHWAddress6 &new_dst_addr)
         void src_addr(const cppHWAddress6 &new_src_addr)
         void payload_type(uint16_t new_payload_type)
-        #uint32_t header_size() const
-        #uint32_t trailer_size() const
-        #PDUType pdu_type() const
-        #cppEthernetII *clone() const
-        #pointer find_pdu[T]()
+
 
 
 cdef class EthernetII(PDU):
     cdef cppEthernetII* ptr
+
+cdef factory_ethernet_ii(cppPDU* ptr, object parent)
+cdef make_ETHII_from_const_uchar_buf(const uint8_t* buf, int size)
+cdef make_ETHII_from_uchar_buf(uint8_t* buf, int size)
+cpdef make_ETHII_from_typed_memoryview(unsigned char[:] data)
+

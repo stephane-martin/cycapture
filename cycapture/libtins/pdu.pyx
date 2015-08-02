@@ -3,7 +3,15 @@
 Abstract PDU python class
 """
 # noinspection PyUnresolvedReferences
-from libc.stdint cimport uint16_t, uint32_t, uint8_t, uintptr_t
+from libc.stdint cimport uint16_t, uint32_t, uint8_t, uintptr_t, int64_t
+from libcpp.map cimport map as cpp_map
+from libcpp.pair cimport pair
+from libcpp.string cimport string
+
+
+
+
+
 
 cdef class PDU(object):
     RAW = PDU_RAW
@@ -60,6 +68,8 @@ cdef class PDU(object):
     PKTAP = PDU_PKTAP
     USER_DEFINED_PDU = PDU_USER_DEFINED_PDU
 
+    pdu_type = -1
+
     property header_size:
         def __get__(self):
             return int(self.base_ptr.header_size())
@@ -82,54 +92,194 @@ cdef class PDU(object):
     def __init__(self):
         pass
 
-    cpdef find_pdu_by_type(self, int t):
-        if t not in _pdutypes:
+    cpdef int64_t get_pdu_type(self):
+        return <int64_t> self.pdu_type
+
+    cpdef copy(self):
+        cdef cppPDU* new_pdu = self.base_ptr.clone()
+        cdef PDUType pdut = <PDUType> self.get_pdu_type()
+        cdef string classname = map_pdutype_to_classname[pdut]
+        new_obj = (map_classname_to_factory[classname])(new_pdu, None)
+        return new_obj
+
+    cpdef reference(self):
+        cdef PDUType pdut = <PDUType> self.get_pdu_type()
+        cdef string classname = map_pdutype_to_classname[pdut]
+        new_obj = (map_classname_to_factory[classname])(self.base_ptr, self)
+        return new_obj
+
+    cpdef copy_inner_pdu(self):
+        cdef cppPDU* inner = self.base_ptr.inner_pdu()
+        if inner == NULL:
+            return None
+        inner = inner.clone()
+        cdef PDUType pdut = <PDUType> inner.pdu_type()
+        cdef string classname = map_pdutype_to_classname[pdut]
+        new_obj = (map_classname_to_factory[classname])(inner, None)
+        return new_obj
+
+    cpdef ref_inner_pdu(self):
+        cdef cppPDU* inner = self.base_ptr.inner_pdu()
+        if inner == NULL:
+            return None
+        cdef PDUType pdut = <PDUType> inner.pdu_type()
+        cdef string classname = map_pdutype_to_classname[pdut]
+        new_obj = (map_classname_to_factory[classname])(inner, self)
+        return new_obj
+
+    cpdef set_inner_pdu(self, obj):
+        cdef cppPDU* existing_inner
+        if obj is None:
+            raise ValueError("obj can't be None")
+        if not isinstance(obj, PDU):
+            raise ValueError("obj is not a PDU")
+        elif (<PDU>obj).parent is not None:
+            raise ValueError("obj is already affected to a parent PDU")
+        elif <cppPDU*> (self.base_ptr) == <cppPDU*> ((<PDU>obj).base_ptr):
+            raise ValueError("Can't assign self as inner PDU of self")
+        else:
+            existing_inner = self.base_ptr.inner_pdu()
+            # C++ set inner_pdu method destroys the previous inner PDU if it existed!
+            if existing_inner == NULL:
+                self.base_ptr.inner_pdu(<cppPDU*>((<PDU>obj).base_ptr))
+                # self has taken ownership of obj
+                (<PDU>obj).parent = self
+            else:
+                raise ValueError("self already has an inner PDU")
+
+    cpdef set_inner_pdu_copy(self, obj):
+        cdef cppPDU* existing_inner
+        if obj is None:
+            raise ValueError("obj can't be None")
+        elif not isinstance(obj, PDU):
+            raise ValueError("obj is not a PDU")
+        else:
+            existing_inner = self.base_ptr.inner_pdu()
+            # C++ set inner_pdu method destroys the previous inner PDU if it existed!
+            if existing_inner == NULL:
+                obj_copy = (<PDU> obj).copy()
+                self.base_ptr.inner_pdu(<cppPDU*>((<PDU>obj_copy).base_ptr))
+                # self has taken ownership of obj_copy
+                (<PDU>obj_copy).parent = self
+            else:
+                raise ValueError("self already has an inner PDU")
+
+    def __div__(self, other):
+        if not isinstance(other, PDU):
+            raise ValueError("other must be a PDU object")
+        copy_of_self = <PDU> (self.copy())
+        cdef cppPDU *last = copy_of_self.base_ptr
+        while last.inner_pdu() != NULL:
+            last = last.inner_pdu()
+        last.inner_pdu(<const cppPDU &>((<PDU>other).base_ptr[0]))      # clone other
+        return copy_of_self
+
+    def __truediv__(self, other):
+        return self.__div__(other)
+
+    def __idiv__(self, other):
+        if not isinstance(other, PDU):
+            raise ValueError("other must be a PDU object")
+        if not isinstance(other, PDU):
+            raise ValueError("other must be a PDU object")
+        cdef cppPDU *last = self.base_ptr
+        while last.inner_pdu() != NULL:
+            last = last.inner_pdu()
+        last.inner_pdu(<const cppPDU &>((<PDU>other).base_ptr[0]))      # clone other
+        return self
+
+    def __itruediv__(self, other):
+        return self.__idiv__(other)
+
+    cpdef find_pdu_by_type(self, int64_t t):
+        cdef string classname = map_pdutype_to_classname[t]
+        if classname.size() == 0:
             raise ValueError("Unknown PDU type")
-        cdef cppPDU* pdu = cpp_find_pdu(<const cppPDU*> self.base_ptr, <PDUType> t)
+        cdef PDUType pdut = <PDUType> t
+        cdef cppPDU* pdu = cpp_find_pdu(<const cppPDU*> self.base_ptr, pdut)
         if pdu == NULL:
             raise NotFound
-        # we create another python object. so that this new object is independant from self, and to prevent
-        # memory freed twice in dealloc, we have to clone... so long for efficiency :(
+        # here we return a *copy* of the matching inner PDu
         pdu = pdu.clone()
-        klass = _mapping_pdutype_to_class[t]
-        obj = klass(_no_init=True)
-        obj.__set_ptr(<uintptr_t>pdu)
+        obj = (map_classname_to_factory[classname])(pdu, None)
         return obj
 
-    cpdef find_pdu_by_classname(self, bytes classname):
-        if classname is None:
-            raise ValueError("classname can't be None")
-        classname = classname.lower()
-        t = _mapping_classname_to_pdutype.get(classname)
-        if t is None:
-            raise ValueError("classname '%s' is unknown" % classname)
-        return self.find_pdu_by_type(t)
+    cpdef rfind_pdu_by_type(self, int64_t t):
+        cdef string classname = map_pdutype_to_classname[t]
+        if classname.size() == 0:
+            raise ValueError("Unknown PDU type")
+        cdef PDUType pdut = <PDUType> t
+        cdef cppPDU* pdu = cpp_find_pdu(<const cppPDU*> self.base_ptr, pdut)
+        if pdu == NULL:
+            raise NotFound
+        # here we return a *reference* of the matching inner PDu
+        obj = (map_classname_to_factory[classname])(pdu, self)
+        return obj
 
-    cpdef find_pdu_by_class(self, obj):
-        if obj not in _classes:
-            raise ValueError('unknown class')
-        return self.find_pdu_by_type(obj.pdu_type)
+    cpdef find_pdu(self, obj):
+        cdef PDUType pdut
+        if isinstance(obj, type):
+            if not hasattr(obj, "pdu_type"):
+                raise ValueError("Don't know what to to with: %s (no attribute pdu_type)" % obj.__name__)
+            t = <int64_t> (obj.pdu_type)
+            if t >= 0:
+                pdut = <PDUType> t
+                return self.find_pdu_by_type(pdut)
+            else:
+                raise ValueError("Don't know what to to with: %s (pdu_type attr is negative)" % obj.__name__)
+        elif isinstance(obj, bytes):
+            obj = (<bytes> obj).lower()
+            try:
+                t = <int64_t> (map_classname_to_pdutype.at(<string>obj))
+            except IndexError:
+                raise ValueError("There is no PDU called: %s" % obj)
+            pdut = <PDUType> t
+            return self.find_pdu_by_type(pdut)
+        else:
+            return self.find_pdu_by_type(int(obj))
 
-    cpdef __set_ptr(self, uintptr_t ptr):
-        self.base_ptr = <cppPDU*> ptr
+    cpdef rfind_pdu(self, obj):
+        cdef PDUType pdut
+        if isinstance(obj, type):
+            if not hasattr(obj, "pdu_type"):
+                raise ValueError("Don't know what to to with: %s (no attribute pdu_type)" % obj.__name__)
+            t = <int64_t> (obj.pdu_type)
+            if t >= 0:
+                pdut = <PDUType> t
+                return self.rfind_pdu_by_type(pdut)
+            else:
+                raise ValueError("Don't know what to to with: %s (pdu_type attr is negative)" % obj.__name__)
+        elif isinstance(obj, bytes):
+            obj = (<bytes> obj).lower()
+            try:
+                t = <int64_t> (map_classname_to_pdutype.at(<string>obj))
+            except IndexError:
+                raise ValueError("There is no PDU called: %s" % obj)
+            pdut = <PDUType> t
+            return self.rfind_pdu_by_type(pdut)
+        else:
+            return self.rfind_pdu_by_type(int(obj))
 
-cdef object _mapping_pdutype_to_class = {
-    PDU_ETHERNET_II: EthernetII,
-    PDU_IP: IP
-}
 
-cdef object _pdutypes = _mapping_pdutype_to_class.keys()
-cdef object _classes = _mapping_pdutype_to_class.values()
 
-_mapping_classname_to_pdutype = {
-    "ethernet": PDU_ETHERNET_II,
-    "ethernet2": PDU_ETHERNET_II,
-    "ethernetii": PDU_ETHERNET_II,
-    "ethernet_2": PDU_ETHERNET_II,
-    "ethernet_ii": PDU_ETHERNET_II,
-    "ip": PDU_IP,
-    "ipv4": PDU_IP
-}
+cdef cpp_map[int64_t, string] map_pdutype_to_classname
+map_pdutype_to_classname[PDU.ETHERNET_II] = "ethernetii"
+map_pdutype_to_classname[PDU.IP] = "ip"
+map_pdutype_to_classname[PDU.TCP] = "tcp"
+map_pdutype_to_classname[PDU.RAW] = "raw"
+
+
+cdef cpp_map[string, factory] map_classname_to_factory
+map_classname_to_factory["ethernetii"] = &factory_ethernet_ii
+map_classname_to_factory["ip"] = &factory_ip
+map_classname_to_factory["tcp"] = &factory_tcp
+map_classname_to_factory["raw"] = &factory_raw
+
+
+cdef cpp_map[string, int64_t] map_classname_to_pdutype
+cdef pair[int64_t, string] p
+for p in map_pdutype_to_classname:
+    map_classname_to_pdutype[p.second] = p.first
 
 class NotFound(Exception):
     pass

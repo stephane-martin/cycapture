@@ -3,7 +3,7 @@
 # noinspection PyUnresolvedReferences
 from libc.stdint cimport uint16_t, uint32_t, uint8_t, uintptr_t
 from libcpp.vector cimport vector
-from libcpp.list cimport list
+from libcpp.list cimport list as cpp_list
 
 
 cdef extern from "wrap.h" namespace "Tins":
@@ -81,10 +81,7 @@ cdef extern from "tins/ip.h" namespace "Tins":
         void stream_identifier(uint16_t stream_id)
         void eol()
         void noop()
-        #uint32_t header_size() const               inherited from cppPDU
         bool is_fragmented() const
-        #PDUType pdu_type() const                   inherited from cppPDU
-        #cppIP* clone() const                       inherited from cppPDU
 
         cppclass option_identifier:
             uint8_t number
@@ -108,7 +105,7 @@ cdef extern from "tins/ip.h" namespace "Tins":
             generic_route_option_type()
             generic_route_option_type(uint8_t ptr, vector[cppIPv4Address] rts)
 
-        const list[ip_pdu_option] & options() const
+        const cpp_list[ip_pdu_option] & options() const
         const ip_pdu_option *search_option(cppIP.option_identifier ident) const
         void add_option(const ip_pdu_option &opt)
         cppIP.security_type security() const;
@@ -136,6 +133,8 @@ cdef class IP(PDU):
     cdef cppIP* ptr
     cpdef eol(self)
     cpdef noop(self)
+
+cdef factory_ip(cppPDU* ptr, object parent)
 
 cdef make_IP_from_const_uchar_buf(const uint8_t* buf, int size)
 cdef make_IP_from_uchar_buf(uint8_t* buf, int size)

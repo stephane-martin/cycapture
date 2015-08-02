@@ -6,4 +6,5 @@ include "networkinterface.pxd"
 include "pdu.pxd"
 include "ethernet.pxd"
 include "ip.pxd"
-
+include "tcp.pxd"
+include "raw.pxd"

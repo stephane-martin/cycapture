@@ -9,6 +9,17 @@ from ..make_mview cimport make_mview_from_const_uchar_buf, make_mview_from_uchar
 # noinspection PyUnresolvedReferences
 from cython.view cimport memoryview as cy_memoryview
 
+
+cdef factory_ethernet_ii(cppPDU* ptr, object parent):
+    if ptr == NULL:
+        raise ValueError("Can't make an EthernetII object from a NULL pointer")
+    obj = EthernetII(_raw=True)
+    obj.base_ptr = ptr
+    obj.ptr = <cppEthernetII*> ptr
+    obj.parent = parent
+    return obj
+
+
 cdef class EthernetII(PDU):
     """
     Ethernet packet
@@ -17,11 +28,10 @@ cdef class EthernetII(PDU):
     pdu_type = PDU.ETHERNET_II
     broadcast = HWAddress.broadcast
 
-    def __cinit__(self, buf=None, src_dest=None, _no_init=False):
-        if _no_init:
-            self.base_ptr = self.ptr = NULL
+    def __cinit__(self, buf=None, src_dest=None, _raw=False):
+        if _raw:
             return
-        if buf is None and src_dest is None:
+        elif buf is None and src_dest is None:
             self.ptr = new cppEthernetII()
         elif buf is not None:
             # construct from a buffer
@@ -49,16 +59,15 @@ cdef class EthernetII(PDU):
                 dest = HWAddress(dest)
             self.ptr = new cppEthernetII(<cppHWAddress6> ((<HWAddress> src).ptr[0]), <cppHWAddress6> ((<HWAddress> dest).ptr[0]))
         self.base_ptr = <cppPDU*> self.ptr
-
-    cpdef __set_ptr(self, uintptr_t ptr):
-        self.base_ptr = <cppPDU*> ptr
-        self.ptr = <cppEthernetII*> ptr
+        self.parent = None
 
     def __dealloc__(self):
-        if self.ptr != NULL:
+        if self.ptr != NULL and self.parent is None:
             del self.ptr
+        self.ptr = NULL
+        self.parent = None
 
-    def __init__(self, buf=None, src_dest=None, _no_init=False):
+    def __init__(self, buf=None, src_dest=None, _raw=False):
         pass
 
     property src_addr:

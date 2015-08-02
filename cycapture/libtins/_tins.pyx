@@ -4,7 +4,7 @@
 from libcpp cimport bool
 from libcpp.string cimport string
 from libcpp.vector cimport vector
-from libcpp.list cimport list
+from libcpp.list cimport list as cpp_list
 
 include "ip_address.pyx"
 include "hw_address.pyx"
@@ -12,6 +12,8 @@ include "networkinterface.pyx"
 include "pdu.pyx"
 include "ethernet.pyx"
 include "ip.pyx"
+include "tcp.pyx"
+include "raw.pyx"
 
 #cdef EthernetII* eth = new EthernetII()
 #cdef pointer p = eth.find_pdu[EthernetII]()

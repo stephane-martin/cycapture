@@ -9,6 +9,7 @@
 #include "tins/ip.h"
 #include "tins/pdu_option.h"
 #include "tins/network_interface.h"
+#include "tins/tcp.h"
 
 namespace Tins {
     uint32_t convert_to_big_endian_int (IPv4Address& addr);
@@ -16,6 +17,8 @@ namespace Tins {
 
     typedef HWAddress<6, uint8_t> cppHWAddress6;
     typedef PDUOption<IP::option_identifier, IP> ip_pdu_option;
+    typedef PDUOption<uint8_t, TCP> tcp_pdu_option;
+
     //const HWAddress6 hw6_broadcast = HWAddress6::broadcast;
 
     class small_int1 : small_uint<1> {
@@ -53,15 +56,6 @@ namespace Tins {
         small_int24(uint32_t val) : small_uint<24>(val) {};
         small_int24(small_uint<24> val) : small_uint<24>(val) {};
     };
-
-    // workaround cython template function bug
-    template<typename T>
-    void slash_equals_op(T &lop, const PDU &rop) {
-        PDU *last = &lop;
-        while(last->inner_pdu())
-            last = last->inner_pdu();
-        last->inner_pdu(rop.clone());
-    }
 
     PDU* cpp_find_pdu(const PDU* pdu, PDU::PDUType t);
 

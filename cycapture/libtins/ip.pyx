@@ -9,6 +9,17 @@ from ..make_mview cimport make_mview_from_const_uchar_buf, make_mview_from_uchar
 # noinspection PyUnresolvedReferences
 from cython.view cimport memoryview as cy_memoryview
 
+
+cdef factory_ip(cppPDU* ptr, object parent):
+    if ptr == NULL:
+        raise ValueError("Can't make an IP object from a NULL pointer")
+    obj = IP(_raw=True)
+    obj.base_ptr = ptr
+    obj.ptr = <cppIP*> ptr
+    obj.parent = parent
+    return obj
+
+
 cdef class IP(PDU):
     """
     IP packet
@@ -38,11 +49,10 @@ cdef class IP(PDU):
     UMP = IP_OPT_NUMBER_UMP
     QS = IP_OPT_NUMBER_QS
 
-    def __cinit__(self, buf=None, src_dest=None, _no_init=False):
-        if _no_init:
-            self.base_ptr = self.ptr = NULL
+    def __cinit__(self, dest_src_ips=None, buf=None, _raw=False):
+        if _raw:
             return
-        if buf is None and src_dest is None:
+        elif buf is None and dest_src_ips is None:
             self.ptr = new cppIP()
         elif buf is not None:
             # construct from a buffer
@@ -58,8 +68,8 @@ cdef class IP(PDU):
                 self.ptr = new cppIP(<uint8_t*> (<cy_memoryview>buf).get_item_pointer([]), <uint32_t> len(buf))
             else:
                 raise ValueError("don't know what to do with type '%s'" % type(buf))
-        else:
-            src, dest = src_dest
+        elif isinstance(dest_src_ips, tuple) or isinstance(dest_src_ips, list):
+            dest, src = dest_src_ips
             if src is None:
                 src = IPv4Address()
             if dest is None:
@@ -69,13 +79,24 @@ cdef class IP(PDU):
             if not isinstance(dest, IPv4Address):
                 dest = IPv4Address(dest)
             self.ptr = new cppIP(<cppIPv4Address> ((<IPv4Address> src).ptr[0]), <cppIPv4Address> ((<IPv4Address> dest).ptr[0]))
+        elif isinstance(dest_src_ips, IPv4Address):
+            src = IPv4Address()
+            dest = dest_src_ips
+            self.ptr = new cppIP(<cppIPv4Address> ((<IPv4Address> src).ptr[0]), <cppIPv4Address> ((<IPv4Address> dest).ptr[0]))
+        else:
+            src = IPv4Address()
+            dest = IPv4Address(dest_src_ips)
+            self.ptr = new cppIP(<cppIPv4Address> ((<IPv4Address> src).ptr[0]), <cppIPv4Address> ((<IPv4Address> dest).ptr[0]))
         self.base_ptr = <cppPDU*> self.ptr
+        self.parent = None
 
     def __dealloc__(self):
-        if self.ptr != NULL:
+        if self.ptr != NULL and self.parent is None:
             del self.ptr
+        self.ptr = NULL
+        self.parent = None
 
-    def __init__(self, buf=None, src_dest=None, _no_init=False):
+    def __init__(self, dest_src_ips=None, buf=None, _raw=False):
         pass
 
     cpdef eol(self):
@@ -83,11 +104,6 @@ cdef class IP(PDU):
 
     cpdef noop(self):
         pass
-
-    cpdef __set_ptr(self, uintptr_t ptr):
-        self.base_ptr = <cppPDU*> ptr
-        self.ptr = <cppIP*> ptr
-
 
 cdef make_IP_from_const_uchar_buf(const uint8_t* buf, int size):
     if size == 0:
