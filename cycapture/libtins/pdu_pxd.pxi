@@ -118,4 +118,3 @@ cdef class PDU(object):
     cpdef copy_inner_pdu(self)
     cpdef ref_inner_pdu(self)
     cpdef set_inner_pdu(self, obj)
-    cpdef set_inner_pdu_copy(self, obj)

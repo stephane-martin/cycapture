@@ -128,41 +128,14 @@ cdef class PDU(object):
         return new_obj
 
     cpdef set_inner_pdu(self, obj):
-        cdef cppPDU* existing_inner
-        if obj is None:
-            raise ValueError("obj can't be None")
-        if not isinstance(obj, PDU):
-            raise ValueError("obj is not a PDU")
-        elif (<PDU>obj).parent is not None:
-            raise ValueError("obj is already affected to a parent PDU")
-        elif <cppPDU*> (self.base_ptr) == <cppPDU*> ((<PDU>obj).base_ptr):
-            raise ValueError("Can't assign self as inner PDU of self")
-        else:
-            existing_inner = self.base_ptr.inner_pdu()
-            # C++ set inner_pdu method destroys the previous inner PDU if it existed!
-            if existing_inner == NULL:
-                self.base_ptr.inner_pdu(<cppPDU*>((<PDU>obj).base_ptr))
-                # self has taken ownership of obj
-                (<PDU>obj).parent = self
-            else:
-                raise ValueError("self already has an inner PDU")
-
-    cpdef set_inner_pdu_copy(self, obj):
-        cdef cppPDU* existing_inner
         if obj is None:
             raise ValueError("obj can't be None")
         elif not isinstance(obj, PDU):
             raise ValueError("obj is not a PDU")
         else:
-            existing_inner = self.base_ptr.inner_pdu()
-            # C++ set inner_pdu method destroys the previous inner PDU if it existed!
-            if existing_inner == NULL:
-                obj_copy = (<PDU> obj).copy()
-                self.base_ptr.inner_pdu(<cppPDU*>((<PDU>obj_copy).base_ptr))
-                # self has taken ownership of obj_copy
-                (<PDU>obj_copy).parent = self
-            else:
-                raise ValueError("self already has an inner PDU")
+            # (C++ set inner_pdu method destroys the previous inner PDU if it existed)
+            # we clone the other obj, so that libtins can destroy it later safely when inner_pdu is called again
+            self.base_ptr.inner_pdu(<cppPDU*>(<PDU>obj).base_ptr.clone())
 
     def __div__(self, other):
         if not isinstance(other, PDU):
