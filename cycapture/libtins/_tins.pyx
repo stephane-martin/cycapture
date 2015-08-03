@@ -6,21 +6,12 @@ from libcpp.string cimport string
 from libcpp.vector cimport vector
 from libcpp.list cimport list as cpp_list
 
-include "ip_address.pyx"
-include "hw_address.pyx"
-include "networkinterface.pyx"
-include "pdu.pyx"
-include "ethernet.pyx"
-include "ip.pyx"
-include "tcp.pyx"
-include "raw.pyx"
-
-#cdef EthernetII* eth = new EthernetII()
-#cdef pointer p = eth.find_pdu[EthernetII]()
-#print(p==NULL)
-#print(p.header_size())
-
-#cdef NetworkInterface d = default_interface()
-#print(d.name())
-#print(network_interface_to_bool(d))
+include "ip_address_pyx.pxi"
+include "hw_address_pyx.pxi"
+include "networkinterface_pyx.pxi"
+include "pdu_pyx.pxi"
+include "ethernet_pyx.pxi"
+include "ip_pyx.pxi"
+include "tcp_pyx.pxi"
+include "raw_pyx.pxi"
 

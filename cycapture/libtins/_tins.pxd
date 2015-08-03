@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
-include "ip_address.pxd"
-include "hw_address.pxd"
-include "networkinterface.pxd"
-include "pdu.pxd"
-include "ethernet.pxd"
-include "ip.pxd"
-include "tcp.pxd"
-include "raw.pxd"
+include "ip_address_pxd.pxi"
+include "hw_address_pxd.pxi"
+include "networkinterface_pxd.pxi"
+include "pdu_pxd.pxi"
+include "ethernet_pxd.pxi"
+include "ip_pxd.pxi"
+include "tcp_pxd.pxi"
+include "raw_pxd.pxi"
