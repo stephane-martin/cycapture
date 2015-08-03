@@ -21,41 +21,11 @@ namespace Tins {
 
     //const HWAddress6 hw6_broadcast = HWAddress6::broadcast;
 
-    class small_int1 : small_uint<1> {
-        public:
-        uint8_t getval() const {
-            return (uint8_t) *this;
-        }
-        small_int1(uint8_t val) : small_uint<1>(val) {};
-        small_int1(small_uint<1> val) : small_uint<1>(val) {};
-    };
+    typedef small_uint<1> small_uint1;
+    typedef small_uint<4> small_uint4;
+    typedef small_uint<12> small_uint12;
+    typedef small_uint<24> small_uint24;
 
-    class small_int4 : small_uint<4> {
-        public:
-        uint8_t getval() const {
-            return (uint8_t) *this;
-        }
-        small_int4(uint8_t val) : small_uint<4>(val) {};
-        small_int4(small_uint<4> val) : small_uint<4>(val) {};
-    };
-
-    class small_int12 : small_uint<12> {
-        public:
-        uint16_t getval() const {
-            return (uint16_t) *this;
-        }
-        small_int12(uint16_t val) : small_uint<12>(val) {};
-        small_int12(small_uint<12> val) : small_uint<12>(val) {};
-    };
-
-    class small_int24 : small_uint<24> {
-        public:
-        uint32_t getval() const {
-            return (uint32_t) *this;
-        }
-        small_int24(uint32_t val) : small_uint<24>(val) {};
-        small_int24(small_uint<24> val) : small_uint<24>(val) {};
-    };
 
     PDU* cpp_find_pdu(const PDU* pdu, PDU::PDUType t);
 

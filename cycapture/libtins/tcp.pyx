@@ -45,6 +45,17 @@ cdef class TCP(PDU):
     TSOPT = TCP_TSOPT
     ALTCHK = TCP_ALTCHK
 
+    map_num_to_option_type = {
+        EOL: "EOL",
+        NOP: "NOP",
+        MSS: "MSS",
+        WSCALE: "WSCALE",
+        SACK_OK: "SACK_OK",
+        SACK: "SACK",
+        TSOPT: "TSOPT",
+        ALTCHK: "ALTCHK"
+    }
+
     CHK_TCP = TCP_CHK_TCP
     CHK_8FLETCHER = TCP_CHK_8FLETCHER
     CHK_16FLETCHER = TCP_CHK_16FLETCHER
@@ -97,13 +108,124 @@ cdef class TCP(PDU):
         def __get__(self):
             return int(self.ptr.sport())
         def __set__(self, value):
+            if value is None:
+                value = 0
             self.ptr.sport(<uint16_t> int(value))
 
     property dport:
         def __get__(self):
             return int(self.ptr.dport())
         def __set__(self, value):
+            if value is None:
+                value = 0
             self.ptr.dport(<uint16_t> int(value))
+
+    property seq:
+        def __get__(self):
+            return int(self.ptr.seq())
+        def __set__(self, value):
+            if value is None:
+                value = 0
+            self.ptr.seq(<uint32_t> int(value))
+
+    property ack_seq:
+        def __get__(self):
+            return int(self.ptr.ack_seq())
+        def __set__(self, value):
+            if value is None:
+                value = 0
+            self.ptr.ack_seq(<uint32_t> int(value))
+
+    property window:
+        def __get__(self):
+            return int(self.ptr.window())
+        def __set__(self, value):
+            if value is None:
+                value = 32678
+            self.ptr.window(<uint16_t>int(value))
+
+    property checksum:
+        def __get__(self):
+            return int(self.ptr.checksum())
+
+    property urg_ptr:
+        def __get__(self):
+            return int(self.ptr.urg_ptr())
+        def __set__(self, value):
+            if value is None:
+                value = 0
+            else:
+                self.ptr.urg_ptr(<uint16_t>int(value))
+
+    property data_offset:
+        def __get__(self):
+            cdef small_uint4 offset = self.ptr.data_offset()
+            return <uint8_t> offset
+        def __set__(self, value):
+            if value is None:
+                pass            # ???
+            else:
+                value = int(value)
+                cdef small_uint4 offset = small_uint4(<uint8_t>value)
+                self.ptr.data_offset(offset)
+
+    property mss:
+        def __get__(self):
+            cdef uint16_t opt
+            try:
+                opt = self.ptr.mss()
+            except RuntimeError:
+                return None
+            return int(opt)
+        def __set__(self, value):
+            cdef tcp_pdu_option* mss_opt
+            if value is None:       # back to default value
+                value = 536
+            self.ptr.mss(<uint16_t>int(value))
+
+    property winscale:
+        def __get__(self):
+            cdef uint8_t opt
+            try:
+                opt = self.ptr.winscale()
+            except RuntimeError:
+                return None
+            return int(opt)
+
+        def __set__(self, value):
+            if value is None:
+                pass            # ???
+            else:
+               self.ptr.winscale(<uint8_t>int(value))
+
+    property sack_permitted:
+        def __get__(self):
+            cdef bool b = self.ptr.has_sack_permitted()
+            return True if b else False
+
+    cpdef set_sack_permitted(self):
+        self.ptr.sack_permitted()
+
+
+    cpdef options(self):
+        result = []
+        cdef cpp_list[tcp_pdu_option] opts = self.ptr.options()
+        for opt in opts:
+            opt_type = self.map_num_to_option_type.get(int((<tcp_pdu_option>opt).option()))
+            opt_length = int((<tcp_pdu_option>opt).length_field())
+            data_size = int((<tcp_pdu_option>opt).data_size())
+            data = b''
+            if data_size > 0:
+                data = <bytes>((<tcp_pdu_option>opt).data_ptr()[:data_size])
+            result.append({
+                'type': opt_type,
+                'length': opt_length,
+                'data_size': data_size,
+                'data': data
+            })
+
+        return result
+
 
 
 cdef make_TCP_from_const_uchar_buf(const uint8_t* buf, int size):

@@ -6,6 +6,8 @@ from libcpp.vector cimport vector
 from libcpp.list cimport list as cpp_list
 from libcpp.pair cimport pair
 
+ctypedef vector[uint32_t] sack_type
+
 cdef extern from "tins/tcp.h" namespace "Tins":
     PDUType tcp_pdu_flag "Tins::TCP::pdu_flag"
     ctypedef enum TcpFlags "Tins::TCP::Flags":
@@ -52,36 +54,47 @@ cdef extern from "tins/tcp.h" namespace "Tins":
         uint16_t checksum() const
         uint16_t urg_ptr() const
         void urg_ptr(uint16_t new_urg_ptr)
-        small_int4 data_offset() const
-        void data_offset(small_int4 new_doff)
+        small_uint4 data_offset() const
+        void data_offset(small_uint4 new_doff)
+        small_uint1 get_flag(TcpFlags tcp_flag) const
+        void set_flag(TcpFlags tcp_flag, small_uint1 value)
+        small_uint12 flags() const
+        void flags(small_uint12 value)
+
         void add_option(const tcp_pdu_option &opt)
         const cpp_list[tcp_pdu_option]& options() const
-        small_int1 get_flag(TcpFlags tcp_flag) const
-        void set_flag(TcpFlags tcp_flag, small_int1 value)
-        small_int12 flags() const
-        void flags(small_int12 value)
-        uint16_t mss() const
+        const tcp_pdu_option* search_option(TcpOptionTypes opt) const
+
+        uint16_t mss() except+
         void mss(uint16_t value)
-        uint8_t winscale() const
+        uint8_t winscale() except+
         void winscale(uint8_t value)
         void sack_permitted()
         bool has_sack_permitted() const
+        TcpAltChecksums altchecksum() const
+        void altchecksum(TcpAltChecksums value)
         void sack(const vector[uint32_t]& edges)
         const vector[uint32_t] sack() const
         void timestamp(uint32_t value, uint32_t reply)
         pair[uint32_t, uint32_t] timestamp() const
-        TcpAltChecksums altchecksum() const
-        void altchecksum(TcpAltChecksums value)
 
 
 cdef extern from "wrap.h" namespace "Tins":
     cdef cppclass tcp_pdu_option:
-        ip_pdu_option()
-        ip_pdu_option(uint8_t opt, size_t length, const uint8_t *data)
+        tcp_pdu_option()
+        tcp_pdu_option(uint8_t opt, size_t length, const uint8_t *data)
+        uint8_t option() const
+        void option(uint8_t opt)
+        const uint8_t *data_ptr() const
+        size_t data_size() const
+        size_t length_field() const
+        #T to()[T] const
 
 
 cdef class TCP(PDU):
     cdef cppTCP* ptr
+    cpdef options(self)
+    cpdef set_sack_permitted(self)
 
 cdef factory_tcp(cppPDU* ptr, object parent)
 cdef make_TCP_from_const_uchar_buf(const uint8_t* buf, int size)

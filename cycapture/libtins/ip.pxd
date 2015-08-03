@@ -7,22 +7,18 @@ from libcpp.list cimport list as cpp_list
 
 
 cdef extern from "wrap.h" namespace "Tins":
-    cdef cppclass small_int1:
-        small_int1()
-        small_int1(uint8_t) except +ValueError
-        uint8_t getval()
-    cdef cppclass small_int4:
-        small_int4()
-        small_int4(uint8_t) except +ValueError
-        uint8_t getval()
-    cdef cppclass small_int12:
-        small_int12()
-        small_int12(uint16_t) except +ValueError
-        uint16_t getval()
-    cdef cppclass small_int24:
-        small_int24()
-        small_int24(uint32_t) except +ValueError
-        uint32_t getval()
+    cdef cppclass small_uint1:
+        small_uint1()
+        small_uint1(uint8_t) except +ValueError
+    cdef cppclass small_uint4:
+        small_uint4()
+        small_uint4(uint8_t) except +ValueError
+    cdef cppclass small_uint12:
+        small_uint12()
+        small_uint12(uint16_t) except +ValueError
+    cdef cppclass small_uint24:
+        small_uint24()
+        small_uint24(uint32_t) except +ValueError
 
 
 cdef extern from "tins/ip.h" namespace "Tins":
@@ -56,7 +52,7 @@ cdef extern from "tins/ip.h" namespace "Tins":
         cppIP()
         cppIP(cppIPv4Address ip_dst, cppIPv4Address ip_src) except +ValueError
         cppIP(const uint8_t* buf, uint32_t total_sz) except +ValueError
-        small_int4 head_len() const
+        small_uint4 head_len() const
         uint8_t tos() const
         void tos(uint8_t new_tos)
         uint16_t tot_len() const
@@ -75,8 +71,8 @@ cdef extern from "tins/ip.h" namespace "Tins":
         void src_addr(cppIPv4Address ip)
         cppIPv4Address dst_addr() const
         void dst_addr(cppIPv4Address ip)
-        small_int4 version() const
-        void version(small_int4 ver)
+        small_uint4 version() const
+        void version(small_uint4 ver)
         uint16_t stream_identifier() const
         void stream_identifier(uint16_t stream_id)
         void eol()
@@ -89,15 +85,15 @@ cdef extern from "tins/ip.h" namespace "Tins":
             uint8_t copied
             option_identifier()
             option_identifier(uint8_t value)
-            option_identifier(OptionNumber number, OptionClass op_class, small_int1 copied)
+            option_identifier(OptionNumber number, OptionClass op_class, small_uint1 copied)
             bool operator==(const option_identifier &rhs) const
 
         cppclass security_type:
             uint16_t security, compartments
             uint16_t handling_restrictions
-            small_int24 transmission_control
+            small_uint24 transmission_control
             security_type()
-            security_type(uint16_t sec, uint16_t comp, uint16_t hand_res, small_int24 tcc)
+            security_type(uint16_t sec, uint16_t comp, uint16_t hand_res, small_uint24 tcc)
 
         cppclass generic_route_option_type:
             uint8_t pointer
