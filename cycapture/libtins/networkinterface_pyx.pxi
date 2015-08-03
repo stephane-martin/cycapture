@@ -1,5 +1,5 @@
 # noinspection PyUnresolvedReferences
-from libcpp cimport bool
+from libcpp cimport bool as cpp_bool
 from libcpp.vector cimport vector
 
 cdef class NetworkInterface(object):
@@ -41,7 +41,7 @@ cdef class NetworkInterface(object):
             'hw_addr': HWAddress(infos.hw_addr.to_string())
         }
 
-    cpdef bool is_loopback(self):
+    cpdef cpp_bool is_loopback(self):
         return self.ptr.is_loopback()
 
     def __bool__(self):

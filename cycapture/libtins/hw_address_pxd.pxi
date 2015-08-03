@@ -12,21 +12,21 @@ cdef extern from "tins/hw_address.h":
         cppHWAddress6(const cppHWAddress6 &) except +ValueError
         const size_t size() const
         string to_string() const
-        bool is_broadcast() const
-        bool is_multicast() const
-        bool is_unicast() const
-        bool equals "operator==" (const cppHWAddress6 &)
-        bool different "operator!=" (const cppHWAddress6 &) const
-        bool less "operator<" (const cppHWAddress6 &) const
+        cpp_bool is_broadcast() const
+        cpp_bool is_multicast() const
+        cpp_bool is_unicast() const
+        cpp_bool equals "operator==" (const cppHWAddress6 &)
+        cpp_bool different "operator!=" (const cppHWAddress6 &) const
+        cpp_bool less "operator<" (const cppHWAddress6 &) const
         unsigned char operator[](size_t i) const
 
     const cppHWAddress6 hw6_broadcast "Tins::HWAddress<6, uint8_t>::broadcast"
 
 cdef class HWAddress(object):
     cdef cppHWAddress6* ptr
-    cpdef bool is_broadcast(self)
-    cpdef bool is_unicast(self)
-    cpdef bool is_multicast(self)
+    cpdef cpp_bool is_broadcast(self)
+    cpdef cpp_bool is_unicast(self)
+    cpdef cpp_bool is_multicast(self)
     cpdef equals(self, object other)
     cpdef different(self, object other)
     cpdef less(self, object other)

@@ -36,6 +36,11 @@ cdef class TCP(PDU):
     ECE = TCP_ECE
     CWR = TCP_CWR
 
+    FLAGS = {b"FIN": TCP_FIN, b"SYN": TCP_SYN, b"RST": TCP_RST, b"PSH": TCP_PSH, b"ACK": TCP_ACK, b"URG": TCP_URG,
+             b"ECE": TCP_ECE, b"CWR": TCP_CWR}
+
+    FLAG_VALUES = FLAGS.values()
+
     EOL = TCP_EOL
     NOP = TCP_NOP
     MSS = TCP_MSS
@@ -154,21 +159,99 @@ cdef class TCP(PDU):
         def __set__(self, value):
             if value is None:
                 value = 0
-            else:
-                self.ptr.urg_ptr(<uint16_t>int(value))
+            self.ptr.urg_ptr(<uint16_t>int(value))
 
     property data_offset:
         def __get__(self):
             cdef small_uint4 offset = self.ptr.data_offset()
             return <uint8_t> offset
         def __set__(self, value):
+            cdef small_uint4 offset
             if value is None:
                 pass            # ???
-            else:
-                value = int(value)
-                cdef small_uint4 offset = small_uint4(<uint8_t>value)
-                self.ptr.data_offset(offset)
+            offset = small_uint4(<uint8_t>int(value))
+            self.ptr.data_offset(offset)
 
+
+    # flags
+    cpdef get_flag(self, flag):
+        if isinstance(flag, bytes):
+            int_flag = self.FLAGS.get(flag.upper())
+            if int_flag is None:
+                raise ValueError(b"unknown flag: %s" % flag)
+        else:
+            int_flag = int(flag)
+            if flag not in self.FLAG_VALUES:
+                raise ValueError(b"Unknown flag: %s" % flag)
+        return bool(<uint8_t> self.ptr.get_flag(<TcpFlags> int_flag))
+
+    cpdef set_flag(self, flag, cpp_bool value):
+        if isinstance(flag, bytes):
+            int_flag = self.FLAGS.get(flag.upper())
+            if int_flag is None:
+                raise ValueError(b"unknown flag: %s" % flag)
+        else:
+            int_flag = int(flag)
+            if flag not in self.FLAG_VALUES:
+                raise ValueError(b"Unknown flag: %s" % flag)
+        self.ptr.set_flag(<TcpFlags> int_flag, small_uint1(<uint8_t>1 if value else <uint8_t>0))
+
+
+    property fin_flag:
+        def __get__(self):
+            return bool(<uint8_t> self.ptr.get_flag(TCP_FIN))
+        def __set__(self, value):
+            self.ptr.set_flag(TCP_FIN, small_uint1(<uint8_t>1 if value else <uint8_t>0))
+
+    property syn_flag:
+        def __get__(self):
+            return bool(<uint8_t> self.ptr.get_flag(TCP_SYN))
+        def __set__(self, value):
+            self.ptr.set_flag(TCP_SYN, small_uint1(<uint8_t>1 if value else <uint8_t>0))
+
+    property rst_flag:
+        def __get__(self):
+            return bool(<uint8_t> self.ptr.get_flag(TCP_RST))
+        def __set__(self, value):
+            self.ptr.set_flag(TCP_RST, small_uint1(<uint8_t>1 if value else <uint8_t>0))
+
+    property psh_flag:
+        def __get__(self):
+            return bool(<uint8_t> self.ptr.get_flag(TCP_PSH))
+        def __set__(self, value):
+            self.ptr.set_flag(TCP_PSH, small_uint1(<uint8_t>1 if value else <uint8_t>0))
+
+    property ack_flag:
+        def __get__(self):
+            return bool(<uint8_t> self.ptr.get_flag(TCP_ACK))
+        def __set__(self, value):
+            self.ptr.set_flag(TCP_ACK, small_uint1(<uint8_t>1 if value else <uint8_t>0))
+
+    property urg_flag:
+        def __get__(self):
+            return bool(<uint8_t> self.ptr.get_flag(TCP_URG))
+        def __set__(self, value):
+            self.ptr.set_flag(TCP_URG, small_uint1(<uint8_t>1 if value else <uint8_t>0))
+
+    property ece_flag:
+        def __get__(self):
+            return bool(<uint8_t> self.ptr.get_flag(TCP_ECE))
+        def __set__(self, value):
+            self.ptr.set_flag(TCP_ECE, small_uint1(<uint8_t>1 if value else <uint8_t>0))
+
+    property cwr_flag:
+        def __get__(self):
+            return bool(<uint8_t> self.ptr.get_flag(TCP_CWR))
+        def __set__(self, value):
+            self.ptr.set_flag(TCP_CWR, small_uint1(<uint8_t>1 if value else <uint8_t>0))
+
+    property flags:
+        def __get__(self):
+            return <uint16_t> self.ptr.flags()
+        def __set__(self, value):
+            self.ptr.flags(small_uint12(<uint16_t>int(value)))
+
+    # option
     property mss:
         def __get__(self):
             cdef uint16_t opt
@@ -183,6 +266,7 @@ cdef class TCP(PDU):
                 value = 536
             self.ptr.mss(<uint16_t>int(value))
 
+    # option
     property winscale:
         def __get__(self):
             cdef uint8_t opt
@@ -195,14 +279,27 @@ cdef class TCP(PDU):
         def __set__(self, value):
             if value is None:
                 pass            # ???
-            else:
-               self.ptr.winscale(<uint8_t>int(value))
+            self.ptr.winscale(<uint8_t>int(value))
 
+    # option
     property sack_permitted:
         def __get__(self):
-            cdef bool b = self.ptr.has_sack_permitted()
+            cdef cpp_bool b = self.ptr.has_sack_permitted()
             return True if b else False
 
+    property altchecksum:
+        def __get__(self):
+            try:
+                return int(self.ptr.altchecksum())
+            except RuntimeError:
+                return None
+        def __set__(self, value):
+            value = int(value)
+            if value not in (TCP_CHK_TCP, TCP_CHK_8FLETCHER, TCP_CHK_16FLETCHER):
+                raise ValueError("Invalid checksum type")
+            self.ptr.altchecksum(<TcpAltChecksums> value)
+
+    # option
     cpdef set_sack_permitted(self):
         self.ptr.sack_permitted()
 

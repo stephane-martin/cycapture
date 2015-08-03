@@ -26,13 +26,13 @@ cdef class HWAddress(object):
     def __repr__(self):
         return "HWAddress('{}')".format(bytes(self.ptr.to_string()))
 
-    cpdef bool is_broadcast(self):
+    cpdef cpp_bool is_broadcast(self):
         return self.ptr.is_broadcast()
 
-    cpdef bool is_unicast(self):
+    cpdef cpp_bool is_unicast(self):
         return self.ptr.is_unicast()
 
-    cpdef bool is_multicast(self):
+    cpdef cpp_bool is_multicast(self):
         return self.ptr.is_multicast()
 
     def __getitem__(self, item):

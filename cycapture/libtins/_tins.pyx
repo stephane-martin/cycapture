@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # noinspection PyUnresolvedReferences
-from libcpp cimport bool
+from libcpp cimport bool as cpp_bool
 from libcpp.string cimport string
 from libcpp.vector cimport vector
 from libcpp.list cimport list as cpp_list

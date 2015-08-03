@@ -28,7 +28,7 @@ cdef extern from "tins/pdu.h" namespace "Tins":
         void inner_pdu(const cppPDU &next_pdu) # clone
         vector[uint8_t] serialize()
         cppPDU *clone() const
-        bool matches_flag(PDUType flag) const
+        cpp_bool matches_flag(PDUType flag) const
         PDUType pdu_type()
         # noinspection PyUnresolvedReferences
         (T*) find_pdu[T]()

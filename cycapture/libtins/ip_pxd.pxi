@@ -50,6 +50,7 @@ cdef extern from "tins/ip.h" namespace "Tins":
 
     cdef cppclass cppIP "Tins::IP" (cppPDU):
         cppIP()
+        cppIP(cppIPv4Address ip_dst) except +ValueError
         cppIP(cppIPv4Address ip_dst, cppIPv4Address ip_src) except +ValueError
         cppIP(const uint8_t* buf, uint32_t total_sz) except +ValueError
         small_uint4 head_len() const
@@ -73,11 +74,15 @@ cdef extern from "tins/ip.h" namespace "Tins":
         void dst_addr(cppIPv4Address ip)
         small_uint4 version() const
         void version(small_uint4 ver)
-        uint16_t stream_identifier() const
-        void stream_identifier(uint16_t stream_id)
+        cpp_bool is_fragmented() const
+
+
+        # options
         void eol()
         void noop()
-        bool is_fragmented() const
+        uint16_t stream_identifier() const
+        void stream_identifier(uint16_t stream_id) except+
+
 
         cppclass option_identifier:
             uint8_t number
@@ -86,7 +91,7 @@ cdef extern from "tins/ip.h" namespace "Tins":
             option_identifier()
             option_identifier(uint8_t value)
             option_identifier(OptionNumber number, OptionClass op_class, small_uint1 copied)
-            bool operator==(const option_identifier &rhs) const
+            cpp_bool operator==(const option_identifier &rhs) const
 
         cppclass security_type:
             uint16_t security, compartments
@@ -104,13 +109,15 @@ cdef extern from "tins/ip.h" namespace "Tins":
         const cpp_list[ip_pdu_option] & options() const
         const ip_pdu_option *search_option(cppIP.option_identifier ident) const
         void add_option(const ip_pdu_option &opt)
-        cppIP.security_type security() const;
+
+        # options
+        cppIP.security_type security() except+
         void security(const cppIP.security_type &data)
-        cppIP.generic_route_option_type lsrr() const
+        cppIP.generic_route_option_type lsrr() except+
         void lsrr(const cppIP.generic_route_option_type &data)
-        cppIP.generic_route_option_type ssrr() const
+        cppIP.generic_route_option_type ssrr() except+
         void ssrr(const cppIP.generic_route_option_type &data)
-        cppIP.generic_route_option_type record_route() const
+        cppIP.generic_route_option_type record_route() except+
         void record_route(const cppIP.generic_route_option_type &data)
 
 
@@ -129,6 +136,13 @@ cdef class IP(PDU):
     cdef cppIP* ptr
     cpdef eol(self)
     cpdef noop(self)
+    cpdef cpp_bool is_fragmented(self)
+    cpdef get_record_route(self)
+    cpdef record_route(self, pointer, routes)
+    cpdef get_lsrr(self)
+    cpdef lsrr(self, pointer, routes)
+    cpdef get_ssrr(self)
+    cpdef ssrr(self, pointer, routes)
 
 cdef factory_ip(cppPDU* ptr, object parent)
 

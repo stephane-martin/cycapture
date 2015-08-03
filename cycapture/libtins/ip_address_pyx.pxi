@@ -7,8 +7,7 @@ cdef class IPv4Address(object):
         if addr is None:
             self.ptr = new cppIPv4Address(<const char*> NULL)
         elif isinstance(addr, int):
-            self.ptr = new cppIPv4Address(<unsigned int> addr)
-            return
+            self.ptr = new cppIPv4Address(<uint32_t> addr)
         elif isinstance(addr, bytes):
             self.ptr = new cppIPv4Address(<string> (<bytes> addr))
         elif isinstance(addr, IPv4Address):
@@ -29,19 +28,19 @@ cdef class IPv4Address(object):
     def __repr__(self):
         return "IPv4Address('{}')".format(bytes(self.ptr.to_string()))
 
-    cpdef bool is_loopback(self):
+    cpdef cpp_bool is_loopback(self):
         return self.ptr.is_loopback()
 
-    cpdef bool is_private(self):
+    cpdef cpp_bool is_private(self):
         return self.ptr.is_private()
 
-    cpdef bool is_broadcast(self):
+    cpdef cpp_bool is_broadcast(self):
         return self.ptr.is_broadcast()
 
-    cpdef bool is_unicast(self):
+    cpdef cpp_bool is_unicast(self):
         return self.ptr.is_unicast()
 
-    cpdef bool is_multicast(self):
+    cpdef cpp_bool is_multicast(self):
         return self.ptr.is_multicast()
 
     def __richcmp__(self, other, op):
@@ -88,8 +87,6 @@ cdef class IPv4Address(object):
             raise ValueError("don't know how to compare")
 
     def __int__(self):
-        return convert_to_big_endian_int(self.ptr[0])
+        return int(convert_to_big_endian_int(self.ptr[0]))
 
-    cdef cppIPv4Address get_cpp_addr(self):
-        return <cppIPv4Address> self.ptr[0]
 

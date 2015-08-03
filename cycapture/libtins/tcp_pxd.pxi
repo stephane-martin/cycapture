@@ -28,7 +28,7 @@ cdef extern from "tins/tcp.h" namespace "Tins":
         TCP_SACK "Tins::TCP::SACK",
         TCP_TSOPT "Tins::TCP::TSOPT",
         TCP_ALTCHK "Tins::TCP::ALTCHK"
-    ctypedef enum TcpAltChecksums "Tins::TCP:AltChecksums":
+    ctypedef enum TcpAltChecksums "Tins::TCP::AltChecksums":
         TCP_CHK_TCP "Tins::TCP::CHK_TCP",
         TCP_CHK_8FLETCHER "Tins::TCP::CHK_8FLETCHER",
         TCP_CHK_16FLETCHER "Tins::TCP::CHK_16FLETCHER"
@@ -70,8 +70,8 @@ cdef extern from "tins/tcp.h" namespace "Tins":
         uint8_t winscale() except+
         void winscale(uint8_t value)
         void sack_permitted()
-        bool has_sack_permitted() const
-        TcpAltChecksums altchecksum() const
+        cpp_bool has_sack_permitted() const
+        TcpAltChecksums altchecksum() except+
         void altchecksum(TcpAltChecksums value)
         void sack(const vector[uint32_t]& edges)
         const vector[uint32_t] sack() const
@@ -95,6 +95,8 @@ cdef class TCP(PDU):
     cdef cppTCP* ptr
     cpdef options(self)
     cpdef set_sack_permitted(self)
+    cpdef get_flag(self, flag)
+    cpdef set_flag(self, flag, cpp_bool value)
 
 cdef factory_tcp(cppPDU* ptr, object parent)
 cdef make_TCP_from_const_uchar_buf(const uint8_t* buf, int size)
