@@ -58,8 +58,9 @@ cdef class IPv4Range(object):
             return IPv4Address(<bytes>(self.ptr.end().ref().to_string()))
 
     def __iter__(self):
-        # please, don't ask why :(
-        cdef range_iterator* it = <range_iterator*> PyMem_Malloc(sizeof(range_iterator))
+        if not self.is_iterable():
+            raise TypeError("The range is not iterable")
+        cdef range_iterator* it = <range_iterator*> PyMem_Malloc(sizeof(range_iterator))    # please, don't ask why :(
         if it is NULL:
             raise MemoryError()
         try:
