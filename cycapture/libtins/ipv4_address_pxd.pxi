@@ -6,7 +6,7 @@ from libc.stdint cimport uint16_t, uint32_t, uint8_t, uintptr_t
 from libcpp cimport bool as cpp_bool
 
 
-cdef extern from "tins/ip_address.h" namespace "Tins":
+cdef extern from "tins/ip_address.h" namespace "Tins" nogil:
     # noinspection PyPep8Naming
     cdef cppclass cppIPv4Address "Tins::IPv4Address":
         cppIPv4Address()
@@ -23,7 +23,7 @@ cdef extern from "tins/ip_address.h" namespace "Tins":
         cpp_bool less "operator<" (const cppIPv4Address &) const
         string to_string() const
 
-cdef extern from "wrap.h" namespace "Tins":
+cdef extern from "wrap.h" namespace "Tins" nogil:
     unsigned int convert_to_big_endian_int (cppIPv4Address&)
 
 cdef class IPv4Address(object):
@@ -36,4 +36,3 @@ cdef class IPv4Address(object):
     cpdef equals(self, object other)
     cpdef different(self, object other)
     cpdef less(self, object other)
-

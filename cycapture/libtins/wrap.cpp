@@ -41,4 +41,14 @@ namespace Tins {
         return *this;
     }
 
+    WrappedHWRange& WrappedHWRange::operator=(const WrappedHWRange& r) {
+        HWAddressRange::operator=(r);
+        return *this;
+    }
+
+    WrappedHWRange& WrappedHWRange::operator=(const HWAddressRange& r) {
+        HWAddressRange::operator=(r);
+        return *this;
+    }
+
 }

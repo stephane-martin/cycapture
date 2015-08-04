@@ -7,7 +7,7 @@ from libcpp.unordered_map cimport unordered_map
 from libcpp.pair cimport pair
 
 
-cdef extern from "tins/pdu.h" namespace "Tins":
+cdef extern from "tins/pdu.h" namespace "Tins" nogil:
     ctypedef vector[uint8_t] byte_array
     ctypedef vector[uint8_t] serialization_type "Tins::PDU::serialization_type"
 
@@ -96,7 +96,7 @@ cdef extern from "tins/pdu.h" namespace "Tins":
 
 ctypedef object (*factory) (cppPDU * ptr, object parent)
 
-cdef extern from "wrap.h" namespace "Tins":
+cdef extern from "wrap.h" namespace "Tins" nogil:
     void slash_equals_op[T](T& lop, const cppPDU &rop)
     cppPDU* cpp_find_pdu(const cppPDU* pdu, PDUType t)
 

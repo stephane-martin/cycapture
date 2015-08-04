@@ -2,7 +2,7 @@
 
 from libcpp.string cimport string
 
-cdef extern from "tins/hw_address.h":
+cdef extern from "tins/hw_address.h" namespace "Tins" nogil:
     # noinspection PyPep8Naming
     cdef cppclass cppHWAddress6 "Tins::HWAddress<6, uint8_t>":
         cppHWAddress6()
@@ -12,6 +12,8 @@ cdef extern from "tins/hw_address.h":
         cppHWAddress6(const cppHWAddress6 &) except +ValueError
         const size_t size() const
         string to_string() const
+        uint8_t* begin()
+        uint8_t* end()
         cpp_bool is_broadcast() const
         cpp_bool is_multicast() const
         cpp_bool is_unicast() const
@@ -30,4 +32,5 @@ cdef class HWAddress(object):
     cpdef equals(self, object other)
     cpdef different(self, object other)
     cpdef less(self, object other)
+    cpdef full_repr(self)
 

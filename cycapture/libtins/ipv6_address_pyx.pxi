@@ -3,6 +3,7 @@
 from libcpp.string cimport string
 from libc.stdint cimport uint16_t, uint32_t, uint8_t, uintptr_t
 
+
 cdef class IPv6Address(object):
     def __cinit__(self, object addr=None):
         if addr is None:
@@ -76,7 +77,6 @@ cdef class IPv6Address(object):
         else:
             raise ValueError("don't know how to compare")
 
-
     def __div__(self, mask):
         if not isinstance(self, IPv6Address):
             raise TypeError("operation not supported")
@@ -84,3 +84,10 @@ cdef class IPv6Address(object):
         cdef cppIPv6Range cpp_r = ipv6_slashrange((<IPv6Address>self).ptr[0], <int>int(mask))
         r.clone_from_cpp(cpp_r)
         return r
+
+
+    cpdef full_repr(self):
+        cdef vector[uint8_t] v
+        v.assign(self.ptr.begin(), self.ptr.end())
+        return <list> v
+

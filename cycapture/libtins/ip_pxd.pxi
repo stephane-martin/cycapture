@@ -6,7 +6,7 @@ from libcpp.vector cimport vector
 from libcpp.list cimport list as cpp_list
 
 
-cdef extern from "wrap.h" namespace "Tins":
+cdef extern from "wrap.h" namespace "Tins" nogil:
     cdef cppclass small_uint1:
         small_uint1()
         small_uint1(uint8_t) except +ValueError
@@ -21,7 +21,7 @@ cdef extern from "wrap.h" namespace "Tins":
         small_uint24(uint32_t) except +ValueError
 
 
-cdef extern from "tins/ip.h" namespace "Tins":
+cdef extern from "tins/ip.h" namespace "Tins" nogil:
     # noinspection PyUnresolvedReferences
     PDUType ip_pdu_flag "Tins::IP::pdu_flag"
     ctypedef enum OptionClass "Tins::IP::OptionClass":
@@ -123,12 +123,12 @@ cdef extern from "tins/ip.h" namespace "Tins":
 
     # typedef std::list<option> options_type;
 
-cdef extern from "wrap.h" namespace "Tins":
+cdef extern from "wrap.h" namespace "Tins" nogil:
     cdef cppclass ip_pdu_option:
         ip_pdu_option()
         ip_pdu_option(cppIP.option_identifier opt, size_t length, const uint8_t *data)
 
-cdef extern from "tins/ip.h" namespace "Tins":
+cdef extern from "tins/ip.h" namespace "Tins" nogil:
     cppIP.security_type security_type_from_option "Tins::IP::security_type::from_option"(const ip_pdu_option &opt)
     cppIP.generic_route_option_type generic_route_option_type_from_option "Tins::IP::generic_route_option_type::from_option" (const ip_pdu_option &opt)
 

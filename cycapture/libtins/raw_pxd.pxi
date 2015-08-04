@@ -7,7 +7,7 @@ from libcpp.string cimport string
 from libcpp.list cimport list as cpp_list
 from libcpp.pair cimport pair
 
-cdef extern from "tins/rawpdu.h" namespace "Tins":
+cdef extern from "tins/rawpdu.h" namespace "Tins" nogil:
     PDUType raw_pdu_flag "Tins::RawPDU::pdu_flag"
     cdef cppclass cppRAW "Tins::RawPDU" (cppPDU):
         #typedef std::vector<uint8_t> payload_type

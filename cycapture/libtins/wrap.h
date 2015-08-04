@@ -49,6 +49,19 @@ namespace Tins {
         WrappedIPv6Range& operator=(const IPv6Range& r);
     };
 
+    typedef AddressRange<cppHWAddress6> HWAddressRange;
+
+    class WrappedHWRange : public HWAddressRange {
+    public:
+        WrappedHWRange(): HWAddressRange(cppHWAddress6(), cppHWAddress6(), false) {}
+        WrappedHWRange(const cppHWAddress6 &first, const cppHWAddress6 &last, bool only_hosts = false):
+            HWAddressRange(first, last, only_hosts) {}
+        WrappedHWRange(const WrappedHWRange& r): HWAddressRange(r) {}
+        WrappedHWRange& operator=(const WrappedHWRange& r);
+        WrappedHWRange& operator=(const HWAddressRange& r);
+
+    };
+
 }
 
 

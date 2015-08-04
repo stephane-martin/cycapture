@@ -3,7 +3,7 @@ from libcpp.vector cimport vector
 # noinspection PyUnresolvedReferences
 from libc.stdint cimport uint16_t, uint32_t, uint8_t
 
-cdef extern from "tins/network_interface.h" namespace "Tins":
+cdef extern from "tins/network_interface.h" namespace "Tins" nogil:
     cdef cppclass cppNetworkInterface "Tins::NetworkInterface":
         cppclass Info:
             cppIPv4Address ip_addr, netmask, bcast_addr
@@ -25,7 +25,7 @@ cdef extern from "tins/network_interface.h" namespace "Tins":
     vector[cppNetworkInterface] all_interfaces "Tins::NetworkInterface::all"()
     cppNetworkInterface network_interface_from_index "Tins::NetworkInterface::from_index"(uint32_t identifier)
 
-cdef extern from "wrap.h" namespace "Tins":
+cdef extern from "wrap.h" namespace "Tins" nogil:
     cpp_bool network_interface_to_bool(const cppNetworkInterface& nwi)
 
 cdef class NetworkInterface(object):

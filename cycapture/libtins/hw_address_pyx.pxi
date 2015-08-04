@@ -81,4 +81,15 @@ cdef class HWAddress(object):
         else:
             raise ValueError("don't know how to compare")
 
+    def __div__(self, mask):
+        if not isinstance(self, HWAddress):
+            raise TypeError("operation not supported")
+        r = HWRange()
+        cdef cppHWRange cpp_r = hw_slashrange((<HWAddress>self).ptr[0], <int>int(mask))
+        r.clone_from_cpp(cpp_r)
+        return r
 
+    cpdef full_repr(self):
+        cdef vector[uint8_t] v
+        v.assign(self.ptr.begin(), self.ptr.end())
+        return <list> v

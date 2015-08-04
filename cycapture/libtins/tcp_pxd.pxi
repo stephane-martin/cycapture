@@ -8,7 +8,7 @@ from libcpp.pair cimport pair
 
 ctypedef vector[uint32_t] sack_type
 
-cdef extern from "tins/tcp.h" namespace "Tins":
+cdef extern from "tins/tcp.h" namespace "Tins" nogil:
     PDUType tcp_pdu_flag "Tins::TCP::pdu_flag"
     ctypedef enum TcpFlags "Tins::TCP::Flags":
         TCP_FIN "Tins::TCP::FIN",
@@ -79,7 +79,7 @@ cdef extern from "tins/tcp.h" namespace "Tins":
         pair[uint32_t, uint32_t] timestamp() const
 
 
-cdef extern from "wrap.h" namespace "Tins":
+cdef extern from "wrap.h" namespace "Tins" nogil:
     cdef cppclass tcp_pdu_option:
         tcp_pdu_option()
         tcp_pdu_option(uint8_t opt, size_t length, const uint8_t *data)

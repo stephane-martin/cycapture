@@ -3,7 +3,7 @@
 from libc.stdint cimport uint16_t, uint32_t, uint8_t, uintptr_t
 from libcpp.vector cimport vector
 
-cdef extern from "tins/ethernetII.h" namespace "Tins":
+cdef extern from "tins/ethernetII.h" namespace "Tins" nogil:
     # noinspection PyUnresolvedReferences
     PDUType ethII_pdu_flag "Tins::EthernetII::pdu_flag"
     cppHWAddress6 ethII_BROADCAST "Tins::EthernetII::BROADCAST"
