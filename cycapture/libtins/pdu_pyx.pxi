@@ -240,6 +240,8 @@ map_pdutype_to_classname[PDU.ETHERNET_II] = "ethernetii"
 map_pdutype_to_classname[PDU.IP] = "ip"
 map_pdutype_to_classname[PDU.TCP] = "tcp"
 map_pdutype_to_classname[PDU.RAW] = "raw"
+map_pdutype_to_classname[PDU.UDP] = "udp"
+
 
 
 cdef cpp_map[string, factory] map_classname_to_factory
@@ -247,6 +249,7 @@ map_classname_to_factory["ethernetii"] = &factory_ethernet_ii
 map_classname_to_factory["ip"] = &factory_ip
 map_classname_to_factory["tcp"] = &factory_tcp
 map_classname_to_factory["raw"] = &factory_raw
+map_classname_to_factory["udp"] = &factory_udp
 
 
 cdef cpp_map[string, int64_t] map_classname_to_pdutype

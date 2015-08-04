@@ -324,7 +324,6 @@ cdef class TCP(PDU):
         return result
 
 
-
 cdef make_TCP_from_const_uchar_buf(const uint8_t* buf, int size):
     if size == 0:
         raise ValueError("size can't be zero")
