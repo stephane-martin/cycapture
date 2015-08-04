@@ -37,5 +37,5 @@ cdef class RouteEntry(object):
     cdef readonly IPv4Address mask
 
 cpdef get_route_entries()
-cpdef network_interfaces()
+cpdef list_network_interfaces()
 cpdef pdutype_to_string(int t)

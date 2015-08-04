@@ -6,7 +6,8 @@ from libcpp.string cimport string
 from libcpp.vector cimport vector
 from libcpp.list cimport list as cpp_list
 
-include "ip_address_pyx.pxi"
+include "ipv4_address_pyx.pxi"
+include "ipv6_address_pyx.pxi"
 include "hw_address_pyx.pxi"
 include "networkinterface_pyx.pxi"
 include "pdu_pyx.pxi"

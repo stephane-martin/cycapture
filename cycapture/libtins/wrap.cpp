@@ -31,4 +31,14 @@ namespace Tins {
         return *this;
     }
 
+    WrappedIPv6Range& WrappedIPv6Range::operator=(const WrappedIPv6Range& r) {
+        IPv6Range::operator=(r);
+        return *this;
+    }
+
+    WrappedIPv6Range& WrappedIPv6Range::operator=(const IPv6Range& r) {
+        IPv6Range::operator=(r);
+        return *this;
+    }
+
 }

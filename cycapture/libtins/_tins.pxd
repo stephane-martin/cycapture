@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
-include "ip_address_pxd.pxi"
+include "ipv4_address_pxd.pxi"
+include "ipv6_address_pxd.pxi"
 include "hw_address_pxd.pxi"
 include "networkinterface_pxd.pxi"
 include "pdu_pxd.pxi"

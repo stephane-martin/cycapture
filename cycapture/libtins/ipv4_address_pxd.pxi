@@ -5,6 +5,7 @@ from libc.stdint cimport uint16_t, uint32_t, uint8_t, uintptr_t
 # noinspection PyUnresolvedReferences
 from libcpp cimport bool as cpp_bool
 
+
 cdef extern from "tins/ip_address.h" namespace "Tins":
     # noinspection PyPep8Naming
     cdef cppclass cppIPv4Address "Tins::IPv4Address":

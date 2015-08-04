@@ -39,6 +39,16 @@ namespace Tins {
         WrappedIPv4Range& operator=(const IPv4Range& r);
     };
 
+    class WrappedIPv6Range : public IPv6Range {
+    public:
+        WrappedIPv6Range(): IPv6Range(IPv6Address(), IPv6Address(), false) {}
+        WrappedIPv6Range(const IPv6Address &first, const IPv6Address &last, bool only_hosts = false):
+            IPv6Range(first, last, only_hosts) {}
+        WrappedIPv6Range(const WrappedIPv6Range& r): IPv6Range(r) {}
+        WrappedIPv6Range& operator=(const WrappedIPv6Range& r);
+        WrappedIPv6Range& operator=(const IPv6Range& r);
+    };
+
 }
 
 

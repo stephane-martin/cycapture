@@ -41,7 +41,7 @@ cpdef get_route_entries():
         inc(it)
     return results
 
-cpdef network_interfaces():
+cpdef list_network_interfaces():
     return <set> cpp_network_interfaces()
 
 cpdef pdutype_to_string(int t):

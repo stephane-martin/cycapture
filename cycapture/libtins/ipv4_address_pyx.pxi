@@ -5,7 +5,7 @@ cdef class IPv4Address(object):
 
     def __cinit__(self, object addr=None):
         if addr is None:
-            self.ptr = new cppIPv4Address(<const char*> NULL)
+            self.ptr = new cppIPv4Address()
         elif isinstance(addr, int):
             self.ptr = new cppIPv4Address(<uint32_t> addr)
         elif isinstance(addr, bytes):
@@ -92,8 +92,8 @@ cdef class IPv4Address(object):
 
     def __div__(self, mask):
         if not isinstance(self, IPv4Address):
-            raise ValueError("wot?")
+            raise TypeError("operation not supported")
         r = IPv4Range()
-        cdef cppIPv4Range cpp_r = slashrange((<IPv4Address>self).ptr[0], <int>int(mask))
-        r.clone_from_cpp_range(cpp_r)
+        cdef cppIPv4Range cpp_r = ipv4_slashrange((<IPv4Address>self).ptr[0], <int>int(mask))
+        r.clone_from_cpp(cpp_r)
         return r
