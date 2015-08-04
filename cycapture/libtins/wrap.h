@@ -10,6 +10,7 @@
 #include "tins/pdu_option.h"
 #include "tins/network_interface.h"
 #include "tins/tcp.h"
+#include "tins/address_range.h"
 
 namespace Tins {
     uint32_t convert_to_big_endian_int (IPv4Address& addr);
@@ -26,8 +27,17 @@ namespace Tins {
     typedef small_uint<12> small_uint12;
     typedef small_uint<24> small_uint24;
 
-
     PDU* cpp_find_pdu(const PDU* pdu, PDU::PDUType t);
+
+    class WrappedIPv4Range : public IPv4Range {
+    public:
+        WrappedIPv4Range(): IPv4Range(IPv4Address(), IPv4Address(), false) {}
+        WrappedIPv4Range(const IPv4Address &first, const IPv4Address &last, bool only_hosts = false):
+            IPv4Range(first, last, only_hosts) {}
+        WrappedIPv4Range(const WrappedIPv4Range& r): IPv4Range(r) {}
+        WrappedIPv4Range& operator=(const WrappedIPv4Range& r);
+        WrappedIPv4Range& operator=(const IPv4Range& r);
+    };
 
 }
 

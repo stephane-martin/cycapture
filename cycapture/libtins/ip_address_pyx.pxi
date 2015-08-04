@@ -90,3 +90,10 @@ cdef class IPv4Address(object):
         return int(convert_to_big_endian_int(self.ptr[0]))
 
 
+    def __div__(self, mask):
+        if not isinstance(self, IPv4Address):
+            raise ValueError("wot?")
+        r = IPv4Range()
+        cdef cppIPv4Range cpp_r = slashrange((<IPv4Address>self).ptr[0], <int>int(mask))
+        r.clone_from_cpp_range(cpp_r)
+        return r

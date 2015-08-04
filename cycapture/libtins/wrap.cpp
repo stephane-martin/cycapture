@@ -21,4 +21,14 @@ namespace Tins {
         return 0;
     }
 
+    WrappedIPv4Range& WrappedIPv4Range::operator=(const WrappedIPv4Range& r) {
+        IPv4Range::operator=(r);
+        return *this;
+    }
+
+    WrappedIPv4Range& WrappedIPv4Range::operator=(const IPv4Range& r) {
+        IPv4Range::operator=(r);
+        return *this;
+    }
+
 }

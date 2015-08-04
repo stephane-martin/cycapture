@@ -14,4 +14,5 @@ include "ethernet_pyx.pxi"
 include "ip_pyx.pxi"
 include "tcp_pyx.pxi"
 include "raw_pyx.pxi"
+include "address_range_pyx.pxi"
 
