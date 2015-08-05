@@ -250,7 +250,7 @@ cdef class TCP(PDU):
             cdef uint16_t opt
             try:
                 opt = self.ptr.mss()
-            except RuntimeError:
+            except OptionNotFound:
                 return None
             return int(opt)
         def __set__(self, value):
@@ -265,7 +265,7 @@ cdef class TCP(PDU):
             cdef uint8_t opt
             try:
                 opt = self.ptr.winscale()
-            except RuntimeError:
+            except OptionNotFound:
                 return None
             return int(opt)
 
@@ -284,7 +284,7 @@ cdef class TCP(PDU):
         def __get__(self):
             try:
                 return int(self.ptr.altchecksum())
-            except RuntimeError:
+            except OptionNotFound:
                 return None
         def __set__(self, value):
             value = int(value)

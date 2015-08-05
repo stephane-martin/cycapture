@@ -32,9 +32,9 @@ cdef extern from "tins/tcp.h" namespace "Tins" nogil:
 
     cdef cppclass cppTCP "Tins::TCP" (cppPDU):
         cppTCP()
-        cppTCP(uint16_t dport)
-        cppTCP(uint16_t dport, uint16_t sport)
-        cppTCP(const uint8_t *buf, uint32_t total_sz)
+        cppTCP(uint16_t dport) except +ValueError
+        cppTCP(uint16_t dport, uint16_t sport) except +ValueError
+        cppTCP(const uint8_t *buf, uint32_t total_sz) except +custom_exception_handler
         uint16_t dport() const
         void dport(uint16_t new_dport)
         uint16_t sport() const
@@ -55,22 +55,22 @@ cdef extern from "tins/tcp.h" namespace "Tins" nogil:
         small_uint12 flags() const
         void flags(small_uint12 value)
 
-        void add_option(const tcp_pdu_option &opt)
+        void add_option(const tcp_pdu_option &opt) except +custom_exception_handler
         const cpp_list[tcp_pdu_option]& options() const
         const tcp_pdu_option* search_option(TcpOptionTypes opt) const
 
-        uint16_t mss() except+
-        void mss(uint16_t value)
-        uint8_t winscale() except+
-        void winscale(uint8_t value)
-        void sack_permitted()
+        uint16_t mss() except +custom_exception_handler
+        void mss(uint16_t value) except +custom_exception_handler
+        uint8_t winscale() except +custom_exception_handler
+        void winscale(uint8_t value) except +custom_exception_handler
+        void sack_permitted() except +custom_exception_handler
         cpp_bool has_sack_permitted() const
-        TcpAltChecksums altchecksum() except+
-        void altchecksum(TcpAltChecksums value)
-        void sack(const vector[uint32_t]& edges)
-        const vector[uint32_t] sack() const
-        void timestamp(uint32_t value, uint32_t reply)
-        pair[uint32_t, uint32_t] timestamp() const
+        TcpAltChecksums altchecksum() except +custom_exception_handler
+        void altchecksum(TcpAltChecksums value) except +custom_exception_handler
+        void sack(const vector[uint32_t]& edges) except +custom_exception_handler
+        const vector[uint32_t] sack() except +custom_exception_handler
+        void timestamp(uint32_t value, uint32_t reply) except +custom_exception_handler
+        pair[uint32_t, uint32_t] timestamp() except +custom_exception_handler
 
 
 cdef extern from "wrap.h" namespace "Tins" nogil:

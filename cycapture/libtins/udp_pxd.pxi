@@ -5,9 +5,9 @@ cdef extern from "tins/udp.h" namespace "Tins" nogil:
 
     cdef cppclass cppUDP "Tins::UDP" (cppPDU):
         cppUDP()
-        cppUDP(uint16_t dport)
-        cppUDP(uint16_t dport, uint16_t sport)
-        cppUDP(const uint8_t *buf, uint32_t total_sz)
+        cppUDP(uint16_t dport) except +ValueError
+        cppUDP(uint16_t dport, uint16_t sport) except +ValueError
+        cppUDP(const uint8_t *buf, uint32_t total_sz) except +custom_exception_handler
         uint16_t dport() const
         void dport(uint16_t new_dport)
         uint16_t sport() const

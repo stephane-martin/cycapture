@@ -186,7 +186,7 @@ cdef class IP(PDU):
         def __get__(self):
             try:
                 return <uint16_t> self.ptr.stream_identifier()
-            except RuntimeError:
+            except OptionNotFound:
                 return None
 
         def __set__(self, value):
@@ -205,7 +205,7 @@ cdef class IP(PDU):
         cdef cppIP.generic_route_option_type r
         try:
             r = self.ptr.record_route()
-        except RuntimeError:
+        except OptionNotFound:
             return None
         routes = []
         cdef vector[cppIPv4Address] v = r.routes
@@ -226,7 +226,7 @@ cdef class IP(PDU):
         cdef cppIP.generic_route_option_type r
         try:
             r = self.ptr.lsrr()
-        except RuntimeError:
+        except OptionNotFound:
             return None
         routes = []
         cdef vector[cppIPv4Address] v = r.routes
@@ -247,7 +247,7 @@ cdef class IP(PDU):
         cdef cppIP.generic_route_option_type r
         try:
             r = self.ptr.ssrr()
-        except RuntimeError:
+        except OptionNotFound:
             return None
         routes = []
         cdef vector[cppIPv4Address] v = r.routes

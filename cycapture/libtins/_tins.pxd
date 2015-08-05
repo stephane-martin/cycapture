@@ -26,7 +26,8 @@ from cython.view cimport memoryview as cy_memoryview
 # noinspection PyUnresolvedReferences
 from ..make_mview cimport make_mview_from_const_uchar_buf, make_mview_from_uchar_buf, mview_get_addr
 
-from .exceptions import LibtinsException, OptionNotFound, MalformedAddress
+cdef extern from "custom_exception_handler.h":
+    cdef void custom_exception_handler()
 
 include "ipv4_address_pxd.pxi"
 include "ipv6_address_pxd.pxi"

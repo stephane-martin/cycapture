@@ -2,8 +2,11 @@
 
 __author__ = 'stef'
 
-from .exceptions import LibtinsException
-from ._tins import IPv4Address, HWAddress, NetworkInterface, PDU, EthernetII, IP, TCP, Raw, IPv4Range
-from ._tins import make_ETHII_from_typed_memoryview, make_IP_from_typed_memoryview, make_TCP_from_typed_memoryview
+from .exceptions import LibtinsException, MalformedAddress, MalformedPacket, MalformedOption, OptionNotFound
+from .exceptions import OptionPayloadTooLarge, FieldNotPresent, PDUNotFound, InvalidInterface, UnknownLinkType
+from .exceptions import SocketOpenError, SocketCloseError, SocketWriteError, InvalidSocketType
+from .exceptions import BadTinsCast, ProtocolDisabled
+from ._tins import IPv4Address, HWAddress, NetworkInterface, PDU, EthernetII, IP, TCP, Raw, IPv4Range, UDP, DNS
+from ._tins import factory_PDU_from_typed_memoryview
 
 

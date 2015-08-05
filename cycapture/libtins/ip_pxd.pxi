@@ -46,7 +46,7 @@ cdef extern from "tins/ip.h" namespace "Tins" nogil:
         cppIP()
         cppIP(cppIPv4Address ip_dst) except +ValueError
         cppIP(cppIPv4Address ip_dst, cppIPv4Address ip_src) except +ValueError
-        cppIP(const uint8_t* buf, uint32_t total_sz) except +ValueError
+        cppIP(const uint8_t* buf, uint32_t total_sz) except +custom_exception_handler
         small_uint4 head_len() const
         uint8_t tos() const
         void tos(uint8_t new_tos)
@@ -74,8 +74,8 @@ cdef extern from "tins/ip.h" namespace "Tins" nogil:
         # options
         void eol()
         void noop()
-        uint16_t stream_identifier() const
-        void stream_identifier(uint16_t stream_id) except+
+        uint16_t stream_identifier() except +custom_exception_handler
+        void stream_identifier(uint16_t stream_id) except +custom_exception_handler
 
 
         cppclass option_identifier:
@@ -101,18 +101,18 @@ cdef extern from "tins/ip.h" namespace "Tins" nogil:
             generic_route_option_type(uint8_t ptr, vector[cppIPv4Address] rts)
 
         const cpp_list[ip_pdu_option] & options() const
-        const ip_pdu_option *search_option(cppIP.option_identifier ident) const
-        void add_option(const ip_pdu_option &opt)
+        const ip_pdu_option *search_option(cppIP.option_identifier ident) except +custom_exception_handler
+        void add_option(const ip_pdu_option &opt) except +custom_exception_handler
 
         # options
-        cppIP.security_type security() except+
-        void security(const cppIP.security_type &data)
-        cppIP.generic_route_option_type lsrr() except+
-        void lsrr(const cppIP.generic_route_option_type &data)
-        cppIP.generic_route_option_type ssrr() except+
-        void ssrr(const cppIP.generic_route_option_type &data)
-        cppIP.generic_route_option_type record_route() except+
-        void record_route(const cppIP.generic_route_option_type &data)
+        cppIP.security_type security() except +custom_exception_handler
+        void security(const cppIP.security_type &data) except +custom_exception_handler
+        cppIP.generic_route_option_type lsrr() except +custom_exception_handler
+        void lsrr(const cppIP.generic_route_option_type &data) except +custom_exception_handler
+        cppIP.generic_route_option_type ssrr() except +custom_exception_handler
+        void ssrr(const cppIP.generic_route_option_type &data) except +custom_exception_handler
+        cppIP.generic_route_option_type record_route() except +custom_exception_handler
+        void record_route(const cppIP.generic_route_option_type &data) except +custom_exception_handler
 
 
     # typedef std::list<option> options_type;
