@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 
-cdef factory_udp(cppPDU* ptr, object parent):
-    if ptr == NULL:
-        raise ValueError("Can't make an IP object from a NULL pointer")
+cdef factory_udp(cppPDU* ptr, uint8_t* buf, int size, object parent):
+    if ptr is NULL and buf is NULL:
+        return UDP()
     obj = UDP(_raw=True)
-    obj.base_ptr = ptr
-    obj.ptr = <cppUDP*> ptr
+    obj.ptr = new cppUDP(<uint8_t*> buf, <uint32_t> size) if ptr is NULL else <cppUDP*> ptr
+    obj.base_ptr = <cppPDU*> obj.ptr
     obj.parent = parent
     return obj
 
@@ -83,18 +83,3 @@ cdef class UDP(PDU):
         def __get__(self):
             return int(self.ptr.checksum())
 
-
-cdef make_UDP_from_const_uchar_buf(const uint8_t* buf, int size):
-    if size == 0 or buf is NULL:
-        return UDP()
-    return UDP(buf=make_mview_from_const_uchar_buf(buf, size))
-
-cdef make_UDP_from_uchar_buf(uint8_t* buf, int size):
-    if size == 0 or buf is NULL:
-        return UDP()
-    return TCP(buf=make_mview_from_uchar_buf(buf, size))
-
-cpdef make_UDP_from_typed_memoryview(unsigned char[:] data):
-    if data is None or len(data) == 0:
-        return UDP()
-    return UDP(buf=<cy_memoryview> data)

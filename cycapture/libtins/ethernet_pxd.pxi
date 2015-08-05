@@ -21,8 +21,5 @@ cdef extern from "tins/ethernetII.h" namespace "Tins" nogil:
 cdef class EthernetII(PDU):
     cdef cppEthernetII* ptr
 
-cdef factory_ethernet_ii(cppPDU* ptr, object parent)
-cdef make_ETHII_from_const_uchar_buf(const uint8_t* buf, int size)
-cdef make_ETHII_from_uchar_buf(uint8_t* buf, int size)
-cpdef make_ETHII_from_typed_memoryview(unsigned char[:] data)
+cdef factory_ethernet_ii(cppPDU* ptr, uint8_t* buf, int size, object parent)
 

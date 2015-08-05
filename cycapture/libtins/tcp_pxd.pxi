@@ -92,7 +92,4 @@ cdef class TCP(PDU):
     cpdef get_flag(self, flag)
     cpdef set_flag(self, flag, cpp_bool value)
 
-cdef factory_tcp(cppPDU* ptr, object parent)
-cdef make_TCP_from_const_uchar_buf(const uint8_t* buf, int size)
-cdef make_TCP_from_uchar_buf(uint8_t* buf, int size)
-cpdef make_TCP_from_typed_memoryview(unsigned char[:] data)
+cdef factory_tcp(cppPDU* ptr, uint8_t* buf, int size, object parent)

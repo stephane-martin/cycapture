@@ -3,12 +3,12 @@
 IP packet python class
 """
 
-cdef factory_ip(cppPDU* ptr, object parent):
-    if ptr == NULL:
-        raise ValueError("Can't make an IP object from a NULL pointer")
+cdef factory_ip(cppPDU* ptr, uint8_t* buf, int size, object parent):
+    if ptr is NULL and buf is NULL:
+        return IP()
     obj = IP(_raw=True)
-    obj.base_ptr = ptr
-    obj.ptr = <cppIP*> ptr
+    obj.ptr = new cppIP(<uint8_t*> buf, <uint32_t> size) if ptr is NULL else <cppIP*> ptr
+    obj.base_ptr = <cppPDU*> obj.ptr
     obj.parent = parent
     return obj
 
@@ -254,24 +254,3 @@ cdef class IP(PDU):
         for i in range(v.size()):
             routes.append(IPv4Address(convert_to_big_endian_int(v[i])))
         return int(r.pointer), routes
-
-
-cdef make_IP_from_const_uchar_buf(const uint8_t* buf, int size):
-    if size == 0:
-        raise ValueError("size can't be zero")
-    if buf == NULL:
-        raise ValueError("buf can't be a NULL pointer")
-    return IP(buf=make_mview_from_const_uchar_buf(buf, size))
-
-cdef make_IP_from_uchar_buf(uint8_t* buf, int size):
-    if size == 0:
-        raise ValueError("size can't be zero")
-    if buf == NULL:
-        raise ValueError("buf can't be a NULL pointer")
-    return IP(buf=make_mview_from_uchar_buf(buf, size))
-
-cpdef make_IP_from_typed_memoryview(unsigned char[:] data):
-    if data is None:
-        raise ValueError("data can't be None")
-    return IP(buf=<cy_memoryview> data)
-

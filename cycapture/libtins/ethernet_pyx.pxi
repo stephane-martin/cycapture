@@ -3,16 +3,14 @@
 Ethernet packet python class
 """
 
-
-cdef factory_ethernet_ii(cppPDU* ptr, object parent):
-    if ptr == NULL:
-        raise ValueError("Can't make an EthernetII object from a NULL pointer")
+cdef factory_ethernet_ii(cppPDU* ptr, uint8_t* buf, int size, object parent):
+    if ptr is NULL and buf is NULL:
+        return EthernetII()
     obj = EthernetII(_raw=True)
-    obj.base_ptr = ptr
-    obj.ptr = <cppEthernetII*> ptr
+    obj.ptr = new cppEthernetII(<uint8_t*> buf, <uint32_t> size) if ptr is NULL else <cppEthernetII*> ptr
+    obj.base_ptr = <cppPDU*> obj.ptr
     obj.parent = parent
     return obj
-
 
 cdef class EthernetII(PDU):
     """
@@ -89,25 +87,4 @@ cdef class EthernetII(PDU):
         def __set__(self, value):
             self.ptr.payload_type(<uint16_t> int(value))
 
-
-cdef make_ETHII_from_const_uchar_buf(const uint8_t* buf, int size):
-    if size == 0:
-        raise ValueError("size can't be zero")
-    if buf == NULL:
-        raise ValueError("buf can't be a NULL pointer")
-    return EthernetII(buf=make_mview_from_const_uchar_buf(buf, size))
-
-
-cdef make_ETHII_from_uchar_buf(uint8_t* buf, int size):
-    if size == 0:
-        raise ValueError("size can't be zero")
-    if buf == NULL:
-        raise ValueError("buf can't be a NULL pointer")
-    return EthernetII(buf=make_mview_from_uchar_buf(buf, size))
-
-
-cpdef make_ETHII_from_typed_memoryview(unsigned char[:] data):
-    if data is None:
-        raise ValueError("data can't be None")
-    return EthernetII(buf=<cy_memoryview> data)
 

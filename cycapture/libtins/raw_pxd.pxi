@@ -14,7 +14,4 @@ cdef extern from "tins/rawpdu.h" namespace "Tins" nogil:
 cdef class Raw(PDU):
     cdef cppRAW* ptr
 
-cdef factory_raw(cppPDU* ptr, object parent)
-cdef make_raw_from_const_uchar_buf(const uint8_t* buf, int size)
-cdef make_raw_from_uchar_buf(uint8_t* buf, int size)
-cpdef make_raw_from_typed_memoryview(unsigned char[:] data)
+cdef factory_raw(cppPDU* ptr, uint8_t* buf, int size, object parent)

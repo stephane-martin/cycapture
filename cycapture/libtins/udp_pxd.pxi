@@ -21,7 +21,4 @@ cdef extern from "tins/udp.h" namespace "Tins" nogil:
 cdef class UDP(PDU):
     cdef cppUDP* ptr
 
-cdef factory_udp(cppPDU* ptr, object parent)
-cdef make_UDP_from_const_uchar_buf(const uint8_t* buf, int size)
-cdef make_UDP_from_uchar_buf(uint8_t* buf, int size)
-cpdef make_UDP_from_typed_memoryview(unsigned char[:] data)
+cdef factory_udp(cppPDU* ptr, uint8_t* buf, int size, object parent)

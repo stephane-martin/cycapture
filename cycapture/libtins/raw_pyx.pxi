@@ -3,12 +3,12 @@
 RAW packet python class
 """
 
-cdef factory_raw(cppPDU* ptr, object parent):
-    if ptr == NULL:
-        raise ValueError("Can't make an IP object from a NULL pointer")
+cdef factory_raw(cppPDU* ptr, uint8_t* buf, int size, object parent):
+    if ptr is NULL and buf is NULL:
+        return Raw()
     obj = Raw(_raw=True)
-    obj.base_ptr = ptr
-    obj.ptr = <cppRAW*> ptr
+    obj.ptr = new cppRAW(<uint8_t*> buf, <uint32_t> size) if ptr is NULL else <cppRAW*> ptr
+    obj.base_ptr = <cppPDU*> obj.ptr
     obj.parent = parent
     return obj
 

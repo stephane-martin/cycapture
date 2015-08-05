@@ -3,12 +3,12 @@
 TCP packet python class
 """
 
-cdef factory_tcp(cppPDU* ptr, object parent):
-    if ptr == NULL:
-        raise ValueError("Can't make an IP object from a NULL pointer")
+cdef factory_tcp(cppPDU* ptr, uint8_t* buf, int size, object parent):
+    if ptr is NULL and buf is NULL:
+        return TCP()
     obj = TCP(_raw=True)
-    obj.base_ptr = ptr
-    obj.ptr = <cppTCP*> ptr
+    obj.ptr = new cppTCP(<uint8_t*> buf, <uint32_t> size) if ptr is NULL else <cppTCP*> ptr
+    obj.base_ptr = <cppPDU*> obj.ptr
     obj.parent = parent
     return obj
 
@@ -316,22 +316,3 @@ cdef class TCP(PDU):
 
         return result
 
-
-cdef make_TCP_from_const_uchar_buf(const uint8_t* buf, int size):
-    if size == 0:
-        raise ValueError("size can't be zero")
-    if buf == NULL:
-        raise ValueError("buf can't be a NULL pointer")
-    return TCP(buf=make_mview_from_const_uchar_buf(buf, size))
-
-cdef make_TCP_from_uchar_buf(uint8_t* buf, int size):
-    if size == 0:
-        raise ValueError("size can't be zero")
-    if buf == NULL:
-        raise ValueError("buf can't be a NULL pointer")
-    return TCP(buf=make_mview_from_uchar_buf(buf, size))
-
-cpdef make_TCP_from_typed_memoryview(unsigned char[:] data):
-    if data is None:
-        raise ValueError("data can't be None")
-    return TCP(buf=<cy_memoryview> data)

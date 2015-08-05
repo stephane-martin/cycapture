@@ -5,3 +5,8 @@ cdef extern from "tins/dns.h" namespace "Tins" nogil:
 
     cdef cppclass cppDNS "Tins::DNS" (cppPDU):
         pass
+
+cdef factory_dns(cppPDU* ptr, uint8_t* buf, int size, object parent)
+
+cdef class DNS(PDU):
+    cdef cppDNS* ptr

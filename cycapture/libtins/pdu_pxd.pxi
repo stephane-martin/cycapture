@@ -87,7 +87,9 @@ cdef extern from "tins/pdu.h" namespace "Tins" nogil:
         PDU_PKTAP "Tins::PDU::PKTAP",
         PDU_USER_DEFINED_PDU "Tins::PDU::USER_DEFINED_PDU"
 
-ctypedef object (*factory) (cppPDU * ptr, object parent)
+
+ctypedef object (*factory) (cppPDU * ptr, uint8_t* buf, int size, object parent)
+
 
 cdef extern from "wrap.h" namespace "Tins" nogil:
     void slash_equals_op[T](T& lop, const cppPDU &rop)
@@ -111,3 +113,7 @@ cdef class PDU(object):
     cpdef copy_inner_pdu(self)
     cpdef ref_inner_pdu(self)
     cpdef set_inner_pdu(self, obj)
+
+
+cdef factory_PDU_from_uchar_buf(int pdu_type, uint8_t* buf=?, int size=?)
+cpdef factory_PDU_from_typed_memoryview(int pdu_type, unsigned char[:] data)

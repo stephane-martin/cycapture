@@ -138,8 +138,4 @@ cdef class IP(PDU):
     cpdef get_ssrr(self)
     cpdef ssrr(self, pointer, routes)
 
-cdef factory_ip(cppPDU* ptr, object parent)
-
-cdef make_IP_from_const_uchar_buf(const uint8_t* buf, int size)
-cdef make_IP_from_uchar_buf(uint8_t* buf, int size)
-cpdef make_IP_from_typed_memoryview(unsigned char[:] data)
+cdef factory_ip(cppPDU* ptr, uint8_t* buf, int size, object parent)

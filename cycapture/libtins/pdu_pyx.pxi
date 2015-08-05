@@ -86,14 +86,13 @@ cdef class PDU(object):
         return <int> self.pdu_type
 
     cpdef copy(self):
-        cdef cppPDU* new_pdu = self.base_ptr.clone()
         cdef string classname = map_pdutype_to_classname[self.get_pdu_type()]
-        new_obj = (map_classname_to_factory[classname])(new_pdu, None)
+        new_obj = (map_classname_to_factory[classname])(self.base_ptr.clone(), NULL, 0, None)
         return new_obj
 
     cpdef reference(self):
         cdef string classname = map_pdutype_to_classname[self.get_pdu_type()]
-        new_obj = (map_classname_to_factory[classname])(self.base_ptr, self)
+        new_obj = (map_classname_to_factory[classname])(self.base_ptr, NULL, 0, self)
         return new_obj
 
     cpdef copy_inner_pdu(self):
@@ -103,7 +102,7 @@ cdef class PDU(object):
         inner = inner.clone()
         cdef PDUType pdut = <PDUType> inner.pdu_type()
         cdef string classname = map_pdutype_to_classname[pdut]
-        new_obj = (map_classname_to_factory[classname])(inner, None)
+        new_obj = (map_classname_to_factory[classname])(inner, NULL, 0, None)
         return new_obj
 
     cpdef ref_inner_pdu(self):
@@ -112,7 +111,7 @@ cdef class PDU(object):
             return None
         cdef PDUType pdut = <PDUType> inner.pdu_type()
         cdef string classname = map_pdutype_to_classname[pdut]
-        new_obj = (map_classname_to_factory[classname])(inner, self)
+        new_obj = (map_classname_to_factory[classname])(inner, NULL, 0, self)
         return new_obj
 
     cpdef set_inner_pdu(self, obj):
@@ -160,9 +159,7 @@ cdef class PDU(object):
         if pdu is NULL:
             return None
         # here we return a *copy* of the matching inner PDu
-        pdu = pdu.clone()
-        obj = (map_classname_to_factory[classname])(pdu, None)
-        return obj
+        return (map_classname_to_factory[classname])(pdu.clone(), NULL, 0, None)
 
     cpdef rfind_pdu_by_type(self, int t):
         cdef string classname = map_pdutype_to_classname[t]
@@ -172,8 +169,7 @@ cdef class PDU(object):
         if pdu is NULL:
             return None
         # here we return a *reference* of the matching inner PDu
-        obj = (map_classname_to_factory[classname])(pdu, self)
-        return obj
+        return (map_classname_to_factory[classname])(pdu, NULL, 0, self)
 
     cpdef find_pdu(self, obj):
         if isinstance(obj, type):
@@ -212,12 +208,28 @@ cdef class PDU(object):
             return self.rfind_pdu_by_type(int(obj))
 
 
+cdef factory_PDU_from_uchar_buf(int pdu_type, uint8_t* buf=NULL, int size=0):
+    cdef string classname = map_pdutype_to_classname[pdu_type]
+    if classname.size() == 0:
+        raise ValueError("Unknown PDU type")
+    return (map_classname_to_factory[classname])(NULL, buf, size, None)
+
+
+cpdef factory_PDU_from_typed_memoryview(int pdu_type, unsigned char[:] data):
+    cdef string classname = map_pdutype_to_classname[pdu_type]
+    if classname.size() == 0:
+        raise ValueError("Unknown PDU type")
+    return (map_classname_to_factory[classname])(NULL, <uint8_t*>((<cy_memoryview>data).get_item_pointer([])), len(data), None)
+
+
+
 cdef cpp_map[int, string] map_pdutype_to_classname
 map_pdutype_to_classname[PDU.ETHERNET_II] = "ethernetii"
 map_pdutype_to_classname[PDU.IP] = "ip"
 map_pdutype_to_classname[PDU.TCP] = "tcp"
 map_pdutype_to_classname[PDU.RAW] = "raw"
 map_pdutype_to_classname[PDU.UDP] = "udp"
+map_pdutype_to_classname[PDU.DNS] = "dns"
 
 
 cdef cpp_map[string, factory] map_classname_to_factory
@@ -226,6 +238,7 @@ map_classname_to_factory["ip"] = &factory_ip
 map_classname_to_factory["tcp"] = &factory_tcp
 map_classname_to_factory["raw"] = &factory_raw
 map_classname_to_factory["udp"] = &factory_udp
+map_classname_to_factory["dns"] = &factory_dns
 
 
 cdef cpp_map[string, int] map_classname_to_pdutype
