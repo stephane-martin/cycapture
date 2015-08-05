@@ -1,6 +1,4 @@
-# noinspection PyUnresolvedReferences
-from libcpp cimport bool as cpp_bool
-from libcpp.vector cimport vector
+# -*- coding: utf-8 -*-
 
 cdef class NetworkInterface(object):
     def __cinit__(self, name=None, address=None):

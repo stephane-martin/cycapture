@@ -1,12 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from libcpp.string cimport string
-from libcpp.set cimport set as cpp_set
-from libcpp.vector cimport vector
-from libc.stdint cimport uint16_t, uint32_t, uint8_t, uintptr_t
-# noinspection PyUnresolvedReferences
-from libcpp cimport bool as cpp_bool
-
 cdef extern from "tins/utils.h" namespace "Tins::Utils" nogil:
     ctypedef struct cppRouteEntry "Tins::Utils::RouteEntry":
         string interface

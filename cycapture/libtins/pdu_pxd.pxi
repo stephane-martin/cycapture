@@ -1,12 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from libcpp.vector cimport vector
-# noinspection PyUnresolvedReferences
-from libc.stdint cimport uint16_t, uint32_t, uint8_t, uintptr_t, int64_t
-from libcpp.unordered_map cimport unordered_map
-from libcpp.pair cimport pair
-
-
 cdef extern from "tins/pdu.h" namespace "Tins" nogil:
     ctypedef vector[uint8_t] byte_array
     ctypedef vector[uint8_t] serialization_type "Tins::PDU::serialization_type"
@@ -108,11 +101,11 @@ cdef class PDU(object):
     cpdef serialize(self)
     cdef cppPDU* base_ptr
     cdef object parent
-    cpdef find_pdu_by_type(self, int64_t t)
-    cpdef rfind_pdu_by_type(self, int64_t t)
+    cpdef find_pdu_by_type(self, int t)
+    cpdef rfind_pdu_by_type(self, int t)
     cpdef copy(self)
     cpdef reference(self)
-    cpdef int64_t get_pdu_type(self)
+    cpdef int get_pdu_type(self)
     cpdef find_pdu(self, obj)
     cpdef rfind_pdu(self, obj)
     cpdef copy_inner_pdu(self)

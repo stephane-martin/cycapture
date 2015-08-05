@@ -1,7 +1,4 @@
-from libcpp.string cimport string
-from libcpp.vector cimport vector
-# noinspection PyUnresolvedReferences
-from libc.stdint cimport uint16_t, uint32_t, uint8_t
+# -*- coding: utf-8 -*-
 
 cdef extern from "tins/network_interface.h" namespace "Tins" nogil:
     cdef cppclass cppNetworkInterface "Tins::NetworkInterface":

@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from libcpp.string cimport string
-
 cdef extern from "tins/hw_address.h" namespace "Tins" nogil:
     # noinspection PyPep8Naming
     cdef cppclass cppHWAddress6 "Tins::HWAddress<6, uint8_t>":

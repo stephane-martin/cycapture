@@ -2,16 +2,6 @@
 """
 Abstract PDU python class
 """
-# noinspection PyUnresolvedReferences
-from libc.stdint cimport uint16_t, uint32_t, uint8_t, uintptr_t, int64_t
-from libcpp.map cimport map as cpp_map
-from libcpp.pair cimport pair
-from libcpp.string cimport string
-
-
-
-
-
 
 cdef class PDU(object):
     RAW = PDU_RAW
@@ -92,19 +82,17 @@ cdef class PDU(object):
     def __init__(self):
         pass
 
-    cpdef int64_t get_pdu_type(self):
-        return <int64_t> self.pdu_type
+    cpdef int get_pdu_type(self):
+        return <int> self.pdu_type
 
     cpdef copy(self):
         cdef cppPDU* new_pdu = self.base_ptr.clone()
-        cdef PDUType pdut = <PDUType> self.get_pdu_type()
-        cdef string classname = map_pdutype_to_classname[pdut]
+        cdef string classname = map_pdutype_to_classname[self.get_pdu_type()]
         new_obj = (map_classname_to_factory[classname])(new_pdu, None)
         return new_obj
 
     cpdef reference(self):
-        cdef PDUType pdut = <PDUType> self.get_pdu_type()
-        cdef string classname = map_pdutype_to_classname[pdut]
+        cdef string classname = map_pdutype_to_classname[self.get_pdu_type()]
         new_obj = (map_classname_to_factory[classname])(self.base_ptr, self)
         return new_obj
 
@@ -164,84 +152,72 @@ cdef class PDU(object):
     def __itruediv__(self, other):
         return self.__idiv__(other)
 
-    cpdef find_pdu_by_type(self, int64_t t):
+    cpdef find_pdu_by_type(self, int t):
         cdef string classname = map_pdutype_to_classname[t]
         if classname.size() == 0:
             raise ValueError("Unknown PDU type")
-        cdef PDUType pdut = <PDUType> t
-        cdef cppPDU* pdu = cpp_find_pdu(<const cppPDU*> self.base_ptr, pdut)
-        if pdu == NULL:
-            raise NotFound
+        cdef cppPDU* pdu = cpp_find_pdu(<const cppPDU*> self.base_ptr, <PDUType> t)
+        if pdu is NULL:
+            return None
         # here we return a *copy* of the matching inner PDu
         pdu = pdu.clone()
         obj = (map_classname_to_factory[classname])(pdu, None)
         return obj
 
-    cpdef rfind_pdu_by_type(self, int64_t t):
+    cpdef rfind_pdu_by_type(self, int t):
         cdef string classname = map_pdutype_to_classname[t]
         if classname.size() == 0:
             raise ValueError("Unknown PDU type")
-        cdef PDUType pdut = <PDUType> t
-        cdef cppPDU* pdu = cpp_find_pdu(<const cppPDU*> self.base_ptr, pdut)
-        if pdu == NULL:
-            raise NotFound
+        cdef cppPDU* pdu = cpp_find_pdu(<const cppPDU*> self.base_ptr, <PDUType> t)
+        if pdu is NULL:
+            return None
         # here we return a *reference* of the matching inner PDu
         obj = (map_classname_to_factory[classname])(pdu, self)
         return obj
 
     cpdef find_pdu(self, obj):
-        cdef PDUType pdut
         if isinstance(obj, type):
             if not hasattr(obj, "pdu_type"):
                 raise ValueError("Don't know what to to with: %s (no attribute pdu_type)" % obj.__name__)
-            t = <int64_t> (obj.pdu_type)
-            if t >= 0:
-                pdut = <PDUType> t
-                return self.find_pdu_by_type(pdut)
+            if obj.pdu_type >= 0:
+                return self.find_pdu_by_type(<PDUType>obj.pdu_type)
             else:
                 raise ValueError("Don't know what to to with: %s (pdu_type attr is negative)" % obj.__name__)
         elif isinstance(obj, bytes):
             obj = (<bytes> obj).lower()
             try:
-                t = <int64_t> (map_classname_to_pdutype.at(<string>obj))
+                t = map_classname_to_pdutype.at(<string>obj)
             except IndexError:
                 raise ValueError("There is no PDU called: %s" % obj)
-            pdut = <PDUType> t
-            return self.find_pdu_by_type(pdut)
+            return self.find_pdu_by_type(t)
         else:
             return self.find_pdu_by_type(int(obj))
 
     cpdef rfind_pdu(self, obj):
-        cdef PDUType pdut
         if isinstance(obj, type):
             if not hasattr(obj, "pdu_type"):
                 raise ValueError("Don't know what to to with: %s (no attribute pdu_type)" % obj.__name__)
-            t = <int64_t> (obj.pdu_type)
-            if t >= 0:
-                pdut = <PDUType> t
-                return self.rfind_pdu_by_type(pdut)
+            if obj.pdu_type >= 0:
+                return self.rfind_pdu_by_type(<PDUType> obj.pdu_type)
             else:
                 raise ValueError("Don't know what to to with: %s (pdu_type attr is negative)" % obj.__name__)
         elif isinstance(obj, bytes):
             obj = (<bytes> obj).lower()
             try:
-                t = <int64_t> (map_classname_to_pdutype.at(<string>obj))
+                t = map_classname_to_pdutype.at(<string>obj)
             except IndexError:
                 raise ValueError("There is no PDU called: %s" % obj)
-            pdut = <PDUType> t
-            return self.rfind_pdu_by_type(pdut)
+            return self.rfind_pdu_by_type(<PDUType> t)
         else:
             return self.rfind_pdu_by_type(int(obj))
 
 
-
-cdef cpp_map[int64_t, string] map_pdutype_to_classname
+cdef cpp_map[int, string] map_pdutype_to_classname
 map_pdutype_to_classname[PDU.ETHERNET_II] = "ethernetii"
 map_pdutype_to_classname[PDU.IP] = "ip"
 map_pdutype_to_classname[PDU.TCP] = "tcp"
 map_pdutype_to_classname[PDU.RAW] = "raw"
 map_pdutype_to_classname[PDU.UDP] = "udp"
-
 
 
 cdef cpp_map[string, factory] map_classname_to_factory
@@ -252,10 +228,8 @@ map_classname_to_factory["raw"] = &factory_raw
 map_classname_to_factory["udp"] = &factory_udp
 
 
-cdef cpp_map[string, int64_t] map_classname_to_pdutype
-cdef pair[int64_t, string] p
+cdef cpp_map[string, int] map_classname_to_pdutype
+cdef pair[int, string] p
 for p in map_pdutype_to_classname:
     map_classname_to_pdutype[p.second] = p.first
 
-class NotFound(Exception):
-    pass

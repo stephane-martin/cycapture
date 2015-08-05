@@ -1,12 +1,5 @@
 # -*- coding: utf-8 -*-
 
-# noinspection PyUnresolvedReferences
-from libc.stdint cimport uint16_t, uint32_t, uint8_t, uintptr_t
-from libcpp.vector cimport vector
-from libcpp.string cimport string
-from libcpp.list cimport list as cpp_list
-from libcpp.pair cimport pair
-
 cdef extern from "tins/rawpdu.h" namespace "Tins" nogil:
     PDUType raw_pdu_flag "Tins::RawPDU::pdu_flag"
     cdef cppclass cppRAW "Tins::RawPDU" (cppPDU):

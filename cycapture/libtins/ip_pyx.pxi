@@ -2,13 +2,6 @@
 """
 IP packet python class
 """
-# noinspection PyUnresolvedReferences
-from libc.stdint cimport uint16_t, uint32_t, uint8_t, uintptr_t
-# noinspection PyUnresolvedReferences
-from ..make_mview cimport make_mview_from_const_uchar_buf, make_mview_from_uchar_buf, mview_get_addr
-# noinspection PyUnresolvedReferences
-from cython.view cimport memoryview as cy_memoryview
-
 
 cdef factory_ip(cppPDU* ptr, object parent):
     if ptr == NULL:
@@ -56,19 +49,27 @@ cdef class IP(PDU):
             self.ptr = new cppIP()
         elif buf is not None:
             # construct from a buffer
-            if isinstance(buf, bytes):
-                self.ptr = new cppIP(<uint8_t*> buf, <uint32_t> len(buf))
+            if PyBytes_Check(buf):           # (if buf a bytes object)
+                # avoid a copy of buf: directly pass the real address
+                # this is OK as cppIP constructor takes a *const* uint8_t parameter
+                self.ptr = new cppIP(<uint8_t*> PyBytes_AS_STRING(buf), <uint32_t> PyBytes_Size(buf))
             elif isinstance(buf, bytearray):
-                self.ptr = new cppIP(<uint8_t*> buf, <uint32_t> len(buf))
-            elif isinstance(buf, memoryview):
-                # todo: check that buf has the right shape, etc
+                # avoid a copy of the bytearray
+                buf = memoryview(buf)
                 self.ptr = new cppIP(<uint8_t*> (mview_get_addr(<void*> buf)), len(buf))
+            elif isinstance(buf, memoryview):
+                if buf.itemsize == 1 and buf.ndim == 1:
+                    self.ptr = new cppIP(<uint8_t*> (mview_get_addr(<void*> buf)), len(buf))
+                else:
+                    raise ValueError("the memoryview doesn't have the proper format")
             elif isinstance(buf, cy_memoryview):
-                # todo: check that buf has the right shape, etc
-                self.ptr = new cppIP(<uint8_t*> (<cy_memoryview>buf).get_item_pointer([]), <uint32_t> len(buf))
+                if buf.itemsize == 1 and buf.ndim == 1:
+                    self.ptr = new cppIP(<uint8_t*> (<cy_memoryview>buf).get_item_pointer([]), <uint32_t> len(buf))
+                else:
+                    raise ValueError("the typed memoryview doesn't have the proper format")
             else:
                 raise ValueError("don't know what to do with type '%s'" % type(buf))
-        elif isinstance(dest_src_ips, tuple) or isinstance(dest_src_ips, list):
+        elif PyTuple_Check(dest_src_ips) or PyList_Check(dest_src_ips):
             dest, src = dest_src_ips
             if src is None:
                 src = IPv4Address()
@@ -78,20 +79,16 @@ cdef class IP(PDU):
                 src = IPv4Address(src)
             if not isinstance(dest, IPv4Address):
                 dest = IPv4Address(dest)
-            self.ptr = new cppIP(<cppIPv4Address> ((<IPv4Address> src).ptr[0]), <cppIPv4Address> ((<IPv4Address> dest).ptr[0]))
+            self.ptr = new cppIP(<cppIPv4Address> ((<IPv4Address> dest).ptr[0]), <cppIPv4Address> ((<IPv4Address> src).ptr[0]))
         elif isinstance(dest_src_ips, IPv4Address):
-            src = IPv4Address()
-            dest = dest_src_ips
-            self.ptr = new cppIP(<cppIPv4Address> ((<IPv4Address> src).ptr[0]), <cppIPv4Address> ((<IPv4Address> dest).ptr[0]))
+            self.ptr = new cppIP(<cppIPv4Address> ((<IPv4Address> dest_src_ips).ptr[0]))
         else:
-            src = IPv4Address()
-            dest = IPv4Address(dest_src_ips)
-            self.ptr = new cppIP(<cppIPv4Address> ((<IPv4Address> src).ptr[0]), <cppIPv4Address> ((<IPv4Address> dest).ptr[0]))
+            self.ptr = new cppIP(<cppIPv4Address> (IPv4Address(dest_src_ips)).ptr[0])
         self.base_ptr = <cppPDU*> self.ptr
         self.parent = None
 
     def __dealloc__(self):
-        if self.ptr != NULL and self.parent is None:
+        if self.ptr is not NULL and self.parent is None:
             del self.ptr
         self.ptr = NULL
         self.parent = None

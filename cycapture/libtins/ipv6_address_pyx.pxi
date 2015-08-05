@@ -1,9 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from libcpp.string cimport string
-from libc.stdint cimport uint16_t, uint32_t, uint8_t, uintptr_t
-
-
 cdef class IPv6Address(object):
     def __cinit__(self, object addr=None):
         if addr is None:

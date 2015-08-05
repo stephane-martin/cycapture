@@ -1,11 +1,5 @@
 # -*- coding: utf-8 -*-
 
-# noinspection PyUnresolvedReferences
-from libc.stdint cimport uint16_t, uint32_t, uint8_t, uintptr_t
-from libcpp.vector cimport vector
-from libcpp.list cimport list as cpp_list
-from cython.operator cimport dereference as deref, preincrement as inc
-from cpython.mem cimport PyMem_Malloc, PyMem_Realloc, PyMem_Free
 
 from functools import reduce
 

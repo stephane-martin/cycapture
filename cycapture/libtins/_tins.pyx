@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
 # noinspection PyUnresolvedReferences
-from libcpp cimport bool as cpp_bool
-from libcpp.string cimport string
-from libcpp.vector cimport vector
-from libcpp.list cimport list as cpp_list
+from cython.operator cimport dereference as deref
+# noinspection PyUnresolvedReferences
+from cython.operator cimport preincrement as inc
+
 
 include "ipv4_address_pyx.pxi"
 include "ipv6_address_pyx.pxi"

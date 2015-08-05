@@ -2,12 +2,6 @@
 """
 RAW packet python class
 """
-# noinspection PyUnresolvedReferences
-from libc.stdint cimport uint16_t, uint32_t, uint8_t, uintptr_t
-# noinspection PyUnresolvedReferences
-from ..make_mview cimport make_mview_from_const_uchar_buf, make_mview_from_uchar_buf, mview_get_addr
-# noinspection PyUnresolvedReferences
-from cython.view cimport memoryview as cy_memoryview
 
 cdef factory_raw(cppPDU* ptr, object parent):
     if ptr == NULL:

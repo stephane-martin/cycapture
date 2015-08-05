@@ -1,11 +1,5 @@
 # -*- coding: utf-8 -*-
 
-# noinspection PyUnresolvedReferences
-from libc.stdint cimport uint16_t, uint32_t, uint8_t, uintptr_t
-from libcpp.vector cimport vector
-from libcpp.list cimport list as cpp_list
-from libcpp.pair cimport pair
-
 ctypedef vector[uint32_t] sack_type
 
 cdef extern from "tins/tcp.h" namespace "Tins" nogil:
