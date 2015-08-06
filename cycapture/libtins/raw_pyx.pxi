@@ -58,21 +58,3 @@ cdef class Raw(PDU):
         self.ptr = NULL
         self.parent = None
 
-cdef make_raw_from_const_uchar_buf(const uint8_t* buf, int size):
-    if size == 0:
-        raise ValueError("size can't be zero")
-    if buf == NULL:
-        raise ValueError("buf can't be a NULL pointer")
-    return Raw(buf=make_mview_from_const_uchar_buf(buf, size))
-
-cdef make_raw_from_uchar_buf(uint8_t* buf, int size):
-    if size == 0:
-        raise ValueError("size can't be zero")
-    if buf == NULL:
-        raise ValueError("buf can't be a NULL pointer")
-    return Raw(buf=make_mview_from_uchar_buf(buf, size))
-
-cpdef make_raw_from_typed_memoryview(unsigned char[:] data):
-    if data is None:
-        raise ValueError("data can't be None")
-    return Raw(buf=<cy_memoryview> data)
