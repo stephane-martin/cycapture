@@ -248,8 +248,8 @@ if __name__ == "__main__":
 
         # small module that contains the python exceptions translated from C++ exceptions
         tins_exceptions_extension = Extension(
-            name="cycapture.libtins.exceptions",
-            sources=["cycapture/libtins/exceptions.pyx"]
+            name="cycapture.libtins.tins_exceptions",
+            sources=["cycapture/libtins/tins_exceptions.pyx"]
         )
 
         extensions.append(tins_exceptions_extension)

@@ -5,10 +5,10 @@ from cython.operator cimport dereference as deref
 # noinspection PyUnresolvedReferences
 from cython.operator cimport preincrement as inc
 
-from .exceptions import LibtinsException, MalformedAddress, MalformedPacket, MalformedOption, OptionNotFound
-from .exceptions import OptionPayloadTooLarge, FieldNotPresent, PDUNotFound, InvalidInterface, UnknownLinkType
-from .exceptions import SocketOpenError, SocketCloseError, SocketWriteError, InvalidSocketType
-from .exceptions import BadTinsCast, ProtocolDisabled
+from .tins_exceptions import LibtinsException, MalformedAddress, MalformedPacket, MalformedOption, OptionNotFound
+from .tins_exceptions import OptionPayloadTooLarge, FieldNotPresent, PDUNotFound, InvalidInterface, UnknownLinkType
+from .tins_exceptions import SocketOpenError, SocketCloseError, SocketWriteError, InvalidSocketType
+from .tins_exceptions import BadTinsCast, ProtocolDisabled
 
 include "ipv4_address_pyx.pxi"
 include "ipv6_address_pyx.pxi"
