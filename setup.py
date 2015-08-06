@@ -24,6 +24,8 @@ class Dependency(object):
         self.static = True
         self.thisdir = abspath(dirname(__file__))
         self.external_dir = join(self.thisdir, 'external')
+        if not exists(self.external_dir):
+            os.mkdir(self.external_dir)
         self._include_dirs = None
         self._library_dirs = None
         self._extra_objects = None
@@ -128,7 +130,10 @@ class LibpcapDep(Dependency):
                 subprocess.call(shlex.split("make install"))
                 self._include_dirs = [join(self._install_dir, 'include')]
                 self._library_dirs = [join(self._install_dir, 'lib')]
-                shutil.copy(join(self._install_dir, 'lib', 'libpcap.dylib'), join(self.thisdir, 'cycapture', 'libpcap'))
+                try:
+                    shutil.copy(join(self._install_dir, 'lib', 'libpcap.dylib'), join(self.thisdir, 'cycapture', 'libpcap'))
+                except:
+                    shutil.copy(join(self._install_dir, 'lib', 'libpcap.so'), join(self.thisdir, 'cycapture', 'libpcap'))
         os.chdir(old_dir)
 
     @classmethod
@@ -282,7 +287,7 @@ if __name__ == "__main__":
         install_requires=requirements,
         license="LGPLv3+",
         zip_safe=False,
-        keywords='libpcap cython python',
+        keywords='libpcap cython python libtins',
         classifiers=[
             'Development Status :: 3 - Alpha',
             'Intended Audience :: Developers',
