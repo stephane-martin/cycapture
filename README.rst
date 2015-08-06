@@ -1,6 +1,6 @@
 Overview
 --------
 
-cycapture is a cython binding for libpcap
+cycapture provides cython bindings for libpcap and libtins
 
 * Free software: LGPLv3 (or later) license

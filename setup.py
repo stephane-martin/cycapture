@@ -2,42 +2,193 @@
 # -*- coding: utf-8 -*-
 
 from setuptools import setup, find_packages, Extension
-import setuptools.command.install
-import setuptools.command.build_ext
 import os
 import shlex
+import platform
 import sys
-import glob
 import shutil
-from tempfile import mkdtemp
 from distutils.log import info
 import subprocess
+import urllib
+import tarfile
 from os.path import dirname, abspath, join, commonprefix, exists
 
 on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
 here = abspath(dirname(__file__))
 
 
-def _get_pcap_config_shared():
-    cfg = {}
-    dirs = ['/usr', sys.prefix] + glob.glob('/opt/libpcap*') + glob.glob('../libpcap*') + glob.glob('../wpdpack*')
-    for d in dirs:
-        for sd in ('include/pcap', 'include', ''):
-            if exists(join(d, sd, 'pcap.h')):
-                cfg['include_dirs'] = [join(d, sd)]
-        for sd in ('lib', 'lib64', 'lib/x86_64-linux-gnu'):
-            for lib in (('pcap', 'libpcap.a'), ('pcap', 'libpcap.so'), ('pcap', 'libpcap.dylib'), ):
-                if exists(join(d, sd, lib[1])):
-                    cfg['library_dirs'] = [join(d, sd)]
-                    cfg['libraries'] = [lib[0]]
-    return cfg
+class Dependency(object):
+    def __init__(self):
+        self.name = ""
+        self.language = "c"
+        self.static = True
+        self.thisdir = abspath(dirname(__file__))
+        self.external_dir = join(self.thisdir, 'external')
+        self._include_dirs = None
+        self._library_dirs = None
+        self._extra_objects = None
+        self._install_dir = None
 
-def _get_pcap_config_static(libpcap_srcdir):
-    cfg = {
-        'include_dirs': [join(libpcap_srcdir, 'pcap')],
-        'extra_objects': [join(libpcap_srcdir, 'libpcap.a')]
-    }
-    return cfg
+
+    def download(self):
+        pass
+
+    def build(self):
+        pass
+
+    def extra_compile_args(self):
+        return []
+
+    def install_dir(self):
+        return self._install_dir
+
+    def include_dirs(self):
+        if self._include_dirs:
+            return self._include_dirs
+        return []
+
+    def extra_objects(self):
+        if self._extra_objects:
+            return self._extra_objects
+        return []
+
+    def library_dirs(self):
+        if self._library_dirs:
+            return self._library_dirs
+        return []
+
+
+    def add_to_extension(self, ext):
+        ext.include_dirs.extend(self.include_dirs())
+        ext.library_dirs.extend(self.library_dirs())
+        if self.name:
+            ext.libraries.append(self.name)
+        ext.language = self.language
+        ext.extra_objects.extend(self.extra_objects())
+
+
+
+
+class LibpcapDep(Dependency):
+    def __init__(self):
+        super(LibpcapDep, self).__init__()
+        self.name = "pcap"
+        self.src_dir = join(self.external_dir, "libpcap")
+
+        if os.getenv("USE_SHARED_PCAP"):
+            self.static = False
+            # find an existing shared libpcap
+            include_dirs, library_dirs = self.find_shared_libpcap(os.getenv("LIBPCAP_PREFIX"))
+            if include_dirs is None or library_dirs is None:
+                raise RuntimeError("an existing shared libpcap library was not found")
+            info("Using shared libpcap: %s, %s" % (include_dirs, library_dirs))
+            self._install_dir = dirname(library_dirs[0])            # hum...
+            self._include_dirs = include_dirs
+            self._library_dirs = library_dirs
+
+        elif os.getenv("COMPILE_SHARED_PCAP"):
+            # compile a shared libpcap, then install the .so directly in cython sources
+            self.static = False
+            self.download()
+            self.build()
+
+        else:
+            # compile a static libpcap
+            self.download()
+            self.build()
+
+
+    def download(self):
+        if not exists(self.src_dir):
+            info("Fetching libpcap from github in %s\n" % self.external_dir)
+            old_dir = os.getcwd()
+            os.chdir(self.external_dir)
+            subprocess.call(shlex.split("git clone -b libpcap-1.7 --single-branch https://github.com/the-tcpdump-group/libpcap.git"))
+            os.chdir(old_dir)
+
+    def build(self):
+        old_dir = os.getcwd()
+        self._install_dir = join(self.src_dir, 'build')
+        os.chdir(self.src_dir)
+        if exists('Makefile'):
+            subprocess.call(shlex.split("make clean"))
+        if self.static:
+            if not exists(join(self._install_dir, 'lib', 'libpcap.a')):
+                info("Building libpcap as a static library\n")
+                subprocess.call(shlex.split("./configure --enable-shared=no --prefix='%s'" % self._install_dir))
+                subprocess.call("make")
+                subprocess.call(shlex.split("make install"))
+                self._include_dirs = [join(self._install_dir, 'include')]
+                self._extra_objects = [join(self._install_dir, 'lib', 'libpcap.a')]
+        else:
+            if not exists(join(self._install_dir, 'lib', 'libpcap.dylib')):
+                info("Building libpcap as a shared library\n")
+                subprocess.call(shlex.split("./configure --prefix='%s'" % self._install_dir))
+                subprocess.call("make")
+                subprocess.call(shlex.split("make install"))
+                self._include_dirs = [join(self._install_dir, 'include')]
+                self._library_dirs = [join(self._install_dir, 'lib')]
+                shutil.copy(join(self._install_dir, 'lib', 'libpcap.dylib'), join(self.thisdir, 'cycapture', 'libpcap'))
+        os.chdir(old_dir)
+
+    @classmethod
+    def find_shared_libpcap(cls, prefix=None):
+        dirs = ['/usr', '/usr/local', '/opt', sys.prefix]
+        if prefix is not None:
+            dirs.insert(0, prefix)
+
+        def _find_include():
+            for d in dirs:
+                for sd in ('include/pcap', 'include', ''):
+                    if exists(join(d, sd, 'pcap.h')):
+                        return [join(d, sd)]
+
+        def _find_library():
+            for d in dirs:
+                for sd in ('lib', 'lib64', 'lib/x86_64-linux-gnu'):
+                    for lib in (('pcap', 'libpcap.a'), ('pcap', 'libpcap.so'), ('pcap', 'libpcap.dylib'), ):
+                        if exists(join(d, sd, lib[1])):
+                            return [join(d, sd)]
+
+        return _find_include(), _find_library()
+
+
+class LibtinsDep(Dependency):
+    def __init__(self, pcap_dep):
+        super(LibtinsDep, self).__init__()
+        self.pcap_dep = pcap_dep
+        self.name = ""              # we dont want setup.py to add a -ltins to the link step
+        self.language = "c++"
+        self.src_dir = join(self.external_dir, "libtins")
+        self.download()
+        self.build()
+
+    def download(self):
+        if not exists(self.src_dir):
+            info("Fetching libtins from github in %s\n" % self.external_dir)
+            old_dir = os.getcwd()
+            os.chdir(self.external_dir)
+            urllib.urlretrieve("https://github.com/mfontanini/libtins/archive/v3.2.tar.gz", "v3.2.tar.gz")
+            t = tarfile.open("v3.2.tar.gz", mode='r:gz')
+            try:
+                t.extractall()
+            finally:
+                t.close()
+            os.remove("v3.2.tar.gz")
+            shutil.move("libtins-3.2", "libtins")
+            os.chdir(old_dir)
+
+    def build(self):
+        old_dir = os.getcwd()
+        os.chdir(self.src_dir)
+        if not exists('build'):
+            os.mkdir('build')
+        os.chdir('build')
+        subprocess.call(shlex.split("cmake ../ -DLIBTINS_BUILD_SHARED=0 -DPCAP_ROOT_DIR='%s'" % self.pcap_dep.install_dir()))
+        subprocess.call('make')
+        os.chdir(old_dir)
+        self._include_dirs = [join(self.src_dir, 'include')]
+        self._extra_objects = [join(self.src_dir, 'build', 'lib', 'libtins.a')]
 
 def list_subdir(subdirname):
     subdirname = join(here, subdirname)
@@ -57,41 +208,6 @@ def list_subdir(subdirname):
     return l
 
 
-class MyBuildExtCommand(setuptools.command.build_ext.build_ext):
-
-    def run(self):
-        tmpdir = None
-        if os.getenv("CYCAPTURE_SHARED_LIBPCAP") is not None:
-            info("Building cycapture against a shared libpcap")
-            pcap_config = _get_pcap_config_shared()
-        else:
-            tmpdir = mkdtemp()
-            old_dir = os.getcwd()
-            os.chdir(tmpdir)
-            info("Fetching libpcap from github in %s\n" % tmpdir)
-            subprocess.call(shlex.split("git clone -b libpcap-1.7 --single-branch https://github.com/the-tcpdump-group/libpcap.git"))
-            info("Compiling libpcap\n")
-            os.chdir("libpcap")
-            subprocess.call(shlex.split("./configure --enable-shared=no"))
-            subprocess.call("make")
-            os.chdir(old_dir)
-            info("Building cycapture as a static library")
-            pcap_config = _get_pcap_config_static(libpcap_srcdir=join(tmpdir, "libpcap"))
-
-        my_exts = [extension for extension in self.extensions if extension.name == "cycapture.libpcap"]
-        if my_exts:
-            my_ext = my_exts[0]
-            my_ext.include_dirs = pcap_config.get('include_dirs', None)
-            my_ext.library_dirs = pcap_config.get('library_dirs', None)
-            my_ext.libraries = pcap_config.get('libraries', None)
-            my_ext.extra_compile_args = pcap_config.get('extra_compile_args', None)
-            my_ext.extra_objects = pcap_config.get('extra_objects', None)
-
-        setuptools.command.build_ext.build_ext.run(self)
-        if tmpdir:
-            shutil.rmtree(tmpdir)
-
-
 if __name__ == "__main__":
     with open('README.rst') as readme_file:
         readme = readme_file.read()
@@ -109,16 +225,50 @@ if __name__ == "__main__":
     test_requirements = []
     extensions = []
     if not on_rtd:
-        pcap_extension = Extension(
-            name="cycapture.libpcap",
-            sources=["cycapture/libpcap.pyx"]
+        # utility module to make python memoryviews from char* buffers
+        make_mview_extension = Extension(
+            name="cycapture.make_mview",
+            sources=["cycapture/make_mview.pyx"]
         )
+        extensions.append(make_mview_extension)
+
+        # build libpcap and the cycapture.libpcap python extension
+        pcap_extension = Extension(
+            name="cycapture.libpcap._pcap",
+            sources=["cycapture/libpcap/_pcap.pyx"]
+        )
+        pcap_dep = LibpcapDep()
+        pcap_dep.add_to_extension(pcap_extension)
         extensions.append(pcap_extension)
+
+        # small module that contains the python exceptions translated from C++ exceptions
+        tins_exceptions_extension = Extension(
+            name="cycapture.libtins.exceptions",
+            sources=["cycapture/libtins/exceptions.pyx"]
+        )
+
+        extensions.append(tins_exceptions_extension)
+
+        # build libtins and the cycapture.libtins python extension
+        tins_extension = Extension(
+            name="cycapture.libtins._tins",
+            sources=["cycapture/libtins/_tins.pyx", "cycapture/libtins/wrap.cpp"]
+        )
+
+        tins_dep = LibtinsDep(pcap_dep)
+        tins_dep.add_to_extension(tins_extension)
+
+        extensions.append(tins_extension)
     data_files = []
+
+    # see http://lists.gnu.org/archive/html/libtool-patches/2014-09/msg00002.html`
+    # http://stackoverflow.com/questions/26563079/mac-osx-getting-segmentation-faults-on-every-c-program-even-hello-world-af
+    if platform.mac_ver()[0].startswith('10.10'):
+        os.environ["MACOSX_DEPLOYMENT_TARGET"] = "10.9"
     setup(
         name='cycapture',
-        version='0.1',
-        description='Cython bindings for libpcap',
+        version='0.2',
+        description='Cython bindings for libpcap and libtins',
         long_description=readme + '\n\n' + history,
         author='Stephane Martin',
         author_email='stephane.martin_github@vesperal.eu',
@@ -128,6 +278,7 @@ if __name__ == "__main__":
             'setuptools_git', 'setuptools', 'twine', 'wheel', 'cython'
         ],
         include_package_data=True,
+        exclude_package_data={'': ['*.c', '*.cpp', '*.h']},
         install_requires=requirements,
         license="LGPLv3+",
         zip_safe=False,
@@ -149,7 +300,6 @@ if __name__ == "__main__":
         data_files=data_files,
         test_suite='tests',
         tests_require=test_requirements,
-        ext_modules=extensions,
-        cmdclass={'build_ext': MyBuildExtCommand}
+        ext_modules=extensions
 
     )

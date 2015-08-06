@@ -4,16 +4,12 @@
 Small cython wrapper around libpcap
 """
 
-# noinspection PyUnresolvedReferences
-from libpcap cimport pcap_pkthdr, c_callback, sockaddr, sockaddr_in, sockaddr_in6, pcap_if_t, pcap_addr_t, pcap_t
-# noinspection PyUnresolvedReferences
-from libpcap cimport pcap_direction_t, bpf_program
 from cpython cimport bool
 import logging
 import struct
 
 
-cdef void _do_python_callback(unsigned char* usr, const pcap_pkthdr* pkthdr, const unsigned char* pkt) with gil:
+cdef void _do_python_callback(unsigned char* usr, const pcap_pkthdr_t* pkthdr, const unsigned char* pkt) with gil:
     cdef Py_buffer pybuffer
     cdef int res = PyBuffer_FillInfo(&pybuffer, NULL, <void*> pkt, pkthdr.caplen, 1, PyBUF_FULL_RO)
     if res == 0:
@@ -21,7 +17,7 @@ cdef void _do_python_callback(unsigned char* usr, const pcap_pkthdr* pkthdr, con
         (<object> (<void*> usr))(pkthdr.ts.tv_sec, pkthdr.ts.tv_usec, pkthdr.caplen, pkthdr.len, mview)
 
 
-cdef void _do_c_callback(unsigned char* usr, const pcap_pkthdr* pkthdr, const unsigned char* pkt):
+cdef void _do_c_callback(unsigned char* usr, const pcap_pkthdr_t* pkthdr, const unsigned char* pkt):
     (<c_callback> (<void*> usr))(pkthdr.ts.tv_sec, pkthdr.ts.tv_usec, pkthdr.caplen, pkthdr.len, pkt)
 
 

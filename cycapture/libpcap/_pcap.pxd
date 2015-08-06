@@ -1,7 +1,7 @@
 from cpython cimport bool
 
 """
-Small cython wrapper around libpcap -- pxd declaration file
+Cython wrapper around libpcap -- pxd declaration file
 """
 
 cdef extern from "Python.h":
@@ -83,9 +83,9 @@ cdef extern from "pcap/pcap.h":
 
     enum: PCAP_NETMASK_UNKNOWN
 
-
+ctypedef pcap_pkthdr pcap_pkthdr_t
 # noinspection PyUnresolvedReferences
-ctypedef void (*pcap_handler) (unsigned char*, const pcap_pkthdr*, const unsigned char*)
+ctypedef void (*pcap_handler) (unsigned char*, const pcap_pkthdr_t*, const unsigned char*)
 
 cdef extern from "pcap.h":
     ctypedef enum pcap_direction_t:
