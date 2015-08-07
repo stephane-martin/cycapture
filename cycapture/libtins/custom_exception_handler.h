@@ -1,7 +1,7 @@
 #ifndef libtins_custom_exception_handler
 #define libtins_custom_exception_handler
 
-namespace Cycapture {
+namespace Tins {
     void custom_exception_handler();
 }
 

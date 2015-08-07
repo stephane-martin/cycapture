@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-cimport libtins_exceptions
 from cpython.bytes cimport PyBytes_AS_STRING, PyBytes_Check, PyBytes_Size
 from cpython.tuple cimport PyTuple_Check
 from cpython.list cimport PyList_Check
@@ -25,13 +24,10 @@ from cython.operator cimport preincrement as inc
 # noinspection PyUnresolvedReferences
 from cython.view cimport memoryview as cy_memoryview
 
-
 # noinspection PyUnresolvedReferences
 from ..make_mview cimport make_mview_from_const_uchar_buf, make_mview_from_uchar_buf, mview_get_addr
 
-cdef extern from "custom_exception_handler.h" namespace "Cycapture":
-    cdef void custom_exception_handler()
-
+include "py_exceptions_pxd.pxi"
 include "ipv4_address_pxd.pxi"
 include "ipv6_address_pxd.pxi"
 include "hw_address_pxd.pxi"
