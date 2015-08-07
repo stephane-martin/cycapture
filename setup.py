@@ -249,27 +249,14 @@ if __name__ == "__main__":
         pcap_dep.add_to_extension(pcap_extension)
         extensions.append(pcap_extension)
 
-        # # small module that contains the python exceptions translated from C++ exceptions
-        # tins_exceptions_extension = Extension(
-        #     name="cycapture.libtins.libtins_exceptions",
-        #     sources=["cycapture/libtins/libtins_exceptions.pyx"],
-        #     language="c++"
-        # )
-        #
-        # extensions.append(tins_exceptions_extension)
-
-        # build libtins and the cycapture.libtins python extension
-        # notice that we link libtins_exceptions with _tins, so that the custom exception handler finds the
-        # appropriate python exceptions symbols
+        # build libtins and cycapture.libtins python extension
         tins_extension = Extension(
             name="cycapture.libtins._tins",
             sources=["cycapture/libtins/_tins.pyx", "cycapture/libtins/wrap.cpp", "cycapture/libtins/custom_exception_handler.cpp"]
         )
-
         tins_dep = LibtinsDep(pcap_dep)
         # noinspection PyTypeChecker
         tins_dep.add_to_extension(tins_extension)
-
         extensions.append(tins_extension)
     data_files = []
 
