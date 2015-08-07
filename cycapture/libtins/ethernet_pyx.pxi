@@ -20,27 +20,31 @@ cdef class EthernetII(PDU):
     pdu_type = PDU.ETHERNET_II
     broadcast = HWAddress.broadcast
 
-    def __cinit__(self, buf=None, src_dest=None, _raw=False):
+    def __cinit__(self, dest_src=None, buf=None, _raw=False):
         if _raw:
             return
-        elif buf is None and src_dest is None:
+        elif buf is None and dest_src is None:
             self.ptr = new cppEthernetII()
         elif buf is not None:
-            # construct from a buffer
-            if isinstance(buf, bytes):
-                self.ptr = new cppEthernetII(<uint8_t*> buf, <uint32_t> len(buf))
+            if PyBytes_Check(buf):
+                self.ptr = new cppEthernetII(<uint8_t*> PyBytes_AS_STRING(buf), <uint32_t> PyBytes_Size(buf))
             elif isinstance(buf, bytearray):
-                self.ptr = new cppEthernetII(<uint8_t*> buf, <uint32_t> len(buf))
-            elif isinstance(buf, memoryview):
-                # todo: check that buf has the right shape, etc
+                buf = memoryview(buf)
                 self.ptr = new cppEthernetII(<uint8_t*> (mview_get_addr(<void*> buf)), len(buf))
+            elif isinstance(buf, memoryview):
+                if buf.itemsize == 1 and buf.ndim == 1:
+                    self.ptr = new cppEthernetII(<uint8_t*> (mview_get_addr(<void*> buf)), len(buf))
+                else:
+                    raise ValueError("the memoryview doesn't have the proper format")
             elif isinstance(buf, cy_memoryview):
-                # todo: check that buf has the right shape, etc
-                self.ptr = new cppEthernetII(<uint8_t*> (<cy_memoryview>buf).get_item_pointer([]), <uint32_t> len(buf))
+                if buf.itemsize == 1 and buf.ndim == 1:
+                    self.ptr = new cppEthernetII(<uint8_t*> (<cy_memoryview>buf).get_item_pointer([]), <uint32_t> len(buf))
+                else:
+                    raise ValueError("the typed memoryview doesn't have the proper format")
             else:
                 raise ValueError("don't know what to do with type '%s'" % type(buf))
-        else:
-            src, dest = src_dest
+        elif PyTuple_Check(dest_src) or PyList_Check(dest_src):
+            dest, src = dest_src
             if src is None:
                 src = HWAddress()
             if dest is None:
@@ -49,7 +53,12 @@ cdef class EthernetII(PDU):
                 src = HWAddress(src)
             if not isinstance(dest, HWAddress):
                 dest = HWAddress(dest)
-            self.ptr = new cppEthernetII(<cppHWAddress6> ((<HWAddress> src).ptr[0]), <cppHWAddress6> ((<HWAddress> dest).ptr[0]))
+            self.ptr = new cppEthernetII(<cppHWAddress6> ((<HWAddress> dest).ptr[0]), <cppHWAddress6> ((<HWAddress> src).ptr[0]))
+        elif isinstance(dest_src, HWAddress):
+            self.ptr = new cppEthernetII(<cppHWAddress6> ((<HWAddress> dest_src).ptr[0]))
+        else:
+            self.ptr = new cppEthernetII(<cppHWAddress6> ((<HWAddress> (HWAddress(dest_src))).ptr[0]))
+
         self.base_ptr = <cppPDU*> self.ptr
         self.parent = None
 
@@ -59,7 +68,7 @@ cdef class EthernetII(PDU):
         self.ptr = NULL
         self.parent = None
 
-    def __init__(self, buf=None, src_dest=None, _raw=False):
+    def __init__(self, dest_src=None, buf=None, _raw=False):
         pass
 
     property src_addr:

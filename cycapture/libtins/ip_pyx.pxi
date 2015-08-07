@@ -48,7 +48,6 @@ cdef class IP(PDU):
         elif buf is None and dest_src_ips is None:
             self.ptr = new cppIP()
         elif buf is not None:
-            # construct from a buffer
             if PyBytes_Check(buf):           # (if buf a bytes object)
                 # avoid a copy of buf: directly pass the real address
                 # this is OK as cppIP constructor takes a *const* uint8_t parameter

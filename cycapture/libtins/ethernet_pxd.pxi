@@ -7,6 +7,7 @@ cdef extern from "tins/ethernetII.h" namespace "Tins" nogil:
 
     cdef cppclass cppEthernetII "Tins::EthernetII" (cppPDU):
         cppEthernetII()
+        cppEthernetII(const cppHWAddress6 &dst_hw_addr) except +ValueError
         cppEthernetII(const cppHWAddress6 &dst_hw_addr, const cppHWAddress6 &src_hw_addr) except +ValueError
         cppEthernetII(const unsigned char *buf, uint32_t total_sz) except +custom_exception_handler
         cppHWAddress6 dst_addr() const

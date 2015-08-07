@@ -17,32 +17,32 @@ cdef class UDP(PDU):
         elif buf is None and dest_src_ports is None:
             self.ptr = new cppUDP()
         elif buf is not None:
-            # construct from a buffer
-            if isinstance(buf, bytes):
-                self.ptr = new cppUDP(<uint8_t*> buf, <uint32_t> len(buf))
+            if PyBytes_Check(buf):
+                self.ptr = new cppUDP(<uint8_t*> PyBytes_AS_STRING(buf), <uint32_t> PyBytes_Size(buf))
             elif isinstance(buf, bytearray):
-                self.ptr = new cppUDP(<uint8_t*> buf, <uint32_t> len(buf))
-            elif isinstance(buf, memoryview):
-                # todo: check that buf has the right shape, etc
+                buf = memoryview(buf)
                 self.ptr = new cppUDP(<uint8_t*> (mview_get_addr(<void*> buf)), len(buf))
+            elif isinstance(buf, memoryview):
+                if buf.itemsize == 1 and buf.ndim == 1:
+                    self.ptr = new cppUDP(<uint8_t*> (mview_get_addr(<void*> buf)), len(buf))
+                else:
+                    raise ValueError("the memoryview doesn't have the proper format")
             elif isinstance(buf, cy_memoryview):
-                # todo: check that buf has the right shape, etc
-                self.ptr = new cppUDP(<uint8_t*> (<cy_memoryview>buf).get_item_pointer([]), <uint32_t> len(buf))
+                if buf.itemsize == 1 and buf.ndim == 1:
+                    self.ptr = new cppUDP(<uint8_t*> (<cy_memoryview>buf).get_item_pointer([]), <uint32_t> len(buf))
+                else:
+                    raise ValueError("the typed memoryview doesn't have the proper format")
             else:
                 raise ValueError("don't know what to do with type '%s'" % type(buf))
-        elif isinstance(dest_src_ports, tuple) or isinstance(dest_src_ports, list):
+        elif PyTuple_Check(dest_src_ports) or PyList_Check(dest_src_ports):
             dest, src = dest_src_ports
             if src is None:
                 src = 0
             if dest is None:
                 dest = 0
-            src = int(src)
-            dest = int(dest)
-            self.ptr = new cppUDP(<uint16_t>dest, <uint16_t>src)
+            self.ptr = new cppUDP(<uint16_t>int(dest), <uint16_t>int(src))
         else:
-            src = 0
-            dest = int(dest_src_ports)
-            self.ptr = new cppUDP(<uint16_t>dest, <uint16_t>src)
+            self.ptr = new cppUDP(<uint16_t>int(dest_src_ports))
         self.base_ptr = <cppPDU*> self.ptr
         self.parent = None
 

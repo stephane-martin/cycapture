@@ -21,16 +21,21 @@ cdef class Raw(PDU):
             return
         if buf is None:
             buf = b""
-        if isinstance(buf, bytes):
-            self.ptr = new cppRAW(<const string>buf)
+        if PyBytes_Check(buf):
+            self.ptr = new cppRAW(<uint8_t*> PyBytes_AS_STRING(buf), <uint32_t> PyBytes_Size(buf))
         elif isinstance(buf, bytearray):
-            self.ptr = new cppRAW(<uint8_t*> buf, <uint32_t> len(buf))
-        elif isinstance(buf, memoryview):
-            # todo: check that buf has the right shape, etc
+            buf = memoryview(buf)
             self.ptr = new cppRAW(<uint8_t*> (mview_get_addr(<void*> buf)), len(buf))
+        elif isinstance(buf, memoryview):
+            if buf.itemsize == 1 and buf.ndim == 1:
+                self.ptr = new cppRAW(<uint8_t*> (mview_get_addr(<void*> buf)), len(buf))
+            else:
+                raise ValueError("the memoryview doesn't have the proper format")
         elif isinstance(buf, cy_memoryview):
-            # todo: check that buf has the right shape, etc
-            self.ptr = new cppRAW(<uint8_t*> (<cy_memoryview>buf).get_item_pointer([]), <uint32_t> len(buf))
+            if buf.itemsize == 1 and buf.ndim == 1:
+                self.ptr = new cppRAW(<uint8_t*> (<cy_memoryview>buf).get_item_pointer([]), <uint32_t> len(buf))
+            else:
+                raise ValueError("the typed memoryview doesn't have the proper format")
         else:
             raise ValueError("don't know what to do with type '%s'" % type(buf))
         self.base_ptr = <cppPDU*> self.ptr
@@ -38,12 +43,13 @@ cdef class Raw(PDU):
 
     property payload:
         def __get__(self):
-            cdef vector[uint8_t] v = self.ptr.payload()
-            cdef uint8_t* buf = &v[0]
-            return <bytes>(buf[:v.size()])
+            cdef const uint8_t* buf = &(self.ptr.payload()[0])
+            cdef int size = self.ptr.payload().size()
+            return <bytes>(buf[:size])
 
         def __set__(self, value):
-            value = bytes(value)
+            if not PyBytes_Check(value):
+                value = bytes(value)
             cdef uint8_t* buf = <uint8_t*> (<bytes>value)
             cdef vector[uint8_t] v
             v.assign(buf, buf + len(value))
