@@ -23,6 +23,8 @@ from cython.operator cimport dereference as deref
 from cython.operator cimport preincrement as inc
 # noinspection PyUnresolvedReferences
 from cython.view cimport memoryview as cy_memoryview
+
+cimport tins_exceptions
 # noinspection PyUnresolvedReferences
 from ..make_mview cimport make_mview_from_const_uchar_buf, make_mview_from_uchar_buf, mview_get_addr
 

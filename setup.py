@@ -189,7 +189,9 @@ class LibtinsDep(Dependency):
         if not exists('build'):
             os.mkdir('build')
         os.chdir('build')
-        subprocess.call(shlex.split("cmake ../ -DLIBTINS_BUILD_SHARED=0 -DPCAP_ROOT_DIR='%s'" % self.pcap_dep.install_dir()))
+        subprocess.call(shlex.split(
+            "cmake ../ -DCMAKE_CXX_FLAGS='-fPIC' -DLIBTINS_BUILD_SHARED=0 -DPCAP_ROOT_DIR='%s'" % self.pcap_dep.install_dir()
+        ))
         subprocess.call('make')
         os.chdir(old_dir)
         self._include_dirs = [join(self.src_dir, 'include')]
