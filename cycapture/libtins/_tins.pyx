@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
 
-cimport libtins_exceptions
+from .libtins_exceptions import LibtinsException, MalformedAddress, MalformedPacket, MalformedOption, OptionNotFound
+from .libtins_exceptions import OptionPayloadTooLarge, FieldNotPresent, PDUNotFound, InvalidInterface, UnknownLinkType
+from .libtins_exceptions import SocketOpenError, SocketCloseError, SocketWriteError, InvalidSocketType
+from .libtins_exceptions import BadTinsCast, ProtocolDisabled
+
 
 # noinspection PyUnresolvedReferences
 from cython.operator cimport dereference as deref
 # noinspection PyUnresolvedReferences
 from cython.operator cimport preincrement as inc
 
-from .libtins_exceptions import LibtinsException, MalformedAddress, MalformedPacket, MalformedOption, OptionNotFound
-from .libtins_exceptions import OptionPayloadTooLarge, FieldNotPresent, PDUNotFound, InvalidInterface, UnknownLinkType
-from .libtins_exceptions import SocketOpenError, SocketCloseError, SocketWriteError, InvalidSocketType
-from .libtins_exceptions import BadTinsCast, ProtocolDisabled
 
 include "ipv4_address_pyx.pxi"
 include "ipv6_address_pyx.pxi"

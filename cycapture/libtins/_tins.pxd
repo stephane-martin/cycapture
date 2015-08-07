@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 cimport libtins_exceptions
-
 from cpython.bytes cimport PyBytes_AS_STRING, PyBytes_Check, PyBytes_Size
 from cpython.tuple cimport PyTuple_Check
 from cpython.list cimport PyList_Check

@@ -3,10 +3,11 @@
 #include <stdexcept>
 #include <ios>
 #include "Python.h"
-#include "libtins_exceptions.h"
+// #include "libtins_exceptions.h" (no need, extern keyword below)
 #include "tins/exceptions.h"
 #include "custom_exception_handler.h"
 
+// the objects will be loaded at runtime
 extern PyObject *libtins_exception;
 extern PyObject *option_not_found;
 extern PyObject *malformed_packet;
@@ -21,7 +22,9 @@ extern PyObject *unknown_link_type;
 extern PyObject *malformed_option;
 extern PyObject *bad_tins_cast;
 extern PyObject *protocol_disabled;
-// extern PyObject *option_payload_too_large;
+// option_payload_too_large seems not present in libtins 3.2
+//    extern PyObject *option_payload_too_large;
+
 
 namespace Cycapture {
 
