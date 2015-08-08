@@ -16,6 +16,9 @@ cdef class Raw(PDU):
     """
     Raw PDU packet
     """
+    pdu_flag = PDU.RAW
+    pdu_type = PDU.RAW
+
     def __cinit__(self, buf=None, _raw=False):
         if _raw:
             return
@@ -71,6 +74,7 @@ cdef class Raw(PDU):
                 raise TypeError("There is no PDU called: %s" % obj)
         else:
             t = int(obj)
+        # the factory uses a copy of self's data (via buf), so we don't need to set af parent for the returned object
         return (map_classname_to_factory[map_pdutype_to_classname[t]])(NULL, &(self.ptr.payload()[0]), self.ptr.payload().size(), None)
         # (cppPDU* ptr, uint8_t* buf, int size, object parent)
 
