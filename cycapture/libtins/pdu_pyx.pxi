@@ -68,6 +68,10 @@ cdef class PDU(object):
         def __get__(self):
             return int(self.base_ptr.trailer_size())
 
+    property size:
+        def __get__(self):
+            return int(self.base_ptr.size())
+
     cpdef serialize(self):
         cdef vector[uint8_t] v = self.base_ptr.serialize()
         cdef uint8_t* p = &v[0]

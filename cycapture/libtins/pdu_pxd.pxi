@@ -100,9 +100,9 @@ cdef class PDU(object):
     """
     (Abstract) Protocol Data Unit
     """
-    cpdef serialize(self)
     cdef cppPDU* base_ptr
     cdef object parent
+
     cpdef find_pdu_by_type(self, int t)
     cpdef rfind_pdu_by_type(self, int t)
     cpdef copy(self)
@@ -113,6 +113,7 @@ cdef class PDU(object):
     cpdef copy_inner_pdu(self)
     cpdef ref_inner_pdu(self)
     cpdef set_inner_pdu(self, obj)
+    cpdef serialize(self)
 
 
 cdef factory_PDU_from_uchar_buf(int pdu_type, uint8_t* buf=?, int size=?)
