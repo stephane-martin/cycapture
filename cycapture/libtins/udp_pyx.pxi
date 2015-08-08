@@ -11,6 +11,9 @@ cdef factory_udp(cppPDU* ptr, uint8_t* buf, int size, object parent):
 
 
 cdef class UDP(PDU):
+    pdu_flag = PDU.UDP
+    pdu_type = PDU.UDP
+
     def __cinit__(self, dest_src_ports=None, buf=None, _raw=False):
         if _raw:
             return
