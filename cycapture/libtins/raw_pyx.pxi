@@ -55,6 +55,25 @@ cdef class Raw(PDU):
             v.assign(buf, buf + len(value))
             self.ptr.payload(v)
 
+    cpdef to(self, obj):
+        cdef int t
+        if isinstance(obj, type):
+            if not hasattr(obj, "pdu_type"):
+                raise ValueError("Don't know what to to with: %s (no attribute pdu_type)" % obj.__name__)
+            if obj.pdu_type < 0:
+                raise ValueError("Don't know what to to with: %s (pdu_type attr is negative)" % obj.__name__)
+            t = obj.pdu_type
+        elif isinstance(obj, bytes):
+            obj = (<bytes> obj).lower()
+            try:
+                t = map_classname_to_pdutype.at(<string>obj)
+            except IndexError:
+                raise TypeError("There is no PDU called: %s" % obj)
+        else:
+            t = int(obj)
+        return (map_classname_to_factory[map_pdutype_to_classname[t]])(NULL, &(self.ptr.payload()[0]), self.ptr.payload().size(), None)
+        # (cppPDU* ptr, uint8_t* buf, int size, object parent)
+
     def __init__(self, buf=None, _raw=False):
         pass
 

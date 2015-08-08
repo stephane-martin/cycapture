@@ -13,5 +13,6 @@ cdef extern from "tins/rawpdu.h" namespace "Tins" nogil:
 
 cdef class Raw(PDU):
     cdef cppRAW* ptr
+    cpdef to(self, obj)
 
 cdef factory_raw(cppPDU* ptr, uint8_t* buf, int size, object parent)
