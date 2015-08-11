@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 cdef extern from "Python.h":
     ctypedef struct PyObject:
         Py_ssize_t ob_refcnt

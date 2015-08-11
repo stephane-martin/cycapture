@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
 
+"""
+libtins bindings using cython
+"""
+
 __author__ = 'stef'
 
 # specific exceptions (they all inherit from LibtinsException)
@@ -8,6 +12,7 @@ from ._tins import LibtinsException, MalformedAddress, MalformedPacket, Malforme
 from ._tins import OptionPayloadTooLarge, FieldNotPresent, PDUNotFound, InvalidInterface, UnknownLinkType
 from ._tins import SocketOpenError, SocketCloseError, SocketWriteError, InvalidSocketType, BadTinsCast, ProtocolDisabled
 
+# addresses and ranges
 from ._tins import IPv4Address, IPv6Address, HWAddress, IPv4Range, IPv6Range, HWRange, NetworkInterface
 
 # abstract PDU

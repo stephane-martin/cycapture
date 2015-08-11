@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 
 cdef class IPv6Address(object):
+    """
+    Encapsulate an IPv6 address.
+    """
     def __cinit__(self, object addr=None):
         if addr is None:
             self.ptr = new cppIPv6Address()
@@ -12,7 +15,14 @@ cdef class IPv6Address(object):
             self.ptr = new cppIPv6Address(<string> (bytes(addr)))
 
     def __init__(self, object addr=None):
-        pass
+        """
+        __init__(self, object addr=None)
+
+        Parameters
+        ----------
+        addr: bytes or :py:class:`~.IPv6Address`
+            make an IPv6 address from this object
+        """
 
     def __dealloc__(self):
         if self.ptr != NULL:
@@ -25,9 +35,21 @@ cdef class IPv6Address(object):
         return "IPv6Address('{}')".format(bytes(self.ptr.to_string()))
 
     cpdef cpp_bool is_loopback(self):
+        """
+        Returns
+        -------
+        bool
+            True if the address is a loopback address.
+        """
         return self.ptr.is_loopback()
 
     cpdef cpp_bool is_multicast(self):
+        """
+        Returns
+        -------
+        bool
+            True if the address is a multicast address.
+        """
         return self.ptr.is_multicast()
 
     def __richcmp__(self, other, op):
@@ -74,6 +96,19 @@ cdef class IPv6Address(object):
             raise ValueError("don't know how to compare")
 
     def __div__(self, mask):
+        """
+        x/y represents the IPv6 range corresponding to base address x with mask y.
+
+        Parameters
+        ----------
+        mask: int
+            the mask as an integer
+
+        Returns
+        -------
+        range: :py:class:`~.IPv6Range`
+            new IPv6 range
+        """
         if not isinstance(self, IPv6Address):
             raise TypeError("operation not supported")
         r = IPv6Range()
@@ -81,8 +116,13 @@ cdef class IPv6Address(object):
         r.clone_from_cpp(cpp_r)
         return r
 
-
     cpdef full_repr(self):
+        """
+        Returns
+        -------
+        list of int
+            the 6 bytes composing the address as a list of integers.
+        """
         cdef vector[uint8_t] v
         v.assign(self.ptr.begin(), self.ptr.end())
         return <list> v

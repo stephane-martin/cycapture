@@ -1,9 +1,21 @@
 # -*- coding: utf-8 -*-
-
-
 from functools import reduce
 
+# noinspection PyAttributeOutsideInit,PyDocstring
 cdef class IPv4Range(object):
+    """
+    Represents a range of IPv4 addresses.
+
+    You can test if an address belongs to a range::
+
+        if address in range:
+            print("OK")
+
+    You can also iterate over ranges::
+
+        for i, address in enumerate(range):
+            print(i, address)
+    """
     def __cinit__(self, first=None, last=None, only_hosts=False, mask=None):
         cdef cppIPv4Range r
         if first is None:
@@ -23,7 +35,24 @@ cdef class IPv4Range(object):
             self.ptr = new cppIPv4Range(r)
 
     def __init__(self, first=None, last=None, only_hosts=False, mask=None):
-        pass
+        """
+        __init__(first=None, last=None, only_hosts=False, mask=None)
+
+        Parameters
+        ----------
+        first: bytes or :py:class:`~.IPv4Address`
+            first address in range
+        last: bytes or :py:class:`~.IPv4Address`
+            last address in range
+        only_hosts: bool
+            indicates whether only host addresses should be accessed when iterating the range
+        mask: bytes or :py:class:`~.IPv4Address`
+            range mask
+
+        Note
+        ----
+        Provide `last` *OR* `mask`
+        """
 
     def __dealloc__(self):
         if self.ptr != NULL:
@@ -35,9 +64,23 @@ cdef class IPv4Range(object):
         return bool(self.ptr.contains((<IPv4Address>addr).ptr[0]))
 
     cpdef is_iterable(self):
+        """
+        is_iterable()
+        Returns
+        -------
+        bool
+            True if the range is iterable.
+        """
         return bool(self.ptr.is_iterable())
 
     def size(self):
+        """
+        size()
+        Returns
+        -------
+        int
+            the range's size (how many addresses in the range)
+        """
         if not self.is_iterable():
             raise TypeError("not iterable")
         first = str(self.first).split('.')
@@ -46,18 +89,44 @@ cdef class IPv4Range(object):
         return reduce(lambda x, y: 256 * x + y, diff)
 
     @classmethod
-    def from_mask(cls, first, mask):
-        return IPv4Range(first, mask=mask)
+    def from_mask(cls, address, mask):
+        """
+        from_mask(address, mask)
+        Construct a range from an address and a mask.
+
+        Parameters
+        ----------
+        address: bytes or :py:class:`~.IPv4Address`
+            address (ex: `192.168.1.0`)
+        mask: bytes or :py:class:`~.IPv4Address`
+            mask (ex: `255.255.255.0`)
+
+        Returns
+        -------
+        range: :py:class:`~.IPv4Range`
+            new IPv4 range
+
+        Note
+        ====
+        class method
+        """
+        return IPv4Range(address, mask=mask)
 
     cdef clone_from_cpp(self, cppIPv4Range r):
         del self.ptr
         self.ptr = new cppIPv4Range(r)
 
     property first:
+        """
+        The first address in range (read-only property)
+        """
         def __get__(self):
             return IPv4Address(<bytes>(self.ptr.begin().ref().to_string()))
 
     property last:
+        """
+        The last address in range (read-only property)
+        """
         def __get__(self):
             return IPv4Address(<bytes>(self.ptr.end().ref().to_string()))
 
@@ -76,7 +145,21 @@ cdef class IPv4Range(object):
             PyMem_Free(it)
 
 
+# noinspection PyDocstring,PyAttributeOutsideInit
 cdef class IPv6Range(object):
+    """
+    Represents a range of IPv6 addresses.
+
+    You can test if an address belongs to a range::
+
+        if address in range:
+            print("OK")
+
+    You can also iterate over ranges::
+
+        for i, address in enumerate(range):
+            print(i, address)
+    """
     def __cinit__(self, first=None, last=None, only_hosts=False, mask=None):
         cdef cppIPv6Range r
         if first is None:
@@ -108,9 +191,23 @@ cdef class IPv6Range(object):
         return bool(self.ptr.contains((<IPv6Address>addr).ptr[0]))
 
     cpdef is_iterable(self):
+        """
+        is_iterable()
+        Returns
+        -------
+        bool
+            True if the range is iterable.
+        """
         return bool(self.ptr.is_iterable())
 
     def size(self):
+        """
+        size()
+        Returns
+        -------
+        int
+            the range's size (how many addresses in the range)
+        """
         if not self.is_iterable():
             raise TypeError("not iterable")
         first = self.first.full_repr()
@@ -120,18 +217,39 @@ cdef class IPv6Range(object):
 
 
     @classmethod
-    def from_mask(cls, first, mask):
-        return IPv6Range(first, mask=mask)
+    def from_mask(cls, address, mask):
+        """
+        Construct an IPv6Range from an address and a mask
+
+        Parameters
+        ----------
+        first: bytes or :py:class:`~.IPv6Address`
+            base IPv6 address
+        mask: bytes or :py:class:`~.IPv6Address`
+            IPv6 mask
+
+        Returns
+        -------
+        range: :py:class:`~.IPv6Range`
+            new IPv6 range
+        """
+        return IPv6Range(address, mask=mask)
 
     cdef clone_from_cpp(self, cppIPv6Range r):
         del self.ptr
         self.ptr = new cppIPv6Range(r)
 
     property first:
+        """
+        First adddress in range (read-only property)
+        """
         def __get__(self):
             return IPv6Address(<bytes>(self.ptr.begin().ref().to_string()))
 
     property last:
+        """
+        Last address in range (read-only propperty)
+        """
         def __get__(self):
             return IPv6Address(<bytes>(self.ptr.end().ref().to_string()))
 
@@ -150,7 +268,21 @@ cdef class IPv6Range(object):
             PyMem_Free(it)
 
 
+# noinspection PyDocstring,PyAttributeOutsideInit
 cdef class HWRange(object):
+    """
+    Represents a range of hardware addresses.
+
+    You can test if an address belongs to a range::
+
+        if address in range:
+            print("OK")
+
+    You can also iterate over ranges::
+
+        for i, address in enumerate(range):
+            print(i, address)
+    """
     def __cinit__(self, first=None, last=None, only_hosts=False, mask=None):
         cdef cppHWRange r
         if first is None:
@@ -182,21 +314,49 @@ cdef class HWRange(object):
         return bool(self.ptr.contains((<HWAddress>addr).ptr[0]))
 
     cpdef is_iterable(self):
+        """
+        is_iterable()
+        Returns
+        -------
+        bool
+            True if the range is iterable.
+        """
         return bool(self.ptr.is_iterable())
 
     @classmethod
-    def from_mask(cls, first, mask):
-        return HWRange(first, mask=mask)
+    def from_mask(cls, address, mask):
+        """
+        Construct a HWRange from an address and a mask
+
+        Parameters
+        ----------
+        address: bytes or :py:class:`~.HWAddress`
+            base hardware address
+        mask: bytes or :py:class:`~.HWAddress`
+            range mask
+
+        Returns
+        -------
+        range: :py:class:`~.HWRange`
+            new harware range
+        """
+        return HWRange(address, mask=mask)
 
     cdef clone_from_cpp(self, cppHWRange r):
         del self.ptr
         self.ptr = new cppHWRange(r)
 
     property first:
+        """
+        First address in range (read-only property)
+        """
         def __get__(self):
             return HWAddress(<bytes>(self.ptr.begin().ref().to_string()))
 
     property last:
+        """
+        Last address in range (read-only property)
+        """
         def __get__(self):
             return HWAddress(<bytes>(self.ptr.end().ref().to_string()))
 
@@ -215,6 +375,13 @@ cdef class HWRange(object):
             PyMem_Free(it)
 
     def size(self):
+        """
+        size()
+        Returns
+        -------
+        int
+            the range's size (how many addresses in the range)
+        """
         if not self.is_iterable():
             raise TypeError("not iterable")
         first = self.first.full_repr()

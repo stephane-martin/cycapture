@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 
 cdef class NetworkInterface(object):
+    """
+    Represent a network interface
+    """
     def __cinit__(self, name=None, address=None):
         if name is None and address is None:
             self.ptr = new cppNetworkInterface()
@@ -11,7 +14,20 @@ cdef class NetworkInterface(object):
             self._make_from_address(address)
 
     def __init__(self, name=None, address=None):
-        pass
+        """
+        __init__(name=None, address=None)
+
+        Parameters
+        ----------
+        name: bytes, optional
+            if `name` is present (ex: ``'eth0'``), returns this network interface
+        address: bytes or :py:class:`~.IPv4Address`, optional
+            if `address` is present, returns the interface that would be used to send packets to this address
+
+        Note
+        ----
+        Give only one parameter, `name` OR `address`.
+        """
 
     def __dealloc__(self):
         if self.ptr != NULL:
@@ -22,12 +38,30 @@ cdef class NetworkInterface(object):
         self.ptr = new cppNetworkInterface(addr.ptr[0])
 
     cpdef int ident(self):
+        """
+        Returns
+        -------
+        int
+            interface id
+        """
         return int(self.ptr.ident())
 
     cpdef bytes name(self):
+        """
+        Returns
+        -------
+        bytes
+            interface name
+        """
         return <bytes> self.ptr.name()
 
     cpdef object addresses(self):
+        """
+        Returns
+        -------
+        dict
+            the IPv4 address, netmask, broadcast address and hardware addresss associated with this interface.
+        """
         cdef cppNetworkInterface.Info infos = self.ptr.addresses()
         # Info:
         # CPPIPV4Address ip_addr, netmask, bcast_addr
@@ -40,6 +74,12 @@ cdef class NetworkInterface(object):
         }
 
     cpdef cpp_bool is_loopback(self):
+        """
+        Returns
+        -------
+        bool
+            True if the interface is a loopback interface.
+        """
         return self.ptr.is_loopback()
 
     def __bool__(self):
@@ -47,12 +87,24 @@ cdef class NetworkInterface(object):
 
     @classmethod
     def default(cls):
+        """
+        Returns
+        -------
+        default: :py:class:`~.NetworkInterface`
+            the default interface.
+        """
         cdef cppNetworkInterface default_i = default_interface()
         interface = NetworkInterface(default_i.name())
         return interface
 
     @classmethod
     def all(cls):
+        """
+        Returns
+        -------
+        all: list of :py:class:`~.NetworkInterface`
+            a list of all network interfaces
+        """
         cdef vector[cppNetworkInterface] all_i = all_interfaces()
         return [NetworkInterface(interface_i.name()) for interface_i in all_i]
 

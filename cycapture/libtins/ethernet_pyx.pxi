@@ -1,7 +1,4 @@
 # -*- coding: utf-8 -*-
-"""
-Ethernet packet python class
-"""
 
 cdef factory_ethernet_ii(cppPDU* ptr, uint8_t* buf, int size, object parent):
     if ptr is NULL and buf is NULL:

@@ -1,3 +1,9 @@
+# -*- coding: utf-8 -*-
+
+"""
+Utility cython functions to make memoryviews from unsigned char* buffers.
+"""
+
 from cpython.mem cimport PyMem_Malloc, PyMem_Free
 
 cdef object make_mview_from_const_uchar_buf(const unsigned char* buf, int size):

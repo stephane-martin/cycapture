@@ -1,6 +1,9 @@
 # encoding: utf-8
 
 cdef class IPv4Address(object):
+    """
+    Encapsulate an IPv4 address.
+    """
     broadcast = IPv4Address("255.255.255.255")
 
     def __cinit__(self, object addr=None):
@@ -16,31 +19,70 @@ cdef class IPv4Address(object):
             self.ptr = new cppIPv4Address(<string> (bytes(addr)))
 
     def __init__(self, object addr=None):
-        pass
+        """
+        __init__(self, object addr=None)
+
+        Parameters
+        ----------
+        addr: int or bytes or :py:class:`~.IPv4Address`
+            make an IPv4 address from this object
+        """
 
     def __dealloc__(self):
         if self.ptr != NULL:
             del self.ptr
 
     def __str__(self):
-        return bytes(self.ptr.to_string())
+        return bytes(self.ptr.to_string()).decode('utf-8')
 
     def __repr__(self):
-        return "IPv4Address('{}')".format(bytes(self.ptr.to_string()))
+        return u"IPv4Address('{}')".format(bytes(self.ptr.to_string()).decode('utf-8'))
 
     cpdef cpp_bool is_loopback(self):
+        """
+        Returns
+        -------
+        bool
+            True if the address is a loopback address.
+        """
         return self.ptr.is_loopback()
 
     cpdef cpp_bool is_private(self):
+        """
+        Returns
+        -------
+        bool
+            True if the address is a private address.
+        """
         return self.ptr.is_private()
 
     cpdef cpp_bool is_broadcast(self):
+        """
+        Returns
+        -------
+        bool
+            True if the address is a broadcast address.
+        """
         return self.ptr.is_broadcast()
 
     cpdef cpp_bool is_unicast(self):
+        """
+        Returns
+        -------
+        bool
+            True if the address is a unicast address.
+        """
+
         return self.ptr.is_unicast()
 
     cpdef cpp_bool is_multicast(self):
+        """
+        Returns
+        -------
+        bool
+            True if the address is a multicast address.
+        """
+
         return self.ptr.is_multicast()
 
     def __richcmp__(self, other, op):
@@ -87,13 +129,37 @@ cdef class IPv4Address(object):
             raise ValueError("don't know how to compare")
 
     def __int__(self):
+        """
+        __int__(self)
+        Convert the address to its integer representation.
+
+        Returns
+        -------
+        int
+            integer representation
+        """
         return int(convert_to_big_endian_int(self.ptr[0]))
 
 
     def __div__(self, mask):
+        """
+        __div__(self, mask)
+        ``x/y`` represents the IPv4 range corresponding to base address x with mask y.
+
+        Parameters
+        ----------
+        mask: int
+            the mask as an integer
+
+        Returns
+        -------
+        range: :py:class:`~.IPv4Range`
+            new IPv4 range
+        """
         if not isinstance(self, IPv4Address):
             raise TypeError("operation not supported")
         r = IPv4Range()
         cdef cppIPv4Range cpp_r = ipv4_slashrange((<IPv4Address>self).ptr[0], <int>int(mask))
         r.clone_from_cpp(cpp_r)
         return r
+
