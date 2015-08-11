@@ -8,4 +8,5 @@ libtins bindings
    exceptions
    generic_pdu
    pdus
+   dns_pdu
 
