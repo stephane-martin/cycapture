@@ -67,7 +67,7 @@ cdef extern from "tins/dns.h" namespace "Tins" nogil:
     cdef cppclass cppDNS "Tins::DNS" (cppPDU):
         PDUType pdu_type() const
 
-        cppclass Query:
+        cppclass cppQuery "Query":
             Query(const string &nm, QueryType tp, QueryClass cl)
             Query()
 
@@ -78,7 +78,7 @@ cdef extern from "tins/dns.h" namespace "Tins" nogil:
             QueryClass query_class() const
             void query_class(QueryClass cl)
 
-        cppclass Resource:
+        cppclass cppResource "Resource":
             Resource(const string &dname, const string &data, uint16_t t, uint16_t rclass, uint32_t ttl)
             Resource()
 
@@ -123,19 +123,22 @@ cdef extern from "tins/dns.h" namespace "Tins" nogil:
         void checking_disabled(uint8_t new_cd)
         uint8_t rcode() const
         void rcode(uint8_t new_rcode)
-        uint16_t questions_count() const
-        uint16_t answers_count() const
-        uint16_t authority_count() const
-        uint16_t additional_count() const
 
-        cpp_list[Query] queries() const
-        void add_query(const Query &query)
-        cpp_list[Resource] answers() const
-        void add_answer(const Resource &resource)
-        cpp_list[Resource] authority() const
-        void add_authority(const Resource &resource)
-        cpp_list[Resource] additional() const
-        void add_additional(const Resource &resource)
+        uint16_t questions_count() const
+        cpp_list[cppQuery] queries() const
+        void add_query(const cppQuery &query)
+
+        uint16_t answers_count() const
+        cpp_list[cppResource] answers() const
+        void add_answer(const cppResource &resource)
+
+        uint16_t authority_count() const
+        cpp_list[cppResource] authority() const
+        void add_authority(const cppResource &resource)
+
+        uint16_t additional_count() const
+        cpp_list[cppResource] additional() const
+        void add_additional(const cppResource &resource)
 
     cdef string cpp_encode_domain_name "Tins::DNS::encode_domain_name"(const string &domain_name)
 
@@ -143,5 +146,25 @@ cdef factory_dns(cppPDU* ptr, uint8_t* buf, int size, object parent)
 
 cdef class DNS(PDU):
     cdef cppDNS* ptr
+    cpdef uint16_t queries_count(self)
+    cpdef uint16_t questions_count(self)
+    cpdef queries(self)
+    cpdef add_query(self, DNS_Query q)
+    cpdef uint16_t answers_count(self)
+    cpdef answers(self)
+    cpdef add_answer(self, DNS_Resource answer)
+    cpdef uint16_t authority_count(self)
+    cpdef authority(self)
+    cpdef add_authority(self, DNS_Resource authority)
+    cpdef uint16_t additional_count(self)
+    cpdef additional(self)
+    cpdef add_additional(self, DNS_Resource additional)
+
+
+cdef class DNS_Query(object):
+    cdef cppDNS.cppQuery* ptr
+
+cdef class DNS_Resource(object):
+    cdef cppDNS.cppResource *ptr
 
 cpdef encode_domain_name(domain_name)
