@@ -35,15 +35,30 @@ cdef class DNS_Query(object):
     def __init__(self, name=None, query_type=None, query_class=None):
         """
         __init__(name=None, query_type=None, query_class=None)
+
+        Parameters
+        ----------
+        name: bytes
+            domain name
+        query_type: int
+            query type
+        query_class: int
+            query class
         """
 
     property name:
+        """
+        Domain name (read-write property)
+        """
         def __get__(self):
             return bytes(self.ptr.dname())
         def __set__(self, value):
             self.ptr.dname(<string> bytes(value))
 
     property query_type:
+        """
+        Query type (read-write property)
+        """
         def __get__(self):
             return int(self.ptr.get_type())
         def __set__(self, value):
@@ -53,6 +68,9 @@ cdef class DNS_Query(object):
             self.ptr.set_type(<QueryType> value)
 
     property query_class:
+        """
+        Query class (read-write property)
+        """
         def __get__(self):
             return int(self.ptr.query_class())
         def __set__(self, value):
@@ -94,21 +112,49 @@ cdef class DNS_Resource(object):
     def __init__(self, name=None, data=None, query_type=None, query_class=None, ttl=None):
         """
         __init__(name=None, data=None, query_type=None, query_class=None, ttl=None)
+
+        Parameters
+        ----------
+        name: bytes
+            The domain name for which this record provides an answer.
+        data: bytes
+            The resource's payload
+        query_type: int
+            record type
+        query_class: int
+            record class
+        ttl: int
+            record TTL
+
+        Note
+        ====
+        The data will be encoded properly by the DNS class before being added to this packet. That means that if the
+        type is A or AAAA, it will be properly encoded as an IPv4 or IPv6 address. The same happens for records that
+        contain domain names, such as NS or CNAME. This data will be encoded using DNS domain name encoding.
         """
 
     property name:
+        """
+        Domain name (read-write property)
+        """
         def __get__(self):
             return bytes(self.ptr.dname())
         def __set__(self, value):
             self.ptr.dname(<string> bytes(value))
 
     property data:
+        """
+        This resource's payload (read-write property)
+        """
         def __get__(self):
             return bytes(self.ptr.data())
         def __set__(self, value):
             self.ptr.data(<string> bytes(value))
 
     property query_type:
+        """
+        Record type (read-write property)
+        """
         def __get__(self):
             return int(self.ptr.get_type())
         def __set__(self, value):
@@ -118,6 +164,9 @@ cdef class DNS_Resource(object):
             self.ptr.set_type(<QueryType> value)
 
     property query_class:
+        """
+        Record class (read-write property)
+        """
         def __get__(self):
             return int(self.ptr.query_class())
         def __set__(self, value):
@@ -127,12 +176,16 @@ cdef class DNS_Resource(object):
             self.ptr.query_class(<QueryClass> value)
 
     property ttl:
+        """
+        Record TTL (read-write property)
+        """
         def __get__(self):
             return int(self.ptr.ttl())
         def __set__(self, value):
             self.ptr.ttl(<uint16_t> int(value))
 
 
+# noinspection PyDocstring
 cdef class DNS(PDU):
     """
     DNS Protocol Data Unit
@@ -243,12 +296,20 @@ cdef class DNS(PDU):
         """
 
     property ident:
+        """
+        id field (read-write property)
+        """
         def __get__(self):
             return int(self.ptr.ident())
         def __set__(self, value):
             self.ptr.ident(<uint16_t> int(value))
 
     property qrtype:
+        """
+        type field (read-write property).
+
+        Can be ``DNS.Query`` or ``DNS.Response``.
+        """
         def __get__(self):
             return int(self.ptr.get_type())
         def __set__(self, value):
@@ -258,66 +319,106 @@ cdef class DNS(PDU):
             self.ptr.set_type(<QRType> value)
 
     property opcode:
+        """
+        opcode field (read-write property).
+        """
         def __get__(self):
             return int(self.ptr.opcode())
         def __set__(self, value):
             self.ptr.opcode(<uint8_t>int(value))
 
     property authoritative_answer:
+        """
+        authoritative answer field (read-write property).
+        """
         def __get__(self):
             return int(self.ptr.authoritative_answer())
         def __set__(self, value):
             self.ptr.authoritative_answer(<uint8_t>int(value))
 
     property truncated:
+        """
+        truncated field (read-write property).
+        """
         def __get__(self):
             return int(self.ptr.truncated())
         def __set__(self, value):
             self.ptr.truncated(<uint8_t>int(value))
 
     property recursion_desired:
+        """
+        recursion desired field (read-write property).
+        """
         def __get__(self):
             return int(self.ptr.recursion_desired())
         def __set__(self, value):
             self.ptr.recursion_desired(<uint8_t>int(value))
 
     property recursion_available:
+        """
+        recursion available field (read-write property).
+        """
         def __get__(self):
             return int(self.ptr.recursion_available())
         def __set__(self, value):
             self.ptr.recursion_available(<uint8_t>int(value))
 
     property z:
+        """
+        z field (read-write property).
+        """
         def __get__(self):
             return int(self.ptr.z())
         def __set__(self, value):
             self.ptr.z(<uint8_t>int(value))
 
     property authenticated_data:
+        """
+        authenticated data field (read-write property).
+        """
         def __get__(self):
             return int(self.ptr.authenticated_data())
         def __set__(self, value):
             self.ptr.authenticated_data(<uint8_t>int(value))
 
     property checking_disabled:
+        """
+        checking disabled field (read-write property).
+        """
         def __get__(self):
             return int(self.ptr.checking_disabled())
         def __set__(self, value):
             self.ptr.checking_disabled(<uint8_t>int(value))
 
     property rcode:
+        """
+        rcode field (read-write property).
+        """
         def __get__(self):
             return int(self.ptr.rcode())
         def __set__(self, value):
             self.ptr.rcode(<uint8_t>int(value))
 
     cpdef uint16_t queries_count(self):
+        """
+        queries_count()
+        """
         return self.ptr.questions_count()
 
     cpdef uint16_t questions_count(self):
+        """
+        questions_count()
+        """
         return self.ptr.questions_count()
 
     cpdef queries(self):
+        """
+        queries()
+        Returns
+        -------
+        queries: list of :py:class:`~.DNS_Query`
+            the list of DNS queries contained in the DNS PDU
+        """
         results = []
         cdef cpp_list[cppDNS.cppQuery] l = self.ptr.queries()
         for q in l:
@@ -325,14 +426,33 @@ cdef class DNS(PDU):
         return results
 
     cpdef add_query(self, DNS_Query q):
+        """
+        add_query(DNS_Query q)
+        Add a query to perform.
+
+        Parameters
+        ----------
+        q: :py:class:`~.DNS_Query`
+            the query to be added
+        """
         if q is None:
             return
         self.ptr.add_query(q.ptr[0])
 
     cpdef uint16_t answers_count(self):
+        """
+        answers_count()
+        """
         return self.ptr.answers_count()
 
     cpdef answers(self):
+        """
+        answers()
+        Returns
+        -------
+        answers: list of :py:class:`~.DNS_Resource`
+            the list of DNS answers contained in the DNS PDU
+        """
         results = []
         cdef cpp_list[cppDNS.cppResource] l = self.ptr.answers()
         for answer in l:
@@ -344,14 +464,33 @@ cdef class DNS(PDU):
         return results
 
     cpdef add_answer(self, DNS_Resource answer):
+        """
+        add_answer(DNS_Resource answer)
+        Add an answer resource record.
+
+        Parameters
+        ----------
+        answer: :py:class:`~.DNS_Resource`
+            the answer to be added
+        """
         if answer is None:
             return
         self.ptr.add_answer(answer.ptr[0])
 
     cpdef uint16_t authority_count(self):
+        """
+        authority_count()
+        """
         return self.ptr.authority_count()
 
     cpdef authority(self):
+        """
+        authority()
+        Returns
+        -------
+        authority: list of :py:class:`~.DNS_Resource`
+            the list of DNS authority records contained in the DNS PDU
+        """
         results = []
         cdef cpp_list[cppDNS.cppResource] l = self.ptr.authority()
         for auth in l:
@@ -363,6 +502,15 @@ cdef class DNS(PDU):
         return results
 
     cpdef add_authority(self, DNS_Resource authority):
+        """
+        add_authority(DNS_Resource authority)
+        Add an authority resource record.
+
+        Parameters
+        ----------
+        authority: :py:class:`~.DNS_Resource`
+            the authority record to be added
+        """
         if authority is None:
             return
         self.ptr.add_authority(authority.ptr[0])
@@ -371,6 +519,13 @@ cdef class DNS(PDU):
         return self.ptr.additional_count()
 
     cpdef additional(self):
+        """
+        additional()
+        Returns
+        -------
+        additional: list of :py:class:`~.DNS_Resource`
+            the list of DNS additional records contained in the DNS PDU
+        """
         results = []
         cdef cpp_list[cppDNS.cppResource] l = self.ptr.additional()
         for add in l:
@@ -382,11 +537,23 @@ cdef class DNS(PDU):
         return results
 
     cpdef add_additional(self, DNS_Resource additional):
+        """
+        add_additional(DNS_Resource additional)
+        Add an additional resource record.
+
+        Parameters
+        ----------
+        additional: :py:class:`~.DNS_Resource`
+            the record to be added
+        """
         if additional is None:
             return
         self.ptr.add_additional(additional.ptr[0])
 
 cpdef encode_domain_name(domain_name):
+    """
+    encode_domain_name(domain_name)
+    """
     if not PyBytes_Check(domain_name):
         domain_name = bytes(domain_name)
     return <bytes>(cpp_encode_domain_name(<string>domain_name))
