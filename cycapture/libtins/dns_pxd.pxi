@@ -2,10 +2,10 @@
 
 cdef extern from "tins/dns.h" namespace "Tins" nogil:
     PDUType dns_pdu_flag "Tins::DNS::pdu_flag"
-    enum QRType:
+    enum QRType "Tins::DNS::QRType":
         DNS_QUERY "Tins::DNS::QUERY",
         DNS_RESPONSE "Tins::DNS::RESPONSE"
-    enum QueryType:
+    enum QueryType "Tins::DNS::QueryType":
         DNS_A "Tins::DNS::A",
         DNS_NS "Tins::DNS::NS",
         DNS_MD "Tins::DNS::MD",
@@ -58,7 +58,7 @@ cdef extern from "tins/dns.h" namespace "Tins" nogil:
         DNS_NSEC3 "Tins::DNS::NSEC3",
         DNS_NSEC3PARAM "Tins::DNS::NSEC3PARAM"
 
-    enum QueryClass:
+    enum QueryClass "Tins::DNS::QueryClass":
         DNS_IN "Tins::DNS::IN",
         DNS_CH "Tins::DNS::CH",
         DNS_HS "Tins::DNS::HS",
