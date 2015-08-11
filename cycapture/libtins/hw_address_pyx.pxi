@@ -130,6 +130,9 @@ cdef class HWAddress(object):
         r.clone_from_cpp(cpp_r)
         return r
 
+    def __truediv__(self, mask):
+        return self.__div__(mask)
+
     cpdef full_repr(self):
         """
         Returns
