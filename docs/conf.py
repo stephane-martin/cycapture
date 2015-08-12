@@ -33,7 +33,7 @@ else:
         print("Creating directory %s" % dst)
         os.makedirs(dst)
     print('copy %s to %s' % (src, dst))
-    shutil.copytree(src, dst)
+    shutil.copytree(src, join(dst, 'api'))
 
 import sphinx_readable_theme
 
