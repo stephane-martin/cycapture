@@ -16,24 +16,7 @@ if not on_rtd:
 else:
     # we are on readthedocs...
     print("Woohoo RTD!!!!")
-    print("We do not actually make a full build, but we copy the static build if it exists")
-    thisdir = abspath(dirname(__file__))
-    try:
-        print("Deleting the api sourcedir, so that RTD won't try to generate API HTML files")
-        shutil.rmtree(join(thisdir, 'api'))
-    except:
-        logging.exception("rmtree of api sourcedir failed :(")
-    try:
-        shutil.rmtree(join(thisdir, '_build', 'html', 'api'))
-    except:
-        pass
-    src = join(thisdir, 'static_build', 'html', 'api')
-    dst = join(thisdir, '_build', 'html')
-    if not exists(dst):
-        print("Creating directory %s" % dst)
-        os.makedirs(dst)
-    print('copy %s to %s' % (src, dst))
-    shutil.copytree(src, join(dst, 'api'))
+
 
 import sphinx_readable_theme
 
@@ -149,10 +132,11 @@ html_short_title = "cycapture"
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
 
-# Add any extra paths that contain custom files (such as robots.txt or
-# .htaccess) here, relative to this directory. These files are copied
-# directly to the root of the documentation.
-#html_extra_path = []
+html_extra_path = []
+if on_rtd:
+    # on RTD, we just overwrite the built documentation with the content of static_build :)
+    print("RTD: configuring html_extra_path")
+    html_extra_path.append('static_build/html')
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.
@@ -165,7 +149,9 @@ html_sidebars = {'**': ['globaltoc.html', 'relations.html', 'sourcelink.html', '
 
 # Additional templates that should be rendered to pages, maps page names to
 # template names.
-#html_additional_pages = {}
+#html_additional_pages = {
+#    'index': 'customdownload.html',
+#}
 
 # If false, no module index is generated.
 html_domain_indices = True
