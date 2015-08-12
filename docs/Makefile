@@ -59,12 +59,13 @@ ifdef ($(READTHEDOCS),True)
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 else
-	@echo "I am on read the docs!"
+	@echo "I am not on read the docs!"
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 	@echo "Copying HTML pages to static_build"
-	rsync -av $(BUILDDIR)/html $(STATICBUILDDIR)
+	rm -rf $(STATICBUILDDIR)/html
+	rsync -a $(BUILDDIR)/html $(STATICBUILDDIR)
 endif
 
 dirhtml:
