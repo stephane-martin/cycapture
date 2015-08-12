@@ -1,8 +1,10 @@
-from cpython cimport bool
+# -*- coding: utf-8 -*-
 
 """
-Cython wrapper around libpcap -- pxd declaration file
+Cython bindings for libpcap
 """
+
+from cpython cimport bool
 
 cdef extern from "Python.h":
     ctypedef struct PyObject:
@@ -84,6 +86,7 @@ cdef extern from "pcap/pcap.h":
     enum: PCAP_NETMASK_UNKNOWN
 
 ctypedef pcap_pkthdr pcap_pkthdr_t
+ctypedef bpf_program bpf_program_t
 # noinspection PyUnresolvedReferences
 ctypedef void (*pcap_handler) (unsigned char*, const pcap_pkthdr_t*, const unsigned char*)
 

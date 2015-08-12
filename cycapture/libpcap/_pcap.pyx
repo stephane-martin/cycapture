@@ -8,7 +8,6 @@ from cpython cimport bool
 import logging
 import struct
 
-
 cdef void _do_python_callback(unsigned char* usr, const pcap_pkthdr_t* pkthdr, const unsigned char* pkt) with gil:
     cdef Py_buffer pybuffer
     cdef int res = PyBuffer_FillInfo(&pybuffer, NULL, <void*> pkt, pkthdr.caplen, 1, PyBUF_FULL_RO)
@@ -135,59 +134,6 @@ class PcapException(Exception):
 
 class PcapActivatedHandle(PcapException):
     pass
-
-
-cdef class _Filter(object):
-    cdef bpf_program fp
-    cdef bool compiled
-    cdef pcap_t* handle
-
-    def __init__(self):
-        self.compiled = False
-        self.handle = NULL
-
-    cdef _Filter set_handle(self, pcap_t* handle):
-        if handle == NULL:
-            raise ValueError("provide a non-NULL handle")
-        self.handle = handle
-        return self
-
-    cdef _Filter _compile(self, object filter_string, unsigned int netmask, bool optimize=True):
-        if filter_string is None:
-            raise ValueError("Provide a non-empty filter-string")
-        if self.handle == NULL:
-            raise PcapException("call set_handle first")
-        if self.compiled:
-            pcap_freecode(&self.fp)
-            self.compiled = False
-        cdef int optim = 1 if optimize else 0
-        cdef int res = pcap_compile(self.handle, &self.fp, <const char *> (<bytes> filter_string), optim, netmask)
-        if res == 0:
-            self.compiled = True
-            return self
-        elif self.handle != NULL:
-            raise PcapException(bytes(pcap_geterr(self.handle)))
-        else:
-            raise PcapException("should not happen...")
-
-    cdef _Filter set(self, object filter_string, unsigned int netmask, bool optimize=True):
-        if filter_string is None:
-            raise ValueError("Provide a non-empty filter-string")
-        if self.handle == NULL:
-            raise PcapException("call set_handle first")
-        self._compile(filter_string, netmask, optimize)
-        cdef int res = pcap_setfilter(self.handle, &self.fp)
-        if res == -1:
-            if self.handle == NULL:
-                raise PcapException("should not happen...")
-            else:
-                raise PcapException(bytes(pcap_geterr(self.handle)))
-        return self
-
-    def __dealloc__(self):
-        if self.compiled:
-            pcap_freecode(&self.fp)
-            self.compiled = False
 
 
 cdef class Sniffer(object):
@@ -505,13 +451,25 @@ cdef class Sniffer(object):
 
 
     cpdef object set_filter(self, object filter_string, bool optimize=True, object netmask=None):
-        if filter_string is None:
-            raise ValueError("Provide a non-empty filter-string")
+        # todo: refactor so that it can be called before activation
         if not self._activated:
             raise PcapException("you must activate the device before calling set_filter")
+        if filter_string is None:
+            raise ValueError("Provide a non-empty filter-string")
         filter_string = bytes(filter_string)
         if len(filter_string) == 0:
             raise ValueError("Provide a non-empty filter_string")
+        cdef unsigned int netm
         if netmask is None:
-            netmask = PCAP_NETMASK_UNKNOWN if self._maskp == -1 else self._maskp
-        _Filter().set_handle(self._handle).set(filter_string, int(netmask), optimize)
+            netm = PCAP_NETMASK_UNKNOWN if self._maskp == -1 else self._maskp
+        else:
+            netm = int(netmask)
+        cdef bpf_program_t prog
+        cdef int optim = 1 if optimize else 0
+        cdef int res = pcap_compile(self._handle, &prog, <const char *> (<bytes> filter_string), optim, netm)
+        if res != 0:
+            raise PcapException(bytes(pcap_geterr(self._handle)))
+        res = pcap_setfilter(self._handle, &prog)
+        pcap_freecode(&prog)
+        if res != 0:
+            raise PcapException(bytes(pcap_geterr(self._handle)))
