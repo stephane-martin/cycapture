@@ -1,0 +1,446 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>DNS PDU &mdash; cycapture documentation</title>
+    
+    <link rel="stylesheet" href="../_static/readable.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="cycapture documentation" href="../index.html" />
+    <link rel="up" title="libtins bindings" href="libtins.html" />
+    <link rel="prev" title="Concrete PDUs" href="pdus.html" />
+   
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">
+  
+  
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="pdus.html" title="Concrete PDUs"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">cycapture</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../api.html" >API documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="libtins.html" accesskey="U">libtins bindings</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="dns-pdu">
+<h1>DNS PDU<a class="headerlink" href="#dns-pdu" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="cycapture.libtins.DNS">
+<em class="property">class </em><code class="descname">DNS</code><span class="sig-paren">(</span><em>buf=None</em>, <em>_raw=False</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins.DNS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">cycapture.libtins._tins.PDU</span></code></p>
+<p>DNS Protocol Data Unit</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>buf</strong> (<em>memoryview or bytes or bytearray, optional</em>) --
+the buffer containing the PDU data</li>
+<li><strong>_raw</strong> (<em>bool, optional</em>) --
+if True, don't initialize the PDU (end users should not use this)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="cycapture.libtins.DNS.add_additional">
+<code class="descname">add_additional</code><span class="sig-paren">(</span><em>DNS_Resource additional</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins.DNS.add_additional" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add an additional resource record.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>additional</strong> (<a class="reference internal" href="#cycapture.libtins.DNS_Resource" title="cycapture.libtins.DNS_Resource"><code class="xref py py-class docutils literal"><span class="pre">DNS_Resource</span></code></a>) --
+the record to be added</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins.DNS.add_answer">
+<code class="descname">add_answer</code><span class="sig-paren">(</span><em>DNS_Resource answer</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins.DNS.add_answer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add an answer resource record.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>answer</strong> (<a class="reference internal" href="#cycapture.libtins.DNS_Resource" title="cycapture.libtins.DNS_Resource"><code class="xref py py-class docutils literal"><span class="pre">DNS_Resource</span></code></a>) --
+the answer to be added</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins.DNS.add_authority">
+<code class="descname">add_authority</code><span class="sig-paren">(</span><em>DNS_Resource authority</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins.DNS.add_authority" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add an authority resource record.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>authority</strong> (<a class="reference internal" href="#cycapture.libtins.DNS_Resource" title="cycapture.libtins.DNS_Resource"><code class="xref py py-class docutils literal"><span class="pre">DNS_Resource</span></code></a>) --
+the authority record to be added</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins.DNS.add_query">
+<code class="descname">add_query</code><span class="sig-paren">(</span><em>DNS_Query q</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins.DNS.add_query" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a query to perform.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>q</strong> (<a class="reference internal" href="#cycapture.libtins.DNS_Query" title="cycapture.libtins.DNS_Query"><code class="xref py py-class docutils literal"><span class="pre">DNS_Query</span></code></a>) --
+the query to be added</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins.DNS.additional">
+<code class="descname">additional</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins.DNS.additional" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>additional</strong> (list of <a class="reference internal" href="#cycapture.libtins.DNS_Resource" title="cycapture.libtins.DNS_Resource"><code class="xref py py-class docutils literal"><span class="pre">DNS_Resource</span></code></a>) --
+the list of DNS additional records contained in the DNS PDU</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins.DNS.answers">
+<code class="descname">answers</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins.DNS.answers" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>answers</strong> (list of <a class="reference internal" href="#cycapture.libtins.DNS_Resource" title="cycapture.libtins.DNS_Resource"><code class="xref py py-class docutils literal"><span class="pre">DNS_Resource</span></code></a>) --
+the list of DNS answers contained in the DNS PDU</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins.DNS.answers_count">
+<code class="descname">answers_count</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins.DNS.answers_count" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins.DNS.authority">
+<code class="descname">authority</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins.DNS.authority" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>authority</strong> (list of <a class="reference internal" href="#cycapture.libtins.DNS_Resource" title="cycapture.libtins.DNS_Resource"><code class="xref py py-class docutils literal"><span class="pre">DNS_Resource</span></code></a>) --
+the list of DNS authority records contained in the DNS PDU</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins.DNS.authority_count">
+<code class="descname">authority_count</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins.DNS.authority_count" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins.DNS.queries">
+<code class="descname">queries</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins.DNS.queries" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>queries</strong> (list of <a class="reference internal" href="#cycapture.libtins.DNS_Query" title="cycapture.libtins.DNS_Query"><code class="xref py py-class docutils literal"><span class="pre">DNS_Query</span></code></a>) --
+the list of DNS queries contained in the DNS PDU</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins.DNS.queries_count">
+<code class="descname">queries_count</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins.DNS.queries_count" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins.DNS.questions_count">
+<code class="descname">questions_count</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins.DNS.questions_count" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins.DNS.authenticated_data">
+<code class="descname">authenticated_data</code><a class="headerlink" href="#cycapture.libtins.DNS.authenticated_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>authenticated data field (read-write property).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins.DNS.authoritative_answer">
+<code class="descname">authoritative_answer</code><a class="headerlink" href="#cycapture.libtins.DNS.authoritative_answer" title="Permalink to this definition">¶</a></dt>
+<dd><p>authoritative answer field (read-write property).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins.DNS.checking_disabled">
+<code class="descname">checking_disabled</code><a class="headerlink" href="#cycapture.libtins.DNS.checking_disabled" title="Permalink to this definition">¶</a></dt>
+<dd><p>checking disabled field (read-write property).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins.DNS.ident">
+<code class="descname">ident</code><a class="headerlink" href="#cycapture.libtins.DNS.ident" title="Permalink to this definition">¶</a></dt>
+<dd><p>id field (read-write property)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins.DNS.opcode">
+<code class="descname">opcode</code><a class="headerlink" href="#cycapture.libtins.DNS.opcode" title="Permalink to this definition">¶</a></dt>
+<dd><p>opcode field (read-write property).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins.DNS.qrtype">
+<code class="descname">qrtype</code><a class="headerlink" href="#cycapture.libtins.DNS.qrtype" title="Permalink to this definition">¶</a></dt>
+<dd><p>type field (read-write property).</p>
+<p>Can be <code class="docutils literal"><span class="pre">DNS.Query</span></code> or <code class="docutils literal"><span class="pre">DNS.Response</span></code>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins.DNS.rcode">
+<code class="descname">rcode</code><a class="headerlink" href="#cycapture.libtins.DNS.rcode" title="Permalink to this definition">¶</a></dt>
+<dd><p>rcode field (read-write property).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins.DNS.recursion_available">
+<code class="descname">recursion_available</code><a class="headerlink" href="#cycapture.libtins.DNS.recursion_available" title="Permalink to this definition">¶</a></dt>
+<dd><p>recursion available field (read-write property).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins.DNS.recursion_desired">
+<code class="descname">recursion_desired</code><a class="headerlink" href="#cycapture.libtins.DNS.recursion_desired" title="Permalink to this definition">¶</a></dt>
+<dd><p>recursion desired field (read-write property).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins.DNS.truncated">
+<code class="descname">truncated</code><a class="headerlink" href="#cycapture.libtins.DNS.truncated" title="Permalink to this definition">¶</a></dt>
+<dd><p>truncated field (read-write property).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins.DNS.z">
+<code class="descname">z</code><a class="headerlink" href="#cycapture.libtins.DNS.z" title="Permalink to this definition">¶</a></dt>
+<dd><p>z field (read-write property).</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="cycapture.libtins.DNS_Query">
+<em class="property">class </em><code class="descname">DNS_Query</code><span class="sig-paren">(</span><em>name=None</em>, <em>query_type=None</em>, <em>query_class=None</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins.DNS_Query" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Encapsulate a DNS query</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<em>bytes</em>) --
+domain name</li>
+<li><strong>query_type</strong> (<em>int</em>) --
+query type</li>
+<li><strong>query_class</strong> (<em>int</em>) --
+query class</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="cycapture.libtins.DNS_Query.name">
+<code class="descname">name</code><a class="headerlink" href="#cycapture.libtins.DNS_Query.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Domain name (read-write property)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins.DNS_Query.query_class">
+<code class="descname">query_class</code><a class="headerlink" href="#cycapture.libtins.DNS_Query.query_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>Query class (read-write property)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins.DNS_Query.query_type">
+<code class="descname">query_type</code><a class="headerlink" href="#cycapture.libtins.DNS_Query.query_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Query type (read-write property)</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="cycapture.libtins.DNS_Resource">
+<em class="property">class </em><code class="descname">DNS_Resource</code><span class="sig-paren">(</span><em>name=None</em>, <em>data=None</em>, <em>query_type=None</em>, <em>query_class=None</em>, <em>ttl=None</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins.DNS_Resource" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Encapsulate a DNS resource</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<em>bytes</em>) --
+The domain name for which this record provides an answer.</li>
+<li><strong>data</strong> (<em>bytes</em>) --
+The resource's payload</li>
+<li><strong>query_type</strong> (<em>int</em>) --
+record type</li>
+<li><strong>query_class</strong> (<em>int</em>) --
+record class</li>
+<li><strong>ttl</strong> (<em>int</em>) --
+record TTL</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The data will be encoded properly by the DNS class before being added to this packet. That means that if the
+type is A or AAAA, it will be properly encoded as an IPv4 or IPv6 address. The same happens for records that
+contain domain names, such as NS or CNAME. This data will be encoded using DNS domain name encoding.</p>
+</div>
+<dl class="attribute">
+<dt id="cycapture.libtins.DNS_Resource.data">
+<code class="descname">data</code><a class="headerlink" href="#cycapture.libtins.DNS_Resource.data" title="Permalink to this definition">¶</a></dt>
+<dd><p>This resource's payload (read-write property)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins.DNS_Resource.name">
+<code class="descname">name</code><a class="headerlink" href="#cycapture.libtins.DNS_Resource.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Domain name (read-write property)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins.DNS_Resource.query_class">
+<code class="descname">query_class</code><a class="headerlink" href="#cycapture.libtins.DNS_Resource.query_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>Record class (read-write property)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins.DNS_Resource.query_type">
+<code class="descname">query_type</code><a class="headerlink" href="#cycapture.libtins.DNS_Resource.query_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Record type (read-write property)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins.DNS_Resource.ttl">
+<code class="descname">ttl</code><a class="headerlink" href="#cycapture.libtins.DNS_Resource.ttl" title="Permalink to this definition">¶</a></dt>
+<dd><p>Record TTL (read-write property)</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h3><a href="../index.html">Table Of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../authors.html">Credits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../history.html">History</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API documentation</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="libpcap.html">libpcap bindings</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="libtins.html">libtins bindings</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="addresses.html">Addresses and ranges</a></li>
+<li class="toctree-l3"><a class="reference internal" href="exceptions.html">Exceptions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generic_pdu.html">Generic PDU</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pdus.html">Concrete PDUs</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="">DNS PDU</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation index</a><ul>
+  <li><a href="../api.html">API documentation</a><ul>
+  <li><a href="libtins.html">libtins bindings</a><ul>
+      <li>Previous: <a href="pdus.html" title="previous chapter">Concrete PDUs</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+  <div class="footer">
+    &copy; Copyright 2015, Stephane Martin.
+    Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+  </div>
+  
+  </body>
+</html>

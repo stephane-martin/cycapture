@@ -1,0 +1,717 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Addresses and ranges &mdash; cycapture documentation</title>
+    
+    <link rel="stylesheet" href="../_static/readable.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="cycapture documentation" href="../index.html" />
+    <link rel="up" title="libtins bindings" href="libtins.html" />
+    <link rel="next" title="Exceptions" href="exceptions.html" />
+    <link rel="prev" title="libtins bindings" href="libtins.html" />
+   
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">
+  
+  
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="exceptions.html" title="Exceptions"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="libtins.html" title="libtins bindings"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">cycapture</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../api.html" >API documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="libtins.html" accesskey="U">libtins bindings</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="addresses-and-ranges">
+<h1>Addresses and ranges<a class="headerlink" href="#addresses-and-ranges" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="cycapture.libtins.IPv4Address">
+<em class="property">class </em><code class="descname">IPv4Address</code><span class="sig-paren">(</span><em>self</em>, <em>object addr=None</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins.IPv4Address" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Encapsulate an IPv4 address.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>addr</strong> (int or bytes or <a class="reference internal" href="#cycapture.libtins.IPv4Address" title="cycapture.libtins.IPv4Address"><code class="xref py py-class docutils literal"><span class="pre">IPv4Address</span></code></a>) --
+make an IPv4 address from this object</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="cycapture.libtins.IPv4Address.is_broadcast">
+<code class="descname">is_broadcast</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins.IPv4Address.is_broadcast" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><em>bool</em> --
+True if the address is a broadcast address.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins.IPv4Address.is_loopback">
+<code class="descname">is_loopback</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins.IPv4Address.is_loopback" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><em>bool</em> --
+True if the address is a loopback address.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins.IPv4Address.is_multicast">
+<code class="descname">is_multicast</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins.IPv4Address.is_multicast" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><em>bool</em> --
+True if the address is a multicast address.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins.IPv4Address.is_private">
+<code class="descname">is_private</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins.IPv4Address.is_private" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><em>bool</em> --
+True if the address is a private address.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins.IPv4Address.is_unicast">
+<code class="descname">is_unicast</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins.IPv4Address.is_unicast" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><em>bool</em> --
+True if the address is a unicast address.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="cycapture.libtins.IPv6Address">
+<em class="property">class </em><code class="descname">IPv6Address</code><span class="sig-paren">(</span><em>self</em>, <em>object addr=None</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins.IPv6Address" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Encapsulate an IPv6 address.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>addr</strong> (bytes or <a class="reference internal" href="#cycapture.libtins.IPv6Address" title="cycapture.libtins.IPv6Address"><code class="xref py py-class docutils literal"><span class="pre">IPv6Address</span></code></a>) --
+make an IPv6 address from this object</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="cycapture.libtins.IPv6Address.full_repr">
+<code class="descname">full_repr</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins.IPv6Address.full_repr" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><em>list of int</em> --
+the 6 bytes composing the address as a list of integers.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins.IPv6Address.is_loopback">
+<code class="descname">is_loopback</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins.IPv6Address.is_loopback" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><em>bool</em> --
+True if the address is a loopback address.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins.IPv6Address.is_multicast">
+<code class="descname">is_multicast</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins.IPv6Address.is_multicast" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><em>bool</em> --
+True if the address is a multicast address.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="cycapture.libtins.HWAddress">
+<em class="property">class </em><code class="descname">HWAddress</code><span class="sig-paren">(</span><em>self</em>, <em>object addr=None</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins.HWAddress" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Represents the address of a network hardware address</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>addr</strong> (bytes or <a class="reference internal" href="#cycapture.libtins.HWAddress" title="cycapture.libtins.HWAddress"><code class="xref py py-class docutils literal"><span class="pre">HWAddress</span></code></a>) --
+make a hardware address from this object</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="cycapture.libtins.HWAddress.full_repr">
+<code class="descname">full_repr</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins.HWAddress.full_repr" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><em>list of int</em> --
+the 6 bytes composing the address as a list of integers.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins.HWAddress.is_broadcast">
+<code class="descname">is_broadcast</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins.HWAddress.is_broadcast" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><em>bool</em> --
+True if the address is a broadcast address.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins.HWAddress.is_multicast">
+<code class="descname">is_multicast</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins.HWAddress.is_multicast" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><em>bool</em> --
+True if the address is a muticast address.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins.HWAddress.is_unicast">
+<code class="descname">is_unicast</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins.HWAddress.is_unicast" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><em>bool</em> --
+True if the address is a unicast address.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="cycapture.libtins.NetworkInterface">
+<em class="property">class </em><code class="descname">NetworkInterface</code><span class="sig-paren">(</span><em>name=None</em>, <em>address=None</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins.NetworkInterface" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Represent a network interface</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<em>bytes, optional</em>) --
+if <cite>name</cite> is present (ex: <code class="docutils literal"><span class="pre">'eth0'</span></code>), returns this network interface</li>
+<li><strong>address</strong> (bytes or <a class="reference internal" href="#cycapture.libtins.IPv4Address" title="cycapture.libtins.IPv4Address"><code class="xref py py-class docutils literal"><span class="pre">IPv4Address</span></code></a>, optional) --
+if <cite>address</cite> is present, returns the interface that would be used to send packets to this address</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Give only one parameter, <cite>name</cite> OR <cite>address</cite>.</p>
+</div>
+<dl class="method">
+<dt id="cycapture.libtins.NetworkInterface.addresses">
+<code class="descname">addresses</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins.NetworkInterface.addresses" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><em>dict</em> --
+the IPv4 address, netmask, broadcast address and hardware addresss associated with this interface.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins.NetworkInterface.all">
+<code class="descname">all</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins.NetworkInterface.all" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>all</strong> (list of <a class="reference internal" href="#cycapture.libtins.NetworkInterface" title="cycapture.libtins.NetworkInterface"><code class="xref py py-class docutils literal"><span class="pre">NetworkInterface</span></code></a>) --
+a list of all network interfaces</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins.NetworkInterface.default">
+<code class="descname">default</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins.NetworkInterface.default" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>default</strong> (<a class="reference internal" href="#cycapture.libtins.NetworkInterface" title="cycapture.libtins.NetworkInterface"><code class="xref py py-class docutils literal"><span class="pre">NetworkInterface</span></code></a>) --
+the default interface.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins.NetworkInterface.ident">
+<code class="descname">ident</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins.NetworkInterface.ident" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><em>int</em> --
+interface id</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins.NetworkInterface.is_loopback">
+<code class="descname">is_loopback</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins.NetworkInterface.is_loopback" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><em>bool</em> --
+True if the interface is a loopback interface.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins.NetworkInterface.name">
+<code class="descname">name</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins.NetworkInterface.name" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><em>bytes</em> --
+interface name</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="cycapture.libtins.IPv4Range">
+<em class="property">class </em><code class="descname">IPv4Range</code><span class="sig-paren">(</span><em>first=None</em>, <em>last=None</em>, <em>only_hosts=False</em>, <em>mask=None</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins.IPv4Range" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Represents a range of IPv4 addresses.</p>
+<p>You can test if an address belongs to a range:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">if</span> <span class="n">address</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&quot;OK&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>You can also iterate over ranges:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">address</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">range</span><span class="p">):</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">address</span><span class="p">)</span>
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>first</strong> (bytes or <a class="reference internal" href="#cycapture.libtins.IPv4Address" title="cycapture.libtins.IPv4Address"><code class="xref py py-class docutils literal"><span class="pre">IPv4Address</span></code></a>) --
+first address in range</li>
+<li><strong>last</strong> (bytes or <a class="reference internal" href="#cycapture.libtins.IPv4Address" title="cycapture.libtins.IPv4Address"><code class="xref py py-class docutils literal"><span class="pre">IPv4Address</span></code></a>) --
+last address in range</li>
+<li><strong>only_hosts</strong> (<em>bool</em>) --
+indicates whether only host addresses should be accessed when iterating the range</li>
+<li><strong>mask</strong> (bytes or <a class="reference internal" href="#cycapture.libtins.IPv4Address" title="cycapture.libtins.IPv4Address"><code class="xref py py-class docutils literal"><span class="pre">IPv4Address</span></code></a>) --
+range mask</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Provide <cite>last</cite> <em>OR</em> <cite>mask</cite></p>
+</div>
+<dl class="method">
+<dt id="cycapture.libtins.IPv4Range.from_mask">
+<code class="descname">from_mask</code><span class="sig-paren">(</span><em>address</em>, <em>mask</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins.IPv4Range.from_mask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct a range from an address and a mask.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>address</strong> (bytes or <a class="reference internal" href="#cycapture.libtins.IPv4Address" title="cycapture.libtins.IPv4Address"><code class="xref py py-class docutils literal"><span class="pre">IPv4Address</span></code></a>) --
+address (ex: <cite>192.168.1.0</cite>)</li>
+<li><strong>mask</strong> (bytes or <a class="reference internal" href="#cycapture.libtins.IPv4Address" title="cycapture.libtins.IPv4Address"><code class="xref py py-class docutils literal"><span class="pre">IPv4Address</span></code></a>) --
+mask (ex: <cite>255.255.255.0</cite>)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>range</strong> (<a class="reference internal" href="#cycapture.libtins.IPv4Range" title="cycapture.libtins.IPv4Range"><code class="xref py py-class docutils literal"><span class="pre">IPv4Range</span></code></a>) --
+new IPv4 range</p>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">class method</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins.IPv4Range.is_iterable">
+<code class="descname">is_iterable</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins.IPv4Range.is_iterable" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><em>bool</em> --
+True if the range is iterable.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins.IPv4Range.size">
+<code class="descname">size</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins.IPv4Range.size" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><em>int</em> --
+the range's size (how many addresses in the range)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins.IPv4Range.first">
+<code class="descname">first</code><a class="headerlink" href="#cycapture.libtins.IPv4Range.first" title="Permalink to this definition">¶</a></dt>
+<dd><p>The first address in range (read-only property)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins.IPv4Range.last">
+<code class="descname">last</code><a class="headerlink" href="#cycapture.libtins.IPv4Range.last" title="Permalink to this definition">¶</a></dt>
+<dd><p>The last address in range (read-only property)</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="cycapture.libtins.IPv6Range">
+<em class="property">class </em><code class="descname">IPv6Range</code><a class="headerlink" href="#cycapture.libtins.IPv6Range" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Represents a range of IPv6 addresses.</p>
+<p>You can test if an address belongs to a range:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">if</span> <span class="n">address</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&quot;OK&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>You can also iterate over ranges:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">address</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">range</span><span class="p">):</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">address</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="method">
+<dt id="cycapture.libtins.IPv6Range.from_mask">
+<code class="descname">from_mask</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins.IPv6Range.from_mask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct an IPv6Range from an address and a mask</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>first</strong> (bytes or <a class="reference internal" href="#cycapture.libtins.IPv6Address" title="cycapture.libtins.IPv6Address"><code class="xref py py-class docutils literal"><span class="pre">IPv6Address</span></code></a>) --
+base IPv6 address</li>
+<li><strong>mask</strong> (bytes or <a class="reference internal" href="#cycapture.libtins.IPv6Address" title="cycapture.libtins.IPv6Address"><code class="xref py py-class docutils literal"><span class="pre">IPv6Address</span></code></a>) --
+IPv6 mask</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>range</strong> (<a class="reference internal" href="#cycapture.libtins.IPv6Range" title="cycapture.libtins.IPv6Range"><code class="xref py py-class docutils literal"><span class="pre">IPv6Range</span></code></a>) --
+new IPv6 range</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins.IPv6Range.is_iterable">
+<code class="descname">is_iterable</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins.IPv6Range.is_iterable" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><em>bool</em> --
+True if the range is iterable.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins.IPv6Range.size">
+<code class="descname">size</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins.IPv6Range.size" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><em>int</em> --
+the range's size (how many addresses in the range)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins.IPv6Range.first">
+<code class="descname">first</code><a class="headerlink" href="#cycapture.libtins.IPv6Range.first" title="Permalink to this definition">¶</a></dt>
+<dd><p>First adddress in range (read-only property)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins.IPv6Range.last">
+<code class="descname">last</code><a class="headerlink" href="#cycapture.libtins.IPv6Range.last" title="Permalink to this definition">¶</a></dt>
+<dd><p>Last address in range (read-only propperty)</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="cycapture.libtins.HWRange">
+<em class="property">class </em><code class="descname">HWRange</code><a class="headerlink" href="#cycapture.libtins.HWRange" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Represents a range of hardware addresses.</p>
+<p>You can test if an address belongs to a range:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">if</span> <span class="n">address</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&quot;OK&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>You can also iterate over ranges:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">address</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">range</span><span class="p">):</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">address</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="method">
+<dt id="cycapture.libtins.HWRange.from_mask">
+<code class="descname">from_mask</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins.HWRange.from_mask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct a HWRange from an address and a mask</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>address</strong> (bytes or <a class="reference internal" href="#cycapture.libtins.HWAddress" title="cycapture.libtins.HWAddress"><code class="xref py py-class docutils literal"><span class="pre">HWAddress</span></code></a>) --
+base hardware address</li>
+<li><strong>mask</strong> (bytes or <a class="reference internal" href="#cycapture.libtins.HWAddress" title="cycapture.libtins.HWAddress"><code class="xref py py-class docutils literal"><span class="pre">HWAddress</span></code></a>) --
+range mask</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>range</strong> (<a class="reference internal" href="#cycapture.libtins.HWRange" title="cycapture.libtins.HWRange"><code class="xref py py-class docutils literal"><span class="pre">HWRange</span></code></a>) --
+new harware range</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins.HWRange.is_iterable">
+<code class="descname">is_iterable</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins.HWRange.is_iterable" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><em>bool</em> --
+True if the range is iterable.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins.HWRange.size">
+<code class="descname">size</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins.HWRange.size" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><em>int</em> --
+the range's size (how many addresses in the range)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins.HWRange.first">
+<code class="descname">first</code><a class="headerlink" href="#cycapture.libtins.HWRange.first" title="Permalink to this definition">¶</a></dt>
+<dd><p>First address in range (read-only property)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins.HWRange.last">
+<code class="descname">last</code><a class="headerlink" href="#cycapture.libtins.HWRange.last" title="Permalink to this definition">¶</a></dt>
+<dd><p>Last address in range (read-only property)</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h3><a href="../index.html">Table Of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../authors.html">Credits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../history.html">History</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API documentation</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="libpcap.html">libpcap bindings</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="libtins.html">libtins bindings</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="">Addresses and ranges</a></li>
+<li class="toctree-l3"><a class="reference internal" href="exceptions.html">Exceptions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generic_pdu.html">Generic PDU</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pdus.html">Concrete PDUs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dns_pdu.html">DNS PDU</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation index</a><ul>
+  <li><a href="../api.html">API documentation</a><ul>
+  <li><a href="libtins.html">libtins bindings</a><ul>
+      <li>Previous: <a href="libtins.html" title="previous chapter">libtins bindings</a></li>
+      <li>Next: <a href="exceptions.html" title="next chapter">Exceptions</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+  <div class="footer">
+    &copy; Copyright 2015, Stephane Martin.
+    Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+  </div>
+  
+  </body>
+</html>
