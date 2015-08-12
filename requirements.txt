@@ -1,0 +1,7 @@
+setuptools_git
+setuptools
+twine
+wheel
+cython
+sphinx
+sphinx-readable-theme
