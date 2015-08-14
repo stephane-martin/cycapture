@@ -222,6 +222,18 @@ cpdef factory_PDU_from_typed_memoryview(int pdu_type, unsigned char[:] data):
     return (map_classname_to_factory[classname])(NULL, <uint8_t*>((<cy_memoryview>data).get_item_pointer([])), len(data), None)
 
 
+cpdef factory_PDU(int pdu_type, object buf):
+    return (map_pdutype_to_class[pdu_type])(buf=buf)
+
+
+map_pdutype_to_class = {
+    PDU.ETHERNET_II: EthernetII,
+    PDU.IP: IP,
+    PDU.TCP: TCP,
+    PDU.RAW: RAW,
+    PDU.UDP: UDP,
+    PDU.DNS: DNS
+}
 
 cdef cpp_map[int, string] map_pdutype_to_classname
 map_pdutype_to_classname[PDU.ETHERNET_II] = "ethernetii"

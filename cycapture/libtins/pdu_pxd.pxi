@@ -115,3 +115,4 @@ cdef class PDU(object):
 
 cdef factory_PDU_from_uchar_buf(int pdu_type, uint8_t* buf=?, int size=?)
 cpdef factory_PDU_from_typed_memoryview(int pdu_type, unsigned char[:] data)
+cpdef factory_PDU(int pdu_type, object buf)
