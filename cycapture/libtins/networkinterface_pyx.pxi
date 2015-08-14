@@ -92,6 +92,10 @@ cdef class NetworkInterface(object):
         -------
         default: :py:class:`~.NetworkInterface`
             the default interface.
+
+        Note
+        ----
+        class method
         """
         cdef cppNetworkInterface default_i = default_interface()
         interface = NetworkInterface(default_i.name())
@@ -104,6 +108,10 @@ cdef class NetworkInterface(object):
         -------
         all: list of :py:class:`~.NetworkInterface`
             a list of all network interfaces
+
+        Note
+        ----
+        class method
         """
         cdef vector[cppNetworkInterface] all_i = all_interfaces()
         return [NetworkInterface(interface_i.name()) for interface_i in all_i]
