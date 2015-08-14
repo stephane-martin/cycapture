@@ -18,13 +18,13 @@ cdef class DNS_Query(object):
             self.ptr.dname(<string> bytes(name))
         if query_type is not None:
             query_type = int(query_type)
-            if query_type not in DNS.TYPES:
-                raise ValueError("value is not a valid DNS query type")
+            #if query_type not in DNS.TYPES:
+            #    raise ValueError("value is not a valid DNS query type: %s " % query_type)
             self.ptr.set_type(<QueryType> query_type)
         if query_class is not None:
             query_class = int(query_class)
-            if query_class not in DNS.CLASSES:
-                raise ValueError("value is not a valid DNS query class")
+            #if query_class not in DNS.CLASSES:
+            #    raise ValueError("value is not a valid DNS query class: %s" % query_class)
             self.ptr.query_class(<QueryClass> query_class)
 
     def __dealloc__(self):
@@ -63,8 +63,8 @@ cdef class DNS_Query(object):
             return int(self.ptr.get_type())
         def __set__(self, value):
             value = int(value)
-            if value not in DNS.TYPES:
-                raise ValueError("value is not a valid DNS query type")
+            #if value not in DNS.TYPES:
+            #    raise ValueError("value is not a valid DNS query type")
             self.ptr.set_type(<QueryType> value)
 
     property query_class:
@@ -75,8 +75,8 @@ cdef class DNS_Query(object):
             return int(self.ptr.query_class())
         def __set__(self, value):
             value = int(value)
-            if value not in DNS.CLASSES:
-                raise ValueError("value is not a valid DNS query class")
+            #if value not in DNS.CLASSES:
+            #    raise ValueError("value is not a valid DNS query class")
             self.ptr.query_class(<QueryClass> value)
 
 
@@ -93,13 +93,13 @@ cdef class DNS_Resource(object):
             self.ptr.data(<string> bytes(data))
         if query_type is not None:
             query_type = int(query_type)
-            if query_type not in DNS.TYPES:
-                raise ValueError("value is not a valid DNS query type")
+            #if query_type not in DNS.TYPES:
+            #    raise ValueError("value is not a valid DNS query type")
             self.ptr.set_type(<QueryType> query_type)
         if query_class is not None:
             query_class = int(query_class)
-            if query_class not in DNS.CLASSES:
-                raise ValueError("value is not a valid DNS query class")
+            #if query_class not in DNS.CLASSES:
+            #    raise ValueError("value is not a valid DNS query class")
             self.ptr.query_class(<QueryClass> query_class)
         if ttl is not None:
             self.ptr.ttl(<uint16_t> int(ttl))
@@ -159,8 +159,8 @@ cdef class DNS_Resource(object):
             return int(self.ptr.get_type())
         def __set__(self, value):
             value = int(value)
-            if value not in DNS.TYPES:
-                raise ValueError("value is not a valid DNS query type")
+            #if value not in DNS.TYPES:
+            #    raise ValueError("value is not a valid DNS query type")
             self.ptr.set_type(<QueryType> value)
 
     property query_class:
@@ -171,8 +171,8 @@ cdef class DNS_Resource(object):
             return int(self.ptr.query_class())
         def __set__(self, value):
             value = int(value)
-            if value not in DNS.CLASSES:
-                raise ValueError("value is not a valid DNS query class")
+            #if value not in DNS.CLASSES:
+            #    raise ValueError("value is not a valid DNS query class")
             self.ptr.query_class(<QueryClass> value)
 
     property ttl:
@@ -262,22 +262,38 @@ cdef class DNS(PDU):
     def __cinit__(self, buf=None, _raw=False):
         if _raw:
             return
-        elif buf is None:
+
+        cdef uint8_t* buf_addr
+        cdef uint32_t size
+
+        if buf is None:
             self.ptr = new cppDNS()
         else:
             if PyBytes_Check(buf):
-                self.ptr = new cppDNS(<uint8_t*> PyBytes_AS_STRING(buf), <uint32_t> PyBytes_Size(buf))
+                buf_addr = <uint8_t*> PyBytes_AS_STRING(buf)
+                size = <uint32_t> PyBytes_Size(buf)
+                with nogil:
+                    self.ptr = new cppDNS(buf_addr, size)
             elif isinstance(buf, bytearray):
                 buf = memoryview(buf)
-                self.ptr = new cppDNS(<uint8_t*> (mview_get_addr(<void*> buf)), len(buf))
+                buf_addr = <uint8_t*> (mview_get_addr(<void*> buf))
+                size = <uint32_t> len(buf)
+                with nogil:
+                    self.ptr = new cppDNS(buf_addr, size)
             elif isinstance(buf, memoryview):
                 if buf.itemsize == 1 and buf.ndim == 1:
-                    self.ptr = new cppDNS(<uint8_t*> (mview_get_addr(<void*> buf)), len(buf))
+                    buf_addr = <uint8_t*> (mview_get_addr(<void*> buf))
+                    size = <uint32_t> len(buf)
+                    with nogil:
+                        self.ptr = new cppDNS(buf_addr, size)
                 else:
                     raise ValueError("the memoryview doesn't have the proper format")
             elif isinstance(buf, cy_memoryview):
                 if buf.itemsize == 1 and buf.ndim == 1:
-                    self.ptr = new cppDNS(<uint8_t*> (<cy_memoryview>buf).get_item_pointer([]), <uint32_t> len(buf))
+                    buf_addr = <uint8_t*> (<cy_memoryview>buf).get_item_pointer([])
+                    size = <uint32_t> len(buf)
+                    with nogil:
+                        self.ptr = new cppDNS(buf_addr, size)
                 else:
                     raise ValueError("the typed memoryview doesn't have the proper format")
             else:
@@ -314,8 +330,8 @@ cdef class DNS(PDU):
             return int(self.ptr.get_type())
         def __set__(self, value):
             value = int(value)
-            if value not in (DNS.QUERY, DNS.RESPONSE):
-                raise ValueError("invalid qrtype")
+            #if value not in (DNS.QUERY, DNS.RESPONSE):
+            #    raise ValueError("invalid qrtype")
             self.ptr.set_type(<QRType> value)
 
     property opcode:
