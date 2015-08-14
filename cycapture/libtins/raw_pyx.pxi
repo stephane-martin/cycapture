@@ -5,16 +5,16 @@ RAW packet python class
 
 cdef factory_raw(cppPDU* ptr, uint8_t* buf, int size, object parent):
     if ptr is NULL and buf is NULL:
-        return Raw()
-    obj = Raw(_raw=True)
+        return RAW()
+    obj = RAW(_raw=True)
     obj.ptr = new cppRAW(<uint8_t*> buf, <uint32_t> size) if ptr is NULL else <cppRAW*> ptr
     obj.base_ptr = <cppPDU*> obj.ptr
     obj.parent = parent
     return obj
 
-cdef class Raw(PDU):
+cdef class RAW(PDU):
     """
-    Raw PDU packet
+    RAW PDU packet
     """
     pdu_flag = PDU.RAW
     pdu_type = PDU.RAW

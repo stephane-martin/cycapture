@@ -11,7 +11,7 @@ cdef extern from "tins/rawpdu.h" namespace "Tins" nogil:
         uint32_t payload_size() const
         T to[T]() except +custom_exception_handler
 
-cdef class Raw(PDU):
+cdef class RAW(PDU):
     cdef cppRAW* ptr
     cpdef to(self, obj)
 
