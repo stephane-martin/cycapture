@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 # noinspection PyUnresolvedReferences
 from cpython.ref cimport PyObject
 import socket
