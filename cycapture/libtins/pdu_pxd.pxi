@@ -97,9 +97,6 @@ cdef extern from "wrap.h" namespace "Tins" nogil:
 
 
 cdef class PDU(object):
-    """
-    (Abstract) Protocol Data Unit
-    """
     cdef cppPDU* base_ptr
     cdef object parent
 

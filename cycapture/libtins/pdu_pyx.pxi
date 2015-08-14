@@ -4,6 +4,9 @@ Abstract PDU python class
 """
 
 cdef class PDU(object):
+    """
+    Generic Protocol Data Unit
+    """
     RAW = PDU_RAW
     ETHERNETII = PDU_ETHERNET_II
     ETHERNET_II = PDU_ETHERNET_II
@@ -91,32 +94,25 @@ cdef class PDU(object):
 
     cpdef copy(self):
         cdef string classname = map_pdutype_to_classname[self.get_pdu_type()]
-        new_obj = (map_classname_to_factory[classname])(self.base_ptr.clone(), NULL, 0, None)
-        return new_obj
+        return (map_classname_to_factory[classname])(self.base_ptr.clone(), NULL, 0, None)
 
     cpdef reference(self):
         cdef string classname = map_pdutype_to_classname[self.get_pdu_type()]
-        new_obj = (map_classname_to_factory[classname])(self.base_ptr, NULL, 0, self)
-        return new_obj
+        return (map_classname_to_factory[classname])(self.base_ptr, NULL, 0, self)
 
     cpdef copy_inner_pdu(self):
         cdef cppPDU* inner = self.base_ptr.inner_pdu()
         if inner == NULL:
             return None
-        inner = inner.clone()
-        cdef PDUType pdut = <PDUType> inner.pdu_type()
-        cdef string classname = map_pdutype_to_classname[pdut]
-        new_obj = (map_classname_to_factory[classname])(inner, NULL, 0, None)
-        return new_obj
+        cdef string classname = map_pdutype_to_classname[<PDUType> inner.pdu_type()]
+        return (map_classname_to_factory[classname])(inner.clone(), NULL, 0, None)
 
     cpdef ref_inner_pdu(self):
         cdef cppPDU* inner = self.base_ptr.inner_pdu()
         if inner == NULL:
             return None
-        cdef PDUType pdut = <PDUType> inner.pdu_type()
-        cdef string classname = map_pdutype_to_classname[pdut]
-        new_obj = (map_classname_to_factory[classname])(inner, NULL, 0, self)
-        return new_obj
+        cdef string classname = map_pdutype_to_classname[<PDUType> inner.pdu_type()]
+        return (map_classname_to_factory[classname])(inner, NULL, 0, self)
 
     cpdef set_inner_pdu(self, obj):
         if obj is None:
