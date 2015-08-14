@@ -93,7 +93,7 @@ ctypedef bpf_program bpf_program_t
 # noinspection PyUnresolvedReferences
 ctypedef void (*pcap_handler) (unsigned char*, const pcap_pkthdr_t*, const unsigned char*)
 
-cdef extern from "pcap.h" nogil:
+cdef extern from "pcap/pcap.h" nogil:
     ctypedef enum pcap_direction_t:
         PCAP_D_INOUT,
         PCAP_D_IN,
@@ -215,9 +215,9 @@ cdef class Sniffer(object):
     cpdef object list_datalinks(self)
     cpdef object set_datalink(self, int dlt)
     cpdef object set_filter(self, object filter_string, bool optimize=?, object netmask=?)
-    cpdef sniff_and_store(self, container, stopping_event=?, f=?)
-    cpdef sniff_callback(self, f, stopping_event=?)
-
+    cpdef sniff_and_store(self, container, stopping_event=?, f=?, signal_mask=?)
+    cpdef sniff_callback(self, f, stopping_event=?, signal_mask=?)
+    cdef void set_signal_mask(self) nogil
 
 cdef int stopping
 cdef void sig_handler(int signum) nogil
@@ -248,3 +248,5 @@ ctypedef struct packet_node:
     int caplen
     int length
     unsigned char* buf
+
+cpdef object PcapExceptionFactory(int return_code, bytes error_msg=?, default=?)

@@ -8,6 +8,12 @@ class PcapException(Exception):
 class AlreadyActivated(PcapException):
     pass
 
+class ActivationError(PcapException):
+    pass
+
+class NotActivatedError(PcapException):
+    pass
+
 class SetTimeoutError(PcapException):
     pass
 
@@ -29,11 +35,12 @@ class SetMonitorModeError(PcapException):
 class SetNonblockingModeError(PcapException):
     pass
 
-class ActivationError(PcapException):
-    pass
-
-class NotActivatedError(PcapException):
-    pass
-
 class SniffingError(PcapException):
     pass
+
+class PermissionDenied(PcapException, OSError):
+    pass
+
+class PromiscPermissionDenied(PermissionDenied):
+    pass
+

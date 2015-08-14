@@ -5,9 +5,12 @@ Small cython wrapper around libpcap
 """
 
 from cpython cimport bool
+from cpython.exc cimport PyErr_CheckSignals
 from libc.stdlib cimport malloc, free
 from libc.signal cimport signal as libc_signal
+from libc.signal cimport SIGINT
 from libc.string cimport memcpy
+from libc.stdio cimport printf, puts
 # noinspection PyUnresolvedReferences
 from ..make_mview cimport make_mview_from_const_uchar_buf
 
@@ -17,11 +20,11 @@ import struct
 
 from .exceptions import PcapException, AlreadyActivated, SetTimeoutError, SetDirectionError, SetBufferSizeError
 from .exceptions import SetSnapshotLengthError, SetPromiscModeError, SetMonitorModeError, SetNonblockingModeError
-from .exceptions import ActivationError, NotActivatedError, SniffingError
+from .exceptions import ActivationError, NotActivatedError, SniffingError, PermissionDenied, PromiscPermissionDenied
 
 ctypedef void (*sighandler_t)(int s) nogil
 
-cdef void _do_python_callback(unsigned char* usr, const pcap_pkthdr_t* pkthdr, const unsigned char* pkt) with gil:
+cdef void _do_python_callback(unsigned char* usr, const pcap_pkthdr_t* pkthdr, const unsigned char* pkt):
     (<object> (<void*> usr))(
         pkthdr.ts.tv_sec,
         pkthdr.ts.tv_usec,
@@ -95,14 +98,16 @@ cdef object sockaddress_to_bytes(const sockaddr* sa):
 
 
 cpdef object findalldevs():
+    cdef int res
     cdef pcap_if_t* all_interfaces
     cdef pcap_if_t* first_interface
     cdef pcap_addr_t* current_address
 
     interfaces = []
     cdef char err_buf[PCAP_ERRBUF_SIZE]
-    if pcap_findalldevs(&all_interfaces, err_buf) == -1:
-        raise PcapException(<bytes> err_buf)
+    res = pcap_findalldevs(&all_interfaces, err_buf)
+    if res < 0:
+        raise PcapExceptionFactory(res, <bytes> err_buf)
 
     first_interface = all_interfaces
     while all_interfaces != NULL:
@@ -136,10 +141,12 @@ cpdef object lookupnet(bytes device):
     cdef unsigned int netp
     cdef unsigned int maskp
     cdef char errbuf[PCAP_ERRBUF_SIZE]
-    if pcap_lookupnet(<char*> device, &netp, &maskp, errbuf) == 0:
+    cdef int res
+    res = pcap_lookupnet(<char*> device, &netp, &maskp, errbuf)
+    if res == 0:
         return int(netp), int(maskp), int_to_address(netp), int_to_address(maskp)
     else:
-        raise PcapException(<bytes> errbuf)
+        raise PcapExceptionFactory(res, <bytes> errbuf)
 
 
 cpdef object datalink_val_to_name_description(int dlt):
@@ -368,10 +375,10 @@ cdef class Sniffer(object):
         # todo: timestamp type, timestamp precision
         cdef int res = pcap_activate(self._handle)
         if res in (PCAP_ERROR, PCAP_ERROR_PERM_DENIED, PCAP_ERROR_NO_SUCH_DEVICE):
-            raise ActivationError(bytes(res) + b' ' + <bytes> pcap_geterr(self._handle))
-        if res < 0:
-            raise ActivationError(bytes(res))
-        if res > 0:
+            raise PcapExceptionFactory(res, <bytes> pcap_geterr(self._handle), default=ActivationError)
+        elif res < 0:
+            raise PcapExceptionFactory(res, default=ActivationError)
+        elif res > 0:
             logging.getLogger('cycapture').warning("Warning when the device was activated: %s", res)
         self._activated = True
         self.direction = self._direction
@@ -449,13 +456,57 @@ cdef class Sniffer(object):
         if res != 0:
             raise PcapException(bytes(pcap_geterr(self._handle)))
 
-    cpdef sniff_callback(self, f, stopping_event=None):
+    cpdef sniff_callback(self, f, stopping_event=None, signal_mask=True):
+        global sig_handler
+        cdef int counted
+        cdef sighandler_t h = <sighandler_t> sig_handler
+        cdef sighandler_t old_sigint
+        cdef bytes error_message = b''
+        cdef unsigned char* usr = <unsigned char*> (<void*> f)
+
+        if not self.activated:
+            raise NotActivatedError('activate the pcap handle before trying to sniff')
         if get_current_pcap_handle() != NULL:
             raise RuntimeError("only one sniffing action is allowed")
         if stopping_event is None:
             stopping_event = threading.Event()
 
-    cpdef sniff_and_store(self, container, stopping_event=None, f=None):
+        set_current_pcap_handle(self._handle)
+        if signal_mask:
+            self.set_signal_mask()
+
+        while not stopping_event.is_set():
+            old_sigint = libc_signal(SIGINT, h)
+            counted = pcap_dispatch(self._handle, 0, _do_python_callback, usr)
+            libc_signal(SIGINT, old_sigint)
+
+            try:
+                if counted == -2:
+                    # pcap_breakloop was called
+                    stopping_event.set()
+                elif counted == -1:
+                    error_message = <bytes> (pcap_geterr(self._handle))
+                    stopping_event.set()
+                elif counted < 0:
+                    error_message = b"error from pcap_dispatch: %s" % counted
+                    stopping_event.set()
+            except KeyboardInterrupt:
+                stopping_event.set()
+
+        set_current_pcap_handle(NULL)
+        if error_message:
+            raise PcapExceptionFactory(counted, bytes(error_message), default=SniffingError)
+
+    cdef void set_signal_mask(self) nogil:
+        cdef sigset_t s
+        sigfillset(&s)
+        pthread_sigmask(SIG_BLOCK, &s, NULL)
+        sigemptyset(&s)
+        sigaddset(&s, SIGINT)
+        pthread_sigmask(SIG_UNBLOCK, &s, NULL)
+
+
+    cpdef sniff_and_store(self, container, stopping_event=None, f=None, signal_mask=True):
         if get_current_pcap_handle() != NULL:
             raise RuntimeError("only one sniffing action is allowed")
         if not self.activated:
@@ -466,9 +517,10 @@ cdef class Sniffer(object):
         global store_dummy_c, sig_handler
 
         cdef int counted
-        cdef sighandler_t h, old_sigint
-        cdef char* error_message = NULL
-        cdef sigset_t s
+        cdef sighandler_t h = <sighandler_t> sig_handler
+        cdef sighandler_t old_sigint
+        cdef bytes error_message = b''
+
         cdef dispatch_user_param usr
         cdef list_head head
         cdef list_head* cursor
@@ -476,23 +528,19 @@ cdef class Sniffer(object):
         cdef packet_node* node
 
         usr.fun = store_dummy_c
-
-        with nogil:
-            # this thread is only interested in SIGINT, ignore the other signals
-            sigfillset(&s)
-            pthread_sigmask(SIG_BLOCK, &s, NULL)
-            sigemptyset(&s)
-            sigaddset(&s, SIGINT)
-            pthread_sigmask(SIG_UNBLOCK, &s, NULL)
-            h = <sighandler_t> sig_handler
-            set_current_pcap_handle(self._handle)
+        set_current_pcap_handle(self._handle)
+        if signal_mask:
+            self.set_signal_mask()
 
         while not stopping_event.is_set():
             with nogil:
                 INIT_LIST_HEAD(&head)
                 usr.param = <void*>&head
+                # we're executing C code for several seconds, so let's install a C signal handler
+                # during execution of pcap_dispatch, if a SIGINT is caught, pcap_breakloop is called
                 old_sigint = libc_signal(SIGINT, h)
                 counted = pcap_dispatch(self._handle, 0, _do_c_callback, <unsigned char*> &usr)
+                # set back the previous signal handler
                 libc_signal(SIGINT, old_sigint)
             try:
                 cursor = head.next
@@ -523,9 +571,15 @@ cdef class Sniffer(object):
                 if counted == -2:
                     # pcap_breakloop was called
                     stopping_event.set()
+                    continue
                 elif counted == -1:
-                    error_message = pcap_geterr(self._handle)
+                    error_message = <bytes> (pcap_geterr(self._handle))
                     stopping_event.set()
+                    continue
+                elif counted < 0:
+                    error_message = b"unknown error from pcap_dispatch: %s" % counted
+                    stopping_event.set()
+                    continue
 
             except KeyboardInterrupt:
                 stopping_event.set()
@@ -533,7 +587,7 @@ cdef class Sniffer(object):
                 # this 'except' clause should not trigger in the caller has installed a SIGINT handler
 
         set_current_pcap_handle(NULL)
-        if error_message != NULL:
+        if error_message:
             raise SniffingError(bytes(error_message))
 
 
@@ -550,3 +604,27 @@ cdef pcap_t* get_current_pcap_handle() nogil:
     global current_pcap_handle
     return current_pcap_handle
 
+cpdef object PcapExceptionFactory(int return_code, bytes error_msg=b'', default=PcapException):
+    # PCAP_ERROR = -1
+    # PCAP_ERROR_BREAK = -2
+    # PCAP_ERROR_NOT_ACTIVATED = -3
+    # PCAP_ERROR_ACTIVATED = -4
+    # PCAP_ERROR_NO_SUCH_DEVICE = -5
+    # PCAP_ERROR_RFMON_NOTSUP = -6
+    # PCAP_ERROR_NOT_RFMON = -7
+    # PCAP_ERROR_PERM_DENIED = -8
+    # PCAP_ERROR_IFACE_NOT_UP = -9
+    # PCAP_ERROR_CANTSET_TSTAMP_TYPE = -10
+    # PCAP_ERROR_PROMISC_PERM_DENIED = -11
+    # PCAP_ERROR_TSTAMP_PRECISION_NOTSUP = -12
+
+    if return_code == -3:
+        return NotActivatedError(error_msg)
+    elif return_code == -4:
+        return AlreadyActivated(error_msg)
+    elif return_code == -8:
+        return PermissionDenied(error_msg)
+    elif return_code == -11:
+        return PromiscPermissionDenied(error_msg)
+    else:
+        return default(error_msg)
