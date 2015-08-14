@@ -20,22 +20,37 @@ cdef class EthernetII(PDU):
     def __cinit__(self, dest_src=None, buf=None, _raw=False):
         if _raw:
             return
-        elif buf is None and dest_src is None:
+        cdef uint8_t* buf_addr
+        cdef uint32_t size
+
+        if buf is None and dest_src is None:
             self.ptr = new cppEthernetII()
         elif buf is not None:
             if PyBytes_Check(buf):
-                self.ptr = new cppEthernetII(<uint8_t*> PyBytes_AS_STRING(buf), <uint32_t> PyBytes_Size(buf))
+                buf_addr = <uint8_t*> PyBytes_AS_STRING(buf)
+                size = <uint32_t> PyBytes_Size(buf)
+                with nogil:
+                    self.ptr = new cppEthernetII(buf_addr, size)
             elif isinstance(buf, bytearray):
                 buf = memoryview(buf)
-                self.ptr = new cppEthernetII(<uint8_t*> (mview_get_addr(<void*> buf)), len(buf))
+                buf_addr = <uint8_t*> (mview_get_addr(<void*> buf))
+                size = <uint32_t> len(buf)
+                with nogil:
+                    self.ptr = new cppEthernetII(buf_addr, size)
             elif isinstance(buf, memoryview):
                 if buf.itemsize == 1 and buf.ndim == 1:
-                    self.ptr = new cppEthernetII(<uint8_t*> (mview_get_addr(<void*> buf)), len(buf))
+                    buf_addr = <uint8_t*> (mview_get_addr(<void*> buf))
+                    size = <uint32_t> len(buf)
+                    with nogil:
+                        self.ptr = new cppEthernetII(buf_addr, size)
                 else:
                     raise ValueError("the memoryview doesn't have the proper format")
             elif isinstance(buf, cy_memoryview):
                 if buf.itemsize == 1 and buf.ndim == 1:
-                    self.ptr = new cppEthernetII(<uint8_t*> (<cy_memoryview>buf).get_item_pointer([]), <uint32_t> len(buf))
+                    buf_addr = <uint8_t*> (<cy_memoryview>buf).get_item_pointer([])
+                    size = <uint32_t> len(buf)
+                    with nogil:
+                        self.ptr = new cppEthernetII(buf_addr, size)
                 else:
                     raise ValueError("the typed memoryview doesn't have the proper format")
             else:
