@@ -6,13 +6,16 @@ Cython bindings for libpcap
 
 from cpython cimport bool
 
-cdef extern from "Python.h":
-    ctypedef struct PyObject:
-        Py_ssize_t ob_refcnt
-    enum: PyBUF_FULL_RO
-    # we declare "object" as return type to deal with python references
-    object PyMemoryView_FromBuffer(Py_buffer*)
-    int PyBuffer_FillInfo(Py_buffer* view, PyObject* obj, void *buf, Py_ssize_t, int, int infoflags)
+
+cdef extern from "signal.h" nogil:
+    ctypedef int sigset_t
+    int sigaddset(sigset_t *s, int signo)
+    int sigdelset(sigset_t *s, int signo)
+    int sigemptyset(sigset_t *s)
+    int sigfillset(sigset_t *s)
+    int sigismember(const sigset_t *s, int signo)
+    int pthread_sigmask(int how, const sigset_t* s, sigset_t *oset)
+    int SIG_SETMASK, SIG_UNBLOCK, SIG_BLOCK
 
 cdef extern from "sys/time.h":
     struct timeval:
@@ -90,7 +93,7 @@ ctypedef bpf_program bpf_program_t
 # noinspection PyUnresolvedReferences
 ctypedef void (*pcap_handler) (unsigned char*, const pcap_pkthdr_t*, const unsigned char*)
 
-cdef extern from "pcap.h":
+cdef extern from "pcap.h" nogil:
     ctypedef enum pcap_direction_t:
         PCAP_D_INOUT,
         PCAP_D_IN,
@@ -175,18 +178,17 @@ cdef enum:
     PCAP_TSTAMP_ADAPTER = 3
     PCAP_TSTAMP_ADAPTER_UNSYNCED = 4
 
-cdef struct ieee80211_radiotap_header:
-        unsigned char it_version
-        unsigned char it_pad
-        unsigned short it_len
-        unsigned int it_present
 
 cpdef object get_pcap_version()
 cpdef object lookupdev()
 cpdef object findalldevs()
 cpdef object lookupnet(bytes device)
 
-ctypedef void (*c_callback) (long tv_sec, int tv_usec, int caplen, int length, const unsigned char* pkt)
+ctypedef void (*c_callback) (long tv_sec, int tv_usec, int caplen, int length, const unsigned char* pkt, void* p) nogil
+
+ctypedef struct dispatch_user_param:
+    c_callback fun
+    void* param
 
 
 cdef class Sniffer(object):
@@ -212,9 +214,37 @@ cdef class Sniffer(object):
     cpdef object get_datalink(self)
     cpdef object list_datalinks(self)
     cpdef object set_datalink(self, int dlt)
-    cpdef object read_n_packets(self, int cnt, object callback=?, destination=?)
-    cdef object read_n_packets_put_destination(self, int n, destination)
-    cdef object read_n_packets_append_destination(self, int n, destination)
-    cdef object read_n_packets_python_callback(self, int cnt, object callback)
-    cdef object read_n_packets_c_callback(self, int cnt, c_callback callback)
     cpdef object set_filter(self, object filter_string, bool optimize=?, object netmask=?)
+    cpdef sniff_and_store(self, container, stopping_event=?, f=?)
+    cpdef sniff_callback(self, f, stopping_event=?)
+
+
+cdef int stopping
+cdef void sig_handler(int signum) nogil
+
+cdef pcap_t* current_pcap_handle
+
+cdef pcap_t* get_current_pcap_handle() nogil
+cdef void set_current_pcap_handle(pcap_t* handle) nogil
+
+cdef extern from "list.h" nogil:
+    struct list_head:
+        list_head *next
+        list_head *prev
+    void INIT_LIST_HEAD(list_head *l)
+    void list_add(list_head *new, list_head *head)
+    void list_add_tail(list_head *new, list_head *head)
+    void list_del(list_head *entry)
+    void list_replace(list_head *old, list_head *new)
+    int list_is_last(const list_head *l, const list_head *head)
+    int list_empty(const list_head *head)
+    int list_is_singular(const list_head *head)
+
+
+ctypedef struct packet_node:
+    list_head link
+    long tv_sec
+    int tv_usec
+    int caplen
+    int length
+    unsigned char* buf
