@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
 
+"""
+Cython module for libtins
+"""
+
 from cpython.bytes cimport PyBytes_AS_STRING, PyBytes_Check, PyBytes_Size
 from cpython.tuple cimport PyTuple_Check
 from cpython.list cimport PyList_Check
@@ -41,3 +45,4 @@ include "tcp_pxd.pxi"
 include "udp_pxd.pxi"
 include "raw_pxd.pxi"
 include "dns_pxd.pxi"
+include "sniffer_pxd.pxi"

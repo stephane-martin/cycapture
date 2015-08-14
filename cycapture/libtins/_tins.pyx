@@ -19,4 +19,4 @@ include "tcp_pyx.pxi"
 include "udp_pyx.pxi"
 include "raw_pyx.pxi"
 include "dns_pyx.pxi"
-
+include "sniffer_pyx.pxi"
