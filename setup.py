@@ -95,6 +95,7 @@ class LibpcapDep(Dependency):
             self.build()
 
         else:
+            self.name = ''
             # compile a static libpcap
             self.download()
             self.build()
@@ -120,20 +121,26 @@ class LibpcapDep(Dependency):
                 subprocess.call(shlex.split("./configure --enable-shared=no --prefix='%s'" % self._install_dir))
                 subprocess.call("make")
                 subprocess.call(shlex.split("make install"))
-                self._include_dirs = [join(self._install_dir, 'include')]
-                self._extra_objects = [join(self._install_dir, 'lib', 'libpcap.a')]
+            else:
+                info("Skipping libpcap build (already hace libpcap.a)")
+            self._include_dirs = [join(self._install_dir, 'include')]
+            self._extra_objects = [join(self._install_dir, 'lib', 'libpcap.a')]
         else:
-            if not exists(join(self._install_dir, 'lib', 'libpcap.dylib')):
+            if not exists(
+                    join(self._install_dir, 'lib', 'libpcap.dylib')
+            ) and not exists(
+                join(self._install_dir, 'lib', 'libpcap.so')
+            ):
                 info("Building libpcap as a shared library\n")
                 subprocess.call(shlex.split("./configure --prefix='%s'" % self._install_dir))
                 subprocess.call("make")
                 subprocess.call(shlex.split("make install"))
-                self._include_dirs = [join(self._install_dir, 'include')]
-                self._library_dirs = [join(self._install_dir, 'lib')]
-                try:
-                    shutil.copy(join(self._install_dir, 'lib', 'libpcap.dylib'), join(self.thisdir, 'cycapture', 'libpcap'))
-                except:
-                    shutil.copy(join(self._install_dir, 'lib', 'libpcap.so'), join(self.thisdir, 'cycapture', 'libpcap'))
+            self._include_dirs = [join(self._install_dir, 'include')]
+            self._library_dirs = [join(self._install_dir, 'lib')]
+            try:
+                shutil.copy(join(self._install_dir, 'lib', 'libpcap.dylib'), join(self.thisdir, 'cycapture', 'libpcap'))
+            except:
+                shutil.copy(join(self._install_dir, 'lib', 'libpcap.so'), join(self.thisdir, 'cycapture', 'libpcap'))
         os.chdir(old_dir)
 
     @classmethod
@@ -236,6 +243,12 @@ if __name__ == "__main__":
         make_mview_extension = Extension(
             name="cycapture.make_mview",
             sources=["cycapture/make_mview.pyx"]
+        )
+        extensions.append(make_mview_extension)
+
+        make_mview_extension = Extension(
+            name="cycapture.pthreadwrap",
+            sources=["cycapture/pthreadwrap.pyx"]
         )
         extensions.append(make_mview_extension)
 
