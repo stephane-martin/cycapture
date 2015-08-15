@@ -5,7 +5,10 @@ Cython bindings for libpcap
 """
 
 from cpython cimport bool
-
+# noinspection PyUnresolvedReferences
+from ..make_mview cimport make_mview_from_const_uchar_buf
+# noinspection PyUnresolvedReferences
+from ..pthreadwrap cimport PthreadWrap, thread_kill, get_thread_id, pthread_t, pthread_equal, print_thread_id
 
 cdef extern from "signal.h" nogil:
     ctypedef int sigset_t
@@ -15,6 +18,7 @@ cdef extern from "signal.h" nogil:
     int sigfillset(sigset_t *s)
     int sigismember(const sigset_t *s, int signo)
     int pthread_sigmask(int how, const sigset_t* s, sigset_t *oset)
+    int siginterrupt(int sig, int flag)
     int SIG_SETMASK, SIG_UNBLOCK, SIG_BLOCK
 
 cdef extern from "sys/time.h":
@@ -179,7 +183,6 @@ cdef enum:
     PCAP_TSTAMP_ADAPTER_UNSYNCED = 4
 
 
-cpdef object get_pcap_version()
 cpdef object lookupdev()
 cpdef object findalldevs()
 cpdef object lookupnet(bytes device)
@@ -190,42 +193,79 @@ ctypedef struct dispatch_user_param:
     c_callback fun
     void* param
 
+cdef class ActivationHelper(object):
+    cdef Sniffer sniffer_obj
+    cdef object old_status
 
 cdef class Sniffer(object):
-    cdef bool _activated
+    cdef readonly bool activated
     cdef int _read_timeout
     cdef int _buffer_size
     cdef int _timestamp_type
     cdef int _timestamp_precision
     cdef int _snapshot_length
     cdef int _direction
-    cdef bool _promisc_mode
-    cdef bool _monitor_mode
-    cdef bool _nonblocking_mode
-    cdef bytes _source
+    cdef int _promisc_mode
+    cdef int _monitor_mode
+    cdef readonly bytes source
     cdef char _errbuf[PCAP_ERRBUF_SIZE]
     cdef pcap_t* _handle
     cdef int _netp
     cdef int _maskp
+    cdef bytes _filter
+    cdef int _datalink
 
-    cpdef object close(self)
-    cpdef object list_tstamp_types(self)
-    cpdef object activate(self, bool set_datalink=?)
-    cpdef object get_datalink(self)
-    cpdef object list_datalinks(self)
-    cpdef object set_datalink(self, int dlt)
-    cpdef object set_filter(self, object filter_string, bool optimize=?, object netmask=?)
-    cpdef sniff_and_store(self, container, stopping_event=?, f=?, signal_mask=?)
-    cpdef sniff_callback(self, f, stopping_event=?, signal_mask=?)
+    cpdef close(self)
+    cdef _apply_read_timeout(self)
+    cdef _apply_buffer_size(self)
+    cdef _apply_snapshot_length(self)
+    cdef _apply_promisc_mode(self)
+    cdef _apply_monitor_mode(self)
+    cdef _apply_direction(self)
+    cdef _apply_filter(self)
+    cdef _apply_datalink(self)
+    cpdef list_datalinks(self)
+    cdef _activate_if_needed(self)
+    cdef _pre_activate(self)
+    cdef _post_activate(self)
+    cdef _activate(self)
+
+
+
+cdef class BlockingSniffer(Sniffer):
+    cdef unsigned char* python_callback_ptr
+    cdef object python_callback
+    cdef readonly PthreadWrap parent_thread
+
+    cpdef sniff_and_store(self, container, f=?, int signal_mask=?)
+    cpdef sniff_callback(self, f, int signal_mask=?)
     cdef void set_signal_mask(self) nogil
+    cpdef ask_stop(self)
 
-cdef int stopping
-cdef void sig_handler(int signum) nogil
+
+cdef class NonBlockingSniffer(Sniffer):
+    cdef bool _nonblocking_mode
+    cdef unsigned char* python_callback_ptr
+    cdef object python_callback
+    cdef object loop
+    cdef bytes loop_type
+    cdef object descriptor
+    cdef object container
+    cdef object old_status
+    cpdef sniff_callback(self, callback)
+    cpdef sniff_and_store(self, container, f=?)
+    cpdef set_loop(self, loop, loop_type=?)
+    cpdef stop(self)
 
 cdef pcap_t* current_pcap_handle
 
-cdef pcap_t* get_current_pcap_handle() nogil
-cdef void set_current_pcap_handle(pcap_t* handle) nogil
+cdef void sig_handler(int signum) nogil
+
+cdef thread_pcap_node* register_pcap_for_thread(pthread_t thread, pcap_t* handle)
+cdef int unregister_pcap_for_thread(pthread_t thread)
+cdef int thread_has_pcap(pthread_t thread) nogil
+cdef thread_pcap_node* get_pcap_for_thread(pthread_t thread) nogil
+
 
 cdef extern from "list.h" nogil:
     struct list_head:
@@ -249,4 +289,13 @@ ctypedef struct packet_node:
     int length
     unsigned char* buf
 
+ctypedef struct thread_pcap_node:
+    list_head link
+    pthread_t thread
+    int asked_to_stop
+    pcap_t* handle
+
+cdef list_head thread_pcap_global_list
+
 cpdef object PcapExceptionFactory(int return_code, bytes error_msg=?, default=?)
+

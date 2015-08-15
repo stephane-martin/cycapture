@@ -5,18 +5,19 @@ Small cython wrapper around libpcap
 """
 
 from cpython cimport bool
-from cpython.exc cimport PyErr_CheckSignals
 from libc.stdlib cimport malloc, free
 from libc.signal cimport signal as libc_signal
-from libc.signal cimport SIGINT
-from libc.string cimport memcpy
+from libc.signal cimport SIGINT, SIGTERM
+from posix.signal cimport kill
+from posix.unistd cimport getpid
+from libc.string cimport memcpy, strcpy, strlen
 from libc.stdio cimport printf, puts
-# noinspection PyUnresolvedReferences
-from ..make_mview cimport make_mview_from_const_uchar_buf
+
 
 import logging
 import threading
-import struct
+import struct as struct_module
+from collections import deque
 
 from .exceptions import PcapException, AlreadyActivated, SetTimeoutError, SetDirectionError, SetBufferSizeError
 from .exceptions import SetSnapshotLengthError, SetPromiscModeError, SetMonitorModeError, SetNonblockingModeError
@@ -24,7 +25,7 @@ from .exceptions import ActivationError, NotActivatedError, SniffingError, Permi
 
 ctypedef void (*sighandler_t)(int s) nogil
 
-cdef void _do_python_callback(unsigned char* usr, const pcap_pkthdr_t* pkthdr, const unsigned char* pkt):
+cdef void _do_python_callback(unsigned char* usr, const pcap_pkthdr_t* pkthdr, const unsigned char* pkt) with gil:
     (<object> (<void*> usr))(
         pkthdr.ts.tv_sec,
         pkthdr.ts.tv_usec,
@@ -39,11 +40,7 @@ cdef void _do_c_callback(unsigned char* usr, const pcap_pkthdr_t* pkthdr, const 
     (s.fun)(pkthdr.ts.tv_sec, pkthdr.ts.tv_usec, pkthdr.caplen, pkthdr.len, pkt, s.param)
 
 
-cdef void dummy_c(long tv_sec, int tv_usec, int caplen, int length, const unsigned char* pkt, void* p) nogil:
-    printf("caplen %i length %i\n", caplen, length)
-
-cdef void store_dummy_c(long tv_sec, int tv_usec, int caplen, int length, const unsigned char* pkt, void* p) nogil:
-    cdef list_head* head_ptr = <list_head*> p
+cdef void store_c_callback(long tv_sec, int tv_usec, int caplen, int length, const unsigned char* pkt, void* p) nogil:
     cdef packet_node* temp = <packet_node*> malloc(sizeof(packet_node))
     temp.tv_sec = tv_sec
     temp.tv_usec = tv_usec
@@ -51,11 +48,9 @@ cdef void store_dummy_c(long tv_sec, int tv_usec, int caplen, int length, const 
     temp.length = length
     temp.buf = <unsigned char*> malloc(caplen)
     memcpy(<void*> temp.buf, <void*>pkt, caplen)
-    list_add_tail(&temp.link, head_ptr)
+    list_add_tail(&temp.link, <list_head*> p)
 
-cpdef object get_pcap_version():
-    return <bytes> pcap_lib_version()
-
+libpcap_version = <bytes> pcap_lib_version()
 
 cpdef object lookupdev():
     cdef char* name
@@ -134,7 +129,7 @@ cpdef object findalldevs():
 
 
 cdef bytes int_to_address(int i):
-    return b'.'.join([bytes(ord(c)) for c in struct.pack('I', i)])
+    return b'.'.join([bytes(ord(c)) for c in struct_module.pack('I', i)])
 
 
 cpdef object lookupnet(bytes device):
@@ -161,6 +156,20 @@ cpdef object datalink_val_to_name_description(int dlt):
     return name_b, description_b
 
 
+cdef class ActivationHelper(object):
+
+    def __init__(self, sniffer_obj):
+        self.sniffer_obj = sniffer_obj
+        self.old_status = sniffer_obj.activated
+
+    def __enter__(self):
+        if not self.old_status:
+            self.sniffer_obj._activate()
+
+    def __exit__(self, t, value, traceback):
+        if not self.old_status:
+            self.sniffer_obj.close()
+
 cdef class Sniffer(object):
     """
     Sniffer
@@ -171,40 +180,46 @@ cdef class Sniffer(object):
     :param snapshot_length: reading size for each packet (default: 2000 bytes)
     :param promisc_mode: if True, try to put the interface in promiscuous mode (default: False)
     :param monitor_mode: if True, try to put the interface in monitoring mode (default: False)
+    :param direction: PCAP_D_INOUT, PCAP_D_OUT or PCAP_D_IN
     """
 
-    def __cinit__(self, source=None, read_timeout=5000, buffer_size=0, snapshot_length=2000, promisc_mode=False,
-                  monitor_mode=False, nonblocking_mode=False, direction=PCAP_D_INOUT):
+    def __cinit__(self, source, read_timeout=5000, buffer_size=0, snapshot_length=2000, promisc_mode=False,
+                  monitor_mode=False, direction=PCAP_D_INOUT):
         if source is None:
-            self._source = None
+            self.source = None
             self._handle = NULL
             return
         source = bytes(source)
         if len(source) == 0:
-            self._source = None
+            self.source = None
             self._handle = NULL
             return
-        self._source = source
+        self.source = source
         self._handle = pcap_create(<char*> source, self._errbuf)
 
-    def __init__(self, source=None, read_timeout=5000, buffer_size=0, snapshot_length=2000, promisc_mode=False,
-                 monitor_mode=False, nonblocking_mode=False, direction=PCAP_D_INOUT):
-        if source is None:
-            raise ValueError("Please provide a source name")
+    cpdef close(self):
+        if self._handle != NULL:
+            pcap_close(self._handle)
+        self._handle = NULL
+        self.activated = False
+
+    def __dealloc__(self):
+        self.close()
+
+    def __init__(self, source, read_timeout=5000, buffer_size=0, snapshot_length=2000, promisc_mode=False,
+                 monitor_mode=False, direction=PCAP_D_INOUT):
+        source = bytes(source)
         if self._handle == NULL:
             raise PcapException("Initialization failed: " + <bytes> self._errbuf)
-        self._read_timeout = int(read_timeout)
-        self._buffer_size = int(buffer_size)
-        self._snapshot_length = int(snapshot_length)
-        self._promisc_mode = bool(promisc_mode)
-        self._monitor_mode = bool(monitor_mode)
-        self._timestamp_type = -1
-        self._timestamp_precision = PCAP_TSTAMP_PRECISION_MICRO
-        self._nonblocking_mode = nonblocking_mode
-        self._activated = False
-        if direction not in (PCAP_D_IN, PCAP_D_OUT, PCAP_D_INOUT):
-            direction = PCAP_D_INOUT
-        self._direction = direction
+        self.read_timeout = read_timeout
+        self.buffer_size = buffer_size
+        self.snapshot_length = snapshot_length
+        self.promisc_mode = promisc_mode
+        self.monitor_mode = monitor_mode
+        self.activated = False
+        self.direction = direction
+        self.filter = b''
+        self._datalink = -1
         try:
             self._netp, self._maskp, _, _ = lookupnet(source)     # IPV6 compatible ?
         except PcapException:
@@ -212,167 +227,223 @@ cdef class Sniffer(object):
             self._netp = -1
             self._maskp = -1
 
-    property activated:
-        def __get__(self):
-            return self._activated
 
     property read_timeout:
         def __get__(self):
             return self._read_timeout
 
-        def __set__(self, int value):
-            if self._activated:
+        def __set__(self, value):
+            value = int(value)
+            if self.activated:
                 raise AlreadyActivated()
             if value < 0:
                 value = 0
-            cdef int res = pcap_set_timeout(self._handle, self._read_timeout)
-            if res == 0:
-                self._read_timeout = value
-            else:
-                raise SetTimeoutError('Error setting read timeout')
+            self._read_timeout = value
 
-    property direction:
-        def __get__(self):
-            return self._direction
-
-        def __set__(self, int value):
-            if value not in (PCAP_D_IN, PCAP_D_OUT, PCAP_D_INOUT):
-                value = PCAP_D_INOUT
-            cdef int res = pcap_setdirection(self._handle, <pcap_direction_t> value)
-            if res == 0:
-                self._direction = value
-            else:
-                raise SetDirectionError(bytes(pcap_geterr(self._handle)))
+    cdef _apply_read_timeout(self):
+        cdef int res = pcap_set_timeout(self._handle, self._read_timeout)
+        if res != 0:
+            raise SetTimeoutError('Error setting read timeout')
 
     property buffer_size:
         def __get__(self):
             return self._buffer_size
 
-        def __set__(self, int value):
-            if self._activated:
+        def __set__(self, value):
+            value = int(value)
+            if self.activated:
                 raise AlreadyActivated()
             if value < 0:
                 value = 0
-            cdef int res = pcap_set_buffer_size(self._handle, self._buffer_size)
-            if res == 0:
-                self._buffer_size = value
-            else:
-                raise SetBufferSizeError("Error while setting buffer size")
+            self._buffer_size = value
 
-    property timestamp_type:
-        def __get__(self):
-            return self._timestamp_type
+    cdef _apply_buffer_size(self):
+        cdef int res = pcap_set_buffer_size(self._handle, self._buffer_size)
+        if res != 0:
+            raise SetBufferSizeError("Error setting buffer size")
 
     property snapshot_length:
         def __get__(self):
             return self._snapshot_length
 
-        def __set__(self, int value):
-            if self._activated:
+        def __set__(self, value):
+            if self.activated:
                 raise AlreadyActivated()
+            value = int(value)
             if value < 0 or value > 65536:
                 raise ValueError("snapshot_length must be 0 <= x <= 65536")
-            cdef int res = pcap_set_snaplen(self._handle, value)
-            if res == 0:
-                self._snapshot_length = value
-            else:
-                raise SetSnapshotLengthError("Error setting snapshot length")
+            self._snapshot_length = value
+
+    cdef _apply_snapshot_length(self):
+        cdef int res = pcap_set_snaplen(self._handle, self._snapshot_length)
+        if res != 0:
+            raise SetSnapshotLengthError("Error setting snapshot length")
 
     property promisc_mode:
         def __get__(self):
             return self._promisc_mode
 
         def __set__(self, bool value):
-            if self._activated:
+            if self.activated:
                 raise AlreadyActivated()
-            cdef int v = 1 if value else 0
-            cdef int res = pcap_set_promisc(self._handle, v)
-            if res == 0:
-                self._promisc_mode = value
-            else:
-                raise SetPromiscModeError("promisc mode could not be set")
+            self._promisc_mode = 1 if value else 0
+
+    cdef _apply_promisc_mode(self):
+        cdef int res = pcap_set_promisc(self._handle, self._promisc_mode)
+        if res != 0:
+            raise SetPromiscModeError("promisc mode could not be set")
 
     property monitor_mode:
         def __get__(self):
             return self._monitor_mode
 
         def __set__(self, bool value):
-            if self._activated:
+            if self.activated:
                 raise AlreadyActivated()
             cdef int v = 1 if value else 0
-            if pcap_set_rfmon(self._handle, v) == 0:
-                self._monitor_mode = value
-            else:
-                raise SetMonitorModeError("monitor mode could not be set")
+            can_set, reason = self.can_set_monitor_mode
+            if v and not can_set:
+                raise SetMonitorModeError(reason)
+            self._monitor_mode = v
+
+    cdef _apply_monitor_mode(self):
+        if self._monitor_mode:
+            if self.can_set_monitor_mode[0]:
+                if pcap_set_rfmon(self._handle, self._monitor_mode) != 0:
+                    raise SetMonitorModeError("monitor mode could not be set")
 
     property can_set_monitor_mode:
         def __get__(self):
             cdef int res = pcap_can_set_rfmon(self._handle)
             if res == 1:
-                return True, u''
+                return True, b''
             elif res == 0:
-                return False, u''
+                return False, b''
             elif res == PCAP_ERROR_NO_SUCH_DEVICE:
-                return False, u"the capture source specified when the handle was created doesn't exist"
+                return False, b"the capture source specified when the handle was created doesn't exist"
             elif res == PCAP_ERROR_PERM_DENIED:
-                return False, u"the process doesn't have permission to check whether monitor mode could be supported"
+                return False, b"the process doesn't have permission to check whether monitor mode could be supported"
             elif res == PCAP_ERROR_ACTIVATED:
-                return False, u"already activated"
+                return False, b"already activated"
             elif res == PCAP_ERROR:
-                return False, (<bytes> pcap_geterr(self._handle)).decode('utf-8')
+                return False, <bytes> pcap_geterr(self._handle)
             else:
-                raise RuntimeError("unknown error in can_set_monitor_mode: %s" % res)
+                raise PcapExceptionFactory(res, b"error in can_set_monitor_mode: %s" % res)
 
-    property source:
+    property direction:
         def __get__(self):
-            return self._source
+            return self._direction
 
-    property nonblocking_mode:
+        def __set__(self, value):
+            value = int(value)
+            if value not in (PCAP_D_IN, PCAP_D_OUT, PCAP_D_INOUT):
+                value = PCAP_D_INOUT
+            self._direction = value
+
+    cdef _apply_direction(self):
+        cdef int res = pcap_setdirection(self._handle, <pcap_direction_t> self._direction)
+        if res != 0:
+            raise SetDirectionError('Error setting direction')
+
+    property filter:
         def __get__(self):
-            return self._nonblocking_mode
-        def __set__(self, bool mode):
-            cdef int v = 1 if mode else 0
-            if pcap_setnonblock(self._handle, v, self._errbuf) == -1:
-                raise SetNonblockingModeError(self._errbuf)
-            else:
-                self._nonblocking_mode = mode
+            return self._filter
 
-    cpdef object close(self):
-        if self._handle != NULL:
-            pcap_close(self._handle)
-        self._handle = NULL
-        self._activated = False
+        def __set__(self, value):
+            value = bytes(value)
+            if value:
+                self._filter = value
+                if self.activated:
+                    self._apply_filter()
 
-    def __dealloc__(self):
-        self.close()
+    cdef _apply_filter(self):
+        cdef unsigned int netmask
+        cdef bpf_program_t prog
+        cdef int optim = 1
+        cdef int res
+        if self._filter:
+            netmask = PCAP_NETMASK_UNKNOWN if self._maskp == -1 else self._maskp
+            res = pcap_compile(self._handle, &prog, <const char *> (<bytes> self._filter), optim, netmask)
+            if res != 0:
+                raise PcapException(bytes(pcap_geterr(self._handle)))
+            res = pcap_setfilter(self._handle, &prog)
+            pcap_freecode(&prog)
+            if res != 0:
+                raise PcapException(bytes(pcap_geterr(self._handle)))
 
-    cpdef object list_tstamp_types(self):
-        cdef int* types
-        cdef int res = pcap_list_tstamp_types(self._handle, &types)
-        if res == PCAP_ERROR:
-            raise PcapException(<bytes> pcap_geterr(self._handle))
-        elif res <= 0:
-            return []
+
+    property datalink:
+        def __get__(self):
+            cdef int res
+            with self._activate_if_needed():
+                res = pcap_datalink(self._handle)
+            name, description = datalink_val_to_name_description(res)
+            return res, name, description
+
+        def __set__(self, value):
+            cdef int res
+            self._datalink = int(value)
+            if self.activated:
+                self._apply_datalink()
+
+
+    cdef _apply_datalink(self):
+        cdef int res
+        if self._datalink == -1:
+            datalinks = [datalink[0] for datalink in self.list_datalinks()]
+            if 1 in datalinks:              # Ethernet
+                pcap_set_datalink(self._handle, 1)
+            elif 12 in datalinks:           # RAW IP
+                pcap_set_datalink(self._handle, 12)
         else:
-            l = []
-            for i in range(res):
-                l.append(types[i])
-            pcap_free_tstamp_types(types)
-            return l
+            res = pcap_set_datalink(self._handle, self._datalink)
+            if res == -1:
+                raise PcapException(bytes(pcap_geterr(self._handle)))
 
-    cpdef object activate(self, bool set_datalink=True):
-        if self._activated:
+    cpdef list_datalinks(self):
+        cdef int* l
+        results = []
+        cdef int n
+        with self._activate_if_needed():
+            n = pcap_list_datalinks(self._handle, &l)
+
+            if n == PCAP_ERROR_NOT_ACTIVATED:
+                raise NotActivatedError('you must activate the device before calling list_datalinks')
+            elif n == PCAP_ERROR:
+                raise PcapException(<bytes> pcap_geterr(self._handle))
+            else:
+                for counter in range(n):
+                    name, description = datalink_val_to_name_description(l[counter])
+                    results.append((l[counter], name, description))
+                return results
+
+    cdef _activate_if_needed(self):
+        return ActivationHelper(self)
+
+    cdef _pre_activate(self):
+        if self.activated:
             return
         if self._handle == NULL:
-            self._handle = pcap_create(<char*> self._source, self._errbuf)
-        self.snapshot_length = self._snapshot_length
-        self.buffer_size = self._buffer_size
-        if self.can_set_monitor_mode[0]:
-            self.monitor_mode = self._monitor_mode
-        self.promisc_mode = self._promisc_mode
-        self.read_timeout = self._read_timeout
-        self.nonblocking_mode = self._nonblocking_mode
-        # todo: timestamp type, timestamp precision
+            self._handle = pcap_create(<char*> self.source, self._errbuf)
+        self._apply_read_timeout()
+        self._apply_buffer_size()
+        self._apply_snapshot_length()
+        self._apply_monitor_mode()
+        self._apply_promisc_mode()
+
+    cdef _post_activate(self):
+        if not self.activated:
+            return
+        self._apply_direction()
+        self._apply_datalink()
+        self._apply_filter()
+
+    cdef _activate(self):
+        if self.activated:
+            return
+
+        self._pre_activate()
+
         cdef int res = pcap_activate(self._handle)
         if res in (PCAP_ERROR, PCAP_ERROR_PERM_DENIED, PCAP_ERROR_NO_SUCH_DEVICE):
             raise PcapExceptionFactory(res, <bytes> pcap_geterr(self._handle), default=ActivationError)
@@ -380,122 +451,47 @@ cdef class Sniffer(object):
             raise PcapExceptionFactory(res, default=ActivationError)
         elif res > 0:
             logging.getLogger('cycapture').warning("Warning when the device was activated: %s", res)
-        self._activated = True
-        self.direction = self._direction
-        if set_datalink:
-            datalinks = [datalink[0] for datalink in self.list_datalinks()]
-            if 1 in datalinks:
-                # EN10MB
-                self.set_datalink(1)
-            elif 12 in datalinks:
-                # RAW
-                self.set_datalink(12)
 
-    def __enter__(self):
-        if not self._activated:
-            self.activate()
+        self.activated = True
 
-    def __exit__(self, exc_type, exc_value, traceback):
+        self._post_activate()
+
+
+# noinspection PyAttributeOutsideInit,PyGlobalUndefined
+cdef class BlockingSniffer(Sniffer):
+    active_sniffers = {}
+
+    def __cinit__(self, source, read_timeout=5000, buffer_size=0, snapshot_length=2000, promisc_mode=False,
+                  monitor_mode=False, direction=PCAP_D_INOUT):
+        if source is None:
+            self.source = None
+            self._handle = NULL
+            return
+        source = bytes(source)
+        if len(source) == 0:
+            self.source = None
+            self._handle = NULL
+            return
+        self.source = source
+        self._handle = pcap_create(<char*> source, self._errbuf)
+        self.parent_thread = None
+
+    def __init__(self, source, read_timeout=5000, buffer_size=0, snapshot_length=2000, promisc_mode=False,
+                  monitor_mode=False, direction=PCAP_D_INOUT):
+        Sniffer.__init__(self,source, read_timeout, buffer_size, snapshot_length, promisc_mode, monitor_mode, direction)
+
+    def __dealloc__(self):
         self.close()
 
-    cpdef object get_datalink(self):
-        if not self._activated:
-            raise NotActivatedError('you must activate the device before calling get_datalink')
-        cdef int res = pcap_datalink(self._handle)
-        if res == PCAP_ERROR_NOT_ACTIVATED:
-            raise NotActivatedError('you must activate the device before calling get_datalink')
-        name, description = datalink_val_to_name_description(res)
-        return res, name, description
+    @classmethod
+    def stop_all(cls):
+        for s in cls.active_sniffers.values():
+            s.ask_stop()
 
-    cpdef object list_datalinks(self):
-        if not self._activated:
-            raise NotActivatedError('you must activate the device before calling list_datalinks')
-        cdef int* l
-        results = []
-        cdef int n = pcap_list_datalinks(self._handle, &l)
-
-        if n == PCAP_ERROR_NOT_ACTIVATED:
-            raise NotActivatedError('you must activate the device before calling list_datalinks')
-        elif n == PCAP_ERROR:
-            raise PcapException(<bytes> pcap_geterr(self._handle))
-        else:
-            for counter in range(n):
-                name, description = datalink_val_to_name_description(l[counter])
-                results.append((l[counter], name, description))
-            return results
-
-    cpdef object set_datalink(self, int dlt):
-        # todo: refactor so that it can be called before activation
-        if not self._activated:
-            raise PcapException('you must activate the device before calling set_datalink')
-        cdef int res = pcap_set_datalink(self._handle, dlt)
-        if res == -1:
-            raise PcapException(bytes(pcap_geterr(self._handle)))
-
-    cpdef object set_filter(self, object filter_string, bool optimize=True, object netmask=None):
-        # todo: refactor so that it can be called before activation
-        if not self._activated:
-            raise PcapException("you must activate the device before calling set_filter")
-        if filter_string is None:
-            raise ValueError("Provide a non-empty filter-string")
-        filter_string = bytes(filter_string)
-        if len(filter_string) == 0:
-            raise ValueError("Provide a non-empty filter_string")
-        cdef unsigned int netm
-        if netmask is None:
-            netm = PCAP_NETMASK_UNKNOWN if self._maskp == -1 else self._maskp
-        else:
-            netm = int(netmask)
-        cdef bpf_program_t prog
-        cdef int optim = 1 if optimize else 0
-        cdef int res = pcap_compile(self._handle, &prog, <const char *> (<bytes> filter_string), optim, netm)
-        if res != 0:
-            raise PcapException(bytes(pcap_geterr(self._handle)))
-        res = pcap_setfilter(self._handle, &prog)
-        pcap_freecode(&prog)
-        if res != 0:
-            raise PcapException(bytes(pcap_geterr(self._handle)))
-
-    cpdef sniff_callback(self, f, stopping_event=None, signal_mask=True):
-        global sig_handler
-        cdef int counted
-        cdef sighandler_t h = <sighandler_t> sig_handler
-        cdef sighandler_t old_sigint
-        cdef bytes error_message = b''
-        cdef unsigned char* usr = <unsigned char*> (<void*> f)
-
-        if not self.activated:
-            raise NotActivatedError('activate the pcap handle before trying to sniff')
-        if get_current_pcap_handle() != NULL:
-            raise RuntimeError("only one sniffing action is allowed")
-        if stopping_event is None:
-            stopping_event = threading.Event()
-
-        set_current_pcap_handle(self._handle)
-        if signal_mask:
-            self.set_signal_mask()
-
-        while not stopping_event.is_set():
-            old_sigint = libc_signal(SIGINT, h)
-            counted = pcap_dispatch(self._handle, 0, _do_python_callback, usr)
-            libc_signal(SIGINT, old_sigint)
-
-            try:
-                if counted == -2:
-                    # pcap_breakloop was called
-                    stopping_event.set()
-                elif counted == -1:
-                    error_message = <bytes> (pcap_geterr(self._handle))
-                    stopping_event.set()
-                elif counted < 0:
-                    error_message = b"error from pcap_dispatch: %s" % counted
-                    stopping_event.set()
-            except KeyboardInterrupt:
-                stopping_event.set()
-
-        set_current_pcap_handle(NULL)
-        if error_message:
-            raise PcapExceptionFactory(counted, bytes(error_message), default=SniffingError)
+    cpdef ask_stop(self):
+        if self.parent_thread is not None:
+            if thread_kill(self.parent_thread, SIGINT) != 0:
+                raise RuntimeError("BlockingSniffer.stop (sending SIGINT) failed")
 
     cdef void set_signal_mask(self) nogil:
         cdef sigset_t s
@@ -505,104 +501,332 @@ cdef class Sniffer(object):
         sigaddset(&s, SIGINT)
         pthread_sigmask(SIG_UNBLOCK, &s, NULL)
 
+    cpdef sniff_callback(self, f, int signal_mask=1):
+        global sig_handler
+        cdef int counted
+        cdef sighandler_t h = <sighandler_t> sig_handler
+        cdef sighandler_t old_sigint
+        cdef char* error_msg = NULL
+        cdef char* error_msg_source = NULL
+        cdef thread_pcap_node* node
+        # keep a reference to the callback... just in case...
+        self.python_callback = f
+        self.python_callback_ptr = <unsigned char *> (<void*> self.python_callback)
 
-    cpdef sniff_and_store(self, container, stopping_event=None, f=None, signal_mask=True):
-        if get_current_pcap_handle() != NULL:
-            raise RuntimeError("only one sniffing action is allowed")
-        if not self.activated:
-            raise NotActivatedError('activate the pcap handle before trying to sniff')
-        if stopping_event is None:
-            stopping_event = threading.Event()
+        if self in self.active_sniffers.values():
+            raise RuntimeError("This BlockingSniffer is already actively listening")
+        if thread_has_pcap(PthreadWrap().thread_id) == 1:
+            raise RuntimeError("only one sniffing action per thread is allowed")
 
-        global store_dummy_c, sig_handler
+        self.parent_thread = PthreadWrap()
+        self.active_sniffers[self.parent_thread.as_bytes()] = self
+        node = register_pcap_for_thread(self.parent_thread.thread_id, self._handle)
 
+
+        with nogil:
+            if signal_mask == 1:
+                self.set_signal_mask()
+            old_sigint = libc_signal(SIGINT, h)
+            siginterrupt(SIGINT, 1)
+
+        with self._activate_if_needed():
+            # the nogil here is important: without it, the other python threads may not be able to run
+            with nogil:
+                while node.asked_to_stop == 0:
+                    counted = pcap_dispatch(self._handle, 0, _do_python_callback, self.python_callback_ptr)
+                    if counted == -2:
+                        # pcap_breakloop was called
+                        node.asked_to_stop = 1
+                    elif counted < 0:
+                        error_msg_source = pcap_geterr(self._handle)
+                        error_msg = <char *> malloc(strlen(error_msg_source) + 1)
+                        if error_msg != NULL:
+                            strcpy(error_msg, error_msg_source)
+                        node.asked_to_stop = 1
+
+                libc_signal(SIGINT, old_sigint)
+                siginterrupt(SIGINT, 1)
+
+        unregister_pcap_for_thread(self.parent_thread.thread_id)
+        del self.active_sniffers[self.parent_thread.as_bytes()]
+        self.parent_thread = None
+
+        if error_msg != NULL:
+            msg = bytes(error_msg)
+            free(error_msg)
+            raise PcapExceptionFactory(counted, msg, default=SniffingError)
+
+    cpdef sniff_and_store(self, container, f=None, int signal_mask=1):
+        global store_c_callback, sig_handler
         cdef int counted
         cdef sighandler_t h = <sighandler_t> sig_handler
         cdef sighandler_t old_sigint
         cdef bytes error_message = b''
+        cdef thread_pcap_node* node
 
         cdef dispatch_user_param usr
         cdef list_head head
         cdef list_head* cursor
         cdef list_head* nextnext
-        cdef packet_node* node
+        cdef packet_node* pkt_node
 
-        usr.fun = store_dummy_c
-        set_current_pcap_handle(self._handle)
-        if signal_mask:
-            self.set_signal_mask()
+        usr.fun = store_c_callback
 
-        while not stopping_event.is_set():
-            with nogil:
-                INIT_LIST_HEAD(&head)
-                usr.param = <void*>&head
-                # we're executing C code for several seconds, so let's install a C signal handler
-                # during execution of pcap_dispatch, if a SIGINT is caught, pcap_breakloop is called
-                old_sigint = libc_signal(SIGINT, h)
-                counted = pcap_dispatch(self._handle, 0, _do_c_callback, <unsigned char*> &usr)
-                # set back the previous signal handler
-                libc_signal(SIGINT, old_sigint)
-            try:
+        if self in self.active_sniffers.values():
+            raise RuntimeError("This BlockingSniffer is already actively listening")
+        if thread_has_pcap(PthreadWrap().thread_id) == 1:
+            raise RuntimeError("only one sniffing action per thread is allowed")
+
+        self.parent_thread = PthreadWrap()
+        self.active_sniffers[self.parent_thread.as_bytes()] = self
+        node = register_pcap_for_thread(self.parent_thread.thread_id, self._handle)
+
+
+        with nogil:
+            if signal_mask == 1:
+                self.set_signal_mask()
+            old_sigint = libc_signal(SIGINT, h)
+            siginterrupt(SIGINT, 1)
+
+        with self._activate_if_needed():
+
+            while node.asked_to_stop == 0:
+                with nogil:
+                    INIT_LIST_HEAD(&head)
+                    usr.param = <void*>&head
+                    counted = pcap_dispatch(self._handle, 0, _do_c_callback, <unsigned char*> &usr)
+
                 cursor = head.next
                 nextnext = cursor.next
                 while cursor != &head:
-                    node = <packet_node*>( <char *>cursor - <unsigned long> (&(<packet_node*>0).link) )
+                    pkt_node = <packet_node*>( <char *>cursor - <unsigned long> (&(<packet_node*>0).link) )
                     if f is not None:
                         container.append((
-                            node.tv_sec,
-                            node.tv_usec,
-                            node.length,
-                            f(make_mview_from_const_uchar_buf(node.buf, node.caplen))
+                            pkt_node.tv_sec,
+                            pkt_node.tv_usec,
+                            pkt_node.length,
+                            f(make_mview_from_const_uchar_buf(pkt_node.buf, pkt_node.caplen))
                         ))
                     else:
                         container.append((
-                            node.tv_sec,
-                            node.tv_usec,
-                            node.length,
-                            <bytes>(node.buf[:node.caplen])
+                            pkt_node.tv_sec,
+                            pkt_node.tv_usec,
+                            pkt_node.length,
+                            <bytes>(pkt_node.buf[:pkt_node.caplen])
                         ))
 
-                    free(node.buf)
-                    list_del(&node.link)
-                    free(node)
+                    free(pkt_node.buf)
+                    list_del(&pkt_node.link)
+                    free(pkt_node)
                     cursor = nextnext
                     nextnext = cursor.next
 
                 if counted == -2:
                     # pcap_breakloop was called
-                    stopping_event.set()
-                    continue
-                elif counted == -1:
-                    error_message = <bytes> (pcap_geterr(self._handle))
-                    stopping_event.set()
-                    continue
+                    node.asked_to_stop = 1
                 elif counted < 0:
-                    error_message = b"unknown error from pcap_dispatch: %s" % counted
-                    stopping_event.set()
-                    continue
+                    error_message = <bytes> (pcap_geterr(self._handle))
+                    node.asked_to_stop = 1
 
-            except KeyboardInterrupt:
-                stopping_event.set()
-                # memory leak can happen here
-                # this 'except' clause should not trigger in the caller has installed a SIGINT handler
 
-        set_current_pcap_handle(NULL)
+        with nogil:
+            libc_signal(SIGINT, old_sigint)
+            siginterrupt(SIGINT, 1)
+
+        unregister_pcap_for_thread(self.parent_thread.thread_id)
+        del self.active_sniffers[self.parent_thread.as_bytes()]
+        self.parent_thread = None
+
         if error_message:
-            raise SniffingError(bytes(error_message))
+            raise PcapExceptionFactory(counted, bytes(error_message), default=SniffingError)
 
+
+# noinspection PyAttributeOutsideInit
+cdef class NonBlockingSniffer(Sniffer):
+    active_sniffers = {}
+
+    def __cinit__(self, source, read_timeout=5000, buffer_size=0, snapshot_length=2000, promisc_mode=False,
+                  monitor_mode=False, direction=PCAP_D_INOUT):
+        if source is None:
+            self.source = None
+            self._handle = NULL
+            return
+        source = bytes(source)
+        if len(source) == 0:
+            self.source = None
+            self._handle = NULL
+            return
+        self.source = source
+        self._handle = pcap_create(<char*> source, self._errbuf)
+
+    def __dealloc__(self):
+        self.close()
+
+    def __init__(self, source, read_timeout=5000, buffer_size=0, snapshot_length=2000, promisc_mode=False,
+                 monitor_mode=False, direction=PCAP_D_INOUT):
+        Sniffer.__init__(self, source, read_timeout, buffer_size, snapshot_length, promisc_mode, monitor_mode, direction)
+        self.loop = None
+        self.loop_type = None
+        self.descriptor = None
+
+    cpdef set_loop(self, loop, loop_type="tornado"):
+        loop_type = bytes(loop_type).lower().strip()
+        self.loop = loop
+        self.loop_type = loop_type
+        return self
+
+    cdef object _activate(self):
+        Sniffer._activate(self)
+        cdef int res
+        res = pcap_setnonblock(self._handle, 1, self._errbuf)
+        if res < 0:
+            raise PcapExceptionFactory(res, self._errbuf, default=SetNonblockingModeError)
+
+    def make_tornado_handler_callback(self, callback):
+        def _tornado_handler_callback(fd=None, events=None):
+            cdef unsigned char* ptr = <unsigned char*> (<void*> callback)
+            cdef int counted = 1
+            while counted > 0:
+                counted = pcap_dispatch(self._handle, 0, _do_python_callback, ptr)
+        return _tornado_handler_callback
+
+    def make_tornado_handle_store(self, container, f):
+        def _tornado_handler_store(fd=None, events=None):
+            if f is None:
+                def _handle(sec, usec, caplen, length, mview):
+                    container.append((sec, usec, length, mview.tobytes()))
+            else:
+                def _handle(sec, usec, caplen, length, mview):
+                    container.append((sec, usec, length, f(mview)))
+            cdef unsigned char* ptr = <unsigned char*> (<void*> _handle)
+            cdef int counted = 1
+            while counted > 0:
+                counted = pcap_dispatch(self._handle, 0, _do_python_callback, ptr)
+        return _tornado_handler_store
+
+
+    cpdef sniff_callback(self, callback):
+        if self in self.active_sniffers.values():
+            raise RuntimeError("This NonBlockingSniffer is already actively listening")
+        if self.loop is None or self.loop_type is None:
+            raise RuntimeError("set loop and loop_type first")
+        self.active_sniffers[id(self)] = self
+        self.old_status = self.activated
+        if not self.activated:
+            self._activate()
+
+        # keep a ref... so that callback can't be garbage collected
+        self.python_callback = callback
+
+        self.descriptor = pcap_get_selectable_fd(self._handle)
+        if self.loop_type == "tornado":
+            # "1" is for READ events
+            self.loop.add_handler(self.descriptor, self.make_tornado_handler_callback(callback), 1)
+        elif self.loop_type == "asyncio":
+            self.loop.add_reader(self.descriptor, self.make_tornado_handler_callback(callback))
+        return self.descriptor
+
+    cpdef sniff_and_store(self, container, f=None):
+        if self in self.active_sniffers.values():
+            raise RuntimeError("This NonBlockingSniffer is already actively listening")
+        if self.loop is None or self.loop_type is None:
+            raise RuntimeError("set loop and loop_type first")
+        self.active_sniffers[id(self)] = self
+        self.old_status = self.activated
+        self.container = container
+        if not self.activated:
+            self._activate()
+
+        # keep a ref... so that callback can't be garbage collected
+        self.python_callback = f
+
+        self.descriptor = pcap_get_selectable_fd(self._handle)
+        if self.loop_type == "tornado":
+            # "1" is for READ events
+            self.loop.add_handler(self.descriptor, self.make_tornado_handle_store(container, f), 1)
+        elif self.loop_type == "asyncio":
+            self.loop.add_reader(self.descriptor, self.make_tornado_handle_store(container, f))
+        return self.descriptor
+
+    cpdef stop(self):
+        if self.descriptor is not None and self.loop is not None:
+            if self.loop_type == "tornado":
+                self.loop.remove_handler(self.descriptor)
+            elif self.loop_type == "asyncio":
+                self.loop.remove_reader(self.descriptor)
+            self.descriptor = None
+        if id(self) in self.active_sniffers:
+            del self.active_sniffers[id(self)]
+        if not self.old_status:
+            self.close()
+
+    @classmethod
+    def stop_all(cls):
+        for s in cls.active_sniffers.values():
+            s.stop()
 
 cdef void sig_handler(int signum) nogil:
-    cdef pcap_t* current = get_current_pcap_handle()
+    cdef thread_pcap_node* current = get_pcap_for_thread(get_thread_id())
     if current != NULL:
-        pcap_breakloop(current)
+        current.asked_to_stop = 1
+        pcap_breakloop(current.handle)
+    else:
+        # the signal was not sent to a specific thread, but to the whole process
+        # we translate it to a SIGTERM for the process, so that SIGINT to threads will be sent
+        kill(getpid(), SIGTERM)
 
-cdef void set_current_pcap_handle(pcap_t* handle) nogil:
-    global current_pcap_handle
-    current_pcap_handle = handle
+cdef thread_pcap_node* get_pcap_for_thread(pthread_t thread) nogil:
+    global thread_pcap_global_list
+    cdef list_head* cursor = thread_pcap_global_list.next
+    cdef thread_pcap_node* node
+    while cursor != &thread_pcap_global_list:
+        node = <thread_pcap_node*>( <char *>cursor - <unsigned long> (&(<thread_pcap_node*>0).link) )
+        if pthread_equal(node.thread, thread):
+            return node
+        cursor = cursor.next
+    return NULL
 
-cdef pcap_t* get_current_pcap_handle() nogil:
-    global current_pcap_handle
-    return current_pcap_handle
+cdef thread_pcap_node* register_pcap_for_thread(pthread_t thread, pcap_t* handle):
+    global lock, thread_pcap_global_list
+    cdef thread_pcap_node* node
+    with lock:
+        if thread_has_pcap(thread) == 1:
+            return NULL
+        node = <thread_pcap_node*> malloc(sizeof(thread_pcap_node))
+        node.thread = thread
+        node.handle = handle
+        node.asked_to_stop = 0
+        list_add_tail(&node.link, &thread_pcap_global_list)
+        return node
+
+cdef int unregister_pcap_for_thread(pthread_t thread):
+    global lock, thread_pcap_global_list
+    cdef list_head* cursor
+    cdef list_head* nextnext
+    cdef thread_pcap_node* node
+    with lock:
+        if thread_has_pcap(thread) == 0:
+            return -1
+        cursor = thread_pcap_global_list.next
+        nextnext = cursor.next
+        while cursor != &thread_pcap_global_list:
+            node = <thread_pcap_node*>( <char *>cursor - <unsigned long> (&(<thread_pcap_node*>0).link) )
+            if pthread_equal(node.thread, thread):
+                list_del(&node.link)
+                free(node)
+                break
+            cursor = nextnext
+            nextnext = cursor.next
+        return 0
+
+cdef int thread_has_pcap(pthread_t thread) nogil:
+    if get_pcap_for_thread(thread) == NULL:
+        return 0
+    else:
+        return 1
+
+lock = threading.Lock()
+INIT_LIST_HEAD(&thread_pcap_global_list)
 
 cpdef object PcapExceptionFactory(int return_code, bytes error_msg=b'', default=PcapException):
     # PCAP_ERROR = -1
@@ -628,3 +852,4 @@ cpdef object PcapExceptionFactory(int return_code, bytes error_msg=b'', default=
         return PromiscPermissionDenied(error_msg)
     else:
         return default(error_msg)
+
