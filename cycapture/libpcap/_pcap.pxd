@@ -5,10 +5,20 @@ Cython bindings for libpcap
 """
 
 from cpython cimport bool
+from libc.stdlib cimport malloc, free
+from libc.signal cimport signal as libc_signal
+from libc.signal cimport SIGINT, SIGTERM
+from posix.signal cimport kill
+from posix.unistd cimport getpid
+from libc.string cimport memcpy, strcpy, strlen
+from libc.stdio cimport printf, puts
 # noinspection PyUnresolvedReferences
 from ..make_mview cimport make_mview_from_const_uchar_buf
 # noinspection PyUnresolvedReferences
-from ..pthreadwrap cimport PthreadWrap, thread_kill, get_thread_id, pthread_t, pthread_equal, print_thread_id
+from ..pthreadwrap cimport pthread_kill, pthread_t, pthread_equal, pthread_self, pthread_self_as_bytes, print_thread_id, copy_pthread_self
+# noinspection PyUnresolvedReferences
+from ..pthreadwrap cimport create_error_check_lock, pthread_mutex_destroy, pthread_mutex_lock, pthread_mutex_unlock, pthread_mutex_t
+
 
 cdef extern from "signal.h" nogil:
     ctypedef int sigset_t
@@ -235,17 +245,18 @@ cdef class Sniffer(object):
 cdef class BlockingSniffer(Sniffer):
     cdef unsigned char* python_callback_ptr
     cdef object python_callback
-    cdef readonly PthreadWrap parent_thread
+    cdef pthread_t* parent_thread
 
     cpdef sniff_and_store(self, container, f=?, int signal_mask=?)
     cpdef sniff_callback(self, f, int signal_mask=?)
     cdef void set_signal_mask(self) nogil
     cpdef ask_stop(self)
+    cdef thread_pcap_node* register(self) except NULL
+    cdef unregister(self)
 
 
 cdef class NonBlockingSniffer(Sniffer):
     cdef bool _nonblocking_mode
-    cdef unsigned char* python_callback_ptr
     cdef object python_callback
     cdef object loop
     cdef bytes loop_type
@@ -261,8 +272,8 @@ cdef pcap_t* current_pcap_handle
 
 cdef void sig_handler(int signum) nogil
 
-cdef thread_pcap_node* register_pcap_for_thread(pthread_t thread, pcap_t* handle)
-cdef int unregister_pcap_for_thread(pthread_t thread)
+cdef thread_pcap_node* register_pcap_for_thread(pcap_t* handle) nogil
+cdef int unregister_pcap_for_thread() nogil
 cdef int thread_has_pcap(pthread_t thread) nogil
 cdef thread_pcap_node* get_pcap_for_thread(pthread_t thread) nogil
 
@@ -295,7 +306,37 @@ ctypedef struct thread_pcap_node:
     int asked_to_stop
     pcap_t* handle
 
+ctypedef void (*sighandler_t)(int s) nogil
+
 cdef list_head thread_pcap_global_list
 
 cpdef object PcapExceptionFactory(int return_code, bytes error_msg=?, default=?)
 
+cdef inline void store_c_callback(long tv_sec, int tv_usec, int caplen, int length, const unsigned char* pkt, void* p) nogil:
+    cdef packet_node* temp = <packet_node*> malloc(sizeof(packet_node))
+    temp.tv_sec = tv_sec
+    temp.tv_usec = tv_usec
+    temp.caplen = caplen
+    temp.length = length
+    temp.buf = <unsigned char*> malloc(caplen)
+    memcpy(<void*> temp.buf, <void*>pkt, caplen)
+    list_add_tail(&temp.link, <list_head*> p)
+
+cdef inline void _do_c_callback(unsigned char* usr, const pcap_pkthdr_t* pkthdr, const unsigned char* pkt) nogil:
+    cdef dispatch_user_param* s = <dispatch_user_param*> usr
+    (s.fun)(pkthdr.ts.tv_sec, pkthdr.ts.tv_usec, pkthdr.caplen, pkthdr.len, pkt, s.param)
+
+cdef inline void _do_python_callback(unsigned char* usr, const pcap_pkthdr_t* pkthdr, const unsigned char* pkt) with gil:
+    (<object> (<void*> usr))(
+        pkthdr.ts.tv_sec,
+        pkthdr.ts.tv_usec,
+        pkthdr.caplen,
+        pkthdr.len,
+        make_mview_from_const_uchar_buf(pkt, pkthdr.caplen)
+    )
+
+cdef inline int store_packet_node_in_seq(packet_node* n, object l, object f) except -1:
+    l.append((n.tv_sec, n.tv_usec, n.length, <bytes>(n.buf[:n.caplen])))
+
+cdef inline int store_packet_node_in_seq_with_f(packet_node* n, object l, object f) except -1:
+    l.append((n.tv_sec, n.tv_usec, n.length, f(make_mview_from_const_uchar_buf(n.buf, n.caplen))))

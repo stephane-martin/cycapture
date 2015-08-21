@@ -2,26 +2,9 @@
 
 from libc.stdio cimport printf, puts
 
-cdef class PthreadWrap(object):
-    def __cinit__(self):
-        self.thread_id = pthread_self()
-
-    def __dealloc__(self):
-        pass
-
-    def __init__(self):
-        pass
-
-    cpdef as_bytes(self):
-        return <bytes> (<unsigned char*>(<void*>(&self.thread_id)))[:sizeof(self.thread_id)]
-
-
-cpdef int thread_kill(PthreadWrap thread, int sig) nogil:
-    return pthread_kill(thread.thread_id, sig)
-
-# noinspection PyUnresolvedReferences
-cdef pthread_t get_thread_id() nogil:
-    return pthread_self()
+cpdef bytes pthread_self_as_bytes():
+    cdef pthread_t tid = pthread_self()
+    return <bytes> (<unsigned char*>(<void*>(&tid)))[:sizeof(tid)]
 
 cpdef void print_thread_id() nogil:
     cdef size_t i = 0
@@ -31,3 +14,18 @@ cpdef void print_thread_id() nogil:
         printf("%02x", <unsigned>(ptc[i]))
         i += 1
     puts('\n')
+
+cdef pthread_t* copy_pthread_self():
+    cdef pthread_t tid = pthread_self()
+    cdef pthread_t* copy = <pthread_t*> malloc(sizeof(pthread_t))
+    memcpy(copy, &tid, sizeof(pthread_t))
+    return copy
+
+cdef pthread_mutex_t create_error_check_lock():
+    cdef pthread_mutex_t lock
+    cdef pthread_mutexattr_t mattr
+    cdef int res
+    res = pthread_mutexattr_init(&mattr)
+    res = pthread_mutexattr_settype(&mattr, PTHREAD_MUTEX_ERRORCHECK)
+    res = pthread_mutex_init(&lock, &mattr)
+    return lock

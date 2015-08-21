@@ -4,51 +4,13 @@
 Small cython wrapper around libpcap
 """
 
-from cpython cimport bool
-from libc.stdlib cimport malloc, free
-from libc.signal cimport signal as libc_signal
-from libc.signal cimport SIGINT, SIGTERM
-from posix.signal cimport kill
-from posix.unistd cimport getpid
-from libc.string cimport memcpy, strcpy, strlen
-from libc.stdio cimport printf, puts
-
-
 import logging
 import threading
 import struct as struct_module
-from collections import deque
 
 from .exceptions import PcapException, AlreadyActivated, SetTimeoutError, SetDirectionError, SetBufferSizeError
 from .exceptions import SetSnapshotLengthError, SetPromiscModeError, SetMonitorModeError, SetNonblockingModeError
 from .exceptions import ActivationError, NotActivatedError, SniffingError, PermissionDenied, PromiscPermissionDenied
-
-ctypedef void (*sighandler_t)(int s) nogil
-
-cdef void _do_python_callback(unsigned char* usr, const pcap_pkthdr_t* pkthdr, const unsigned char* pkt) with gil:
-    (<object> (<void*> usr))(
-        pkthdr.ts.tv_sec,
-        pkthdr.ts.tv_usec,
-        pkthdr.caplen,
-        pkthdr.len,
-        make_mview_from_const_uchar_buf(pkt, pkthdr.caplen)
-    )
-
-
-cdef void _do_c_callback(unsigned char* usr, const pcap_pkthdr_t* pkthdr, const unsigned char* pkt) nogil:
-    cdef dispatch_user_param* s = <dispatch_user_param*> usr
-    (s.fun)(pkthdr.ts.tv_sec, pkthdr.ts.tv_usec, pkthdr.caplen, pkthdr.len, pkt, s.param)
-
-
-cdef void store_c_callback(long tv_sec, int tv_usec, int caplen, int length, const unsigned char* pkt, void* p) nogil:
-    cdef packet_node* temp = <packet_node*> malloc(sizeof(packet_node))
-    temp.tv_sec = tv_sec
-    temp.tv_usec = tv_usec
-    temp.caplen = caplen
-    temp.length = length
-    temp.buf = <unsigned char*> malloc(caplen)
-    memcpy(<void*> temp.buf, <void*>pkt, caplen)
-    list_add_tail(&temp.link, <list_head*> p)
 
 libpcap_version = <bytes> pcap_lib_version()
 
@@ -474,7 +436,7 @@ cdef class BlockingSniffer(Sniffer):
             return
         self.source = source
         self._handle = pcap_create(<char*> source, self._errbuf)
-        self.parent_thread = None
+        self.parent_thread = NULL
 
     def __init__(self, source, read_timeout=5000, buffer_size=0, snapshot_length=2000, promisc_mode=False,
                   monitor_mode=False, direction=PCAP_D_INOUT):
@@ -485,12 +447,15 @@ cdef class BlockingSniffer(Sniffer):
 
     @classmethod
     def stop_all(cls):
+        # puts('stop_all method')
         for s in cls.active_sniffers.values():
             s.ask_stop()
 
     cpdef ask_stop(self):
-        if self.parent_thread is not None:
-            if thread_kill(self.parent_thread, SIGINT) != 0:
+        # puts('ask_stop method')
+        if self.parent_thread != NULL:
+            # puts('sending SIGINT to appropriate thread')
+            if pthread_kill(self.parent_thread[0], SIGINT) != 0:
                 raise RuntimeError("BlockingSniffer.stop (sending SIGINT) failed")
 
     cdef void set_signal_mask(self) nogil:
@@ -500,6 +465,27 @@ cdef class BlockingSniffer(Sniffer):
         sigemptyset(&s)
         sigaddset(&s, SIGINT)
         pthread_sigmask(SIG_UNBLOCK, &s, NULL)
+
+    cdef thread_pcap_node* register(self) except NULL:
+        if self in self.active_sniffers.values():
+            raise RuntimeError("This BlockingSniffer is already actively listening")
+        if thread_has_pcap(pthread_self()) == 1:
+            raise RuntimeError("only one sniffing action per thread is allowed")
+        self.parent_thread = copy_pthread_self()
+        self.active_sniffers[pthread_self_as_bytes()] = self
+        cdef thread_pcap_node* n = register_pcap_for_thread(self._handle)
+        if n == NULL:
+            raise RuntimeError('register_pcap_for_thread failed')
+        return n
+
+    cdef unregister(self):
+        if unregister_pcap_for_thread() != 0:
+            raise RuntimeError('unregister_pcap_for_thread failed')
+        del self.active_sniffers[pthread_self_as_bytes()]
+        if self.parent_thread != NULL:
+            free(self.parent_thread)
+            self.parent_thread = NULL
+
 
     cpdef sniff_callback(self, f, int signal_mask=1):
         global sig_handler
@@ -513,14 +499,7 @@ cdef class BlockingSniffer(Sniffer):
         self.python_callback = f
         self.python_callback_ptr = <unsigned char *> (<void*> self.python_callback)
 
-        if self in self.active_sniffers.values():
-            raise RuntimeError("This BlockingSniffer is already actively listening")
-        if thread_has_pcap(PthreadWrap().thread_id) == 1:
-            raise RuntimeError("only one sniffing action per thread is allowed")
-
-        self.parent_thread = PthreadWrap()
-        self.active_sniffers[self.parent_thread.as_bytes()] = self
-        node = register_pcap_for_thread(self.parent_thread.thread_id, self._handle)
+        node = self.register()
 
 
         with nogil:
@@ -547,9 +526,7 @@ cdef class BlockingSniffer(Sniffer):
                 libc_signal(SIGINT, old_sigint)
                 siginterrupt(SIGINT, 1)
 
-        unregister_pcap_for_thread(self.parent_thread.thread_id)
-        del self.active_sniffers[self.parent_thread.as_bytes()]
-        self.parent_thread = None
+        self.unregister()
 
         if error_msg != NULL:
             msg = bytes(error_msg)
@@ -572,14 +549,7 @@ cdef class BlockingSniffer(Sniffer):
 
         usr.fun = store_c_callback
 
-        if self in self.active_sniffers.values():
-            raise RuntimeError("This BlockingSniffer is already actively listening")
-        if thread_has_pcap(PthreadWrap().thread_id) == 1:
-            raise RuntimeError("only one sniffing action per thread is allowed")
-
-        self.parent_thread = PthreadWrap()
-        self.active_sniffers[self.parent_thread.as_bytes()] = self
-        node = register_pcap_for_thread(self.parent_thread.thread_id, self._handle)
+        node = self.register()
 
 
         with nogil:
@@ -587,6 +557,13 @@ cdef class BlockingSniffer(Sniffer):
                 self.set_signal_mask()
             old_sigint = libc_signal(SIGINT, h)
             siginterrupt(SIGINT, 1)
+
+        cdef store_fun store
+        if f is None:
+            store = store_packet_node_in_seq
+        else:
+            store = store_packet_node_in_seq_with_f
+
 
         with self._activate_if_needed():
 
@@ -600,21 +577,7 @@ cdef class BlockingSniffer(Sniffer):
                 nextnext = cursor.next
                 while cursor != &head:
                     pkt_node = <packet_node*>( <char *>cursor - <unsigned long> (&(<packet_node*>0).link) )
-                    if f is not None:
-                        container.append((
-                            pkt_node.tv_sec,
-                            pkt_node.tv_usec,
-                            pkt_node.length,
-                            f(make_mview_from_const_uchar_buf(pkt_node.buf, pkt_node.caplen))
-                        ))
-                    else:
-                        container.append((
-                            pkt_node.tv_sec,
-                            pkt_node.tv_usec,
-                            pkt_node.length,
-                            <bytes>(pkt_node.buf[:pkt_node.caplen])
-                        ))
-
+                    store(pkt_node, container, f)
                     free(pkt_node.buf)
                     list_del(&pkt_node.link)
                     free(pkt_node)
@@ -633,9 +596,7 @@ cdef class BlockingSniffer(Sniffer):
             libc_signal(SIGINT, old_sigint)
             siginterrupt(SIGINT, 1)
 
-        unregister_pcap_for_thread(self.parent_thread.thread_id)
-        del self.active_sniffers[self.parent_thread.as_bytes()]
-        self.parent_thread = None
+        self.unregister()
 
         if error_message:
             raise PcapExceptionFactory(counted, bytes(error_message), default=SniffingError)
@@ -682,7 +643,7 @@ cdef class NonBlockingSniffer(Sniffer):
         if res < 0:
             raise PcapExceptionFactory(res, self._errbuf, default=SetNonblockingModeError)
 
-    def make_tornado_handler_callback(self, callback):
+    def _make_tornado_handler_callback(self, callback):
         def _tornado_handler_callback(fd=None, events=None):
             cdef unsigned char* ptr = <unsigned char*> (<void*> callback)
             cdef int counted = 1
@@ -690,15 +651,16 @@ cdef class NonBlockingSniffer(Sniffer):
                 counted = pcap_dispatch(self._handle, 0, _do_python_callback, ptr)
         return _tornado_handler_callback
 
-    def make_tornado_handle_store(self, container, f):
+    def _make_tornado_handle_store(self, container, f):
+        if f is None:
+            def _cllbck(sec, usec, caplen, length, mview):
+                container.append((sec, usec, length, mview.tobytes()))
+        else:
+            def _cllbck(sec, usec, caplen, length, mview):
+                container.append((sec, usec, length, f(mview)))
+
         def _tornado_handler_store(fd=None, events=None):
-            if f is None:
-                def _handle(sec, usec, caplen, length, mview):
-                    container.append((sec, usec, length, mview.tobytes()))
-            else:
-                def _handle(sec, usec, caplen, length, mview):
-                    container.append((sec, usec, length, f(mview)))
-            cdef unsigned char* ptr = <unsigned char*> (<void*> _handle)
+            cdef unsigned char* ptr = <unsigned char*> (<void*> _cllbck)
             cdef int counted = 1
             while counted > 0:
                 counted = pcap_dispatch(self._handle, 0, _do_python_callback, ptr)
@@ -721,9 +683,9 @@ cdef class NonBlockingSniffer(Sniffer):
         self.descriptor = pcap_get_selectable_fd(self._handle)
         if self.loop_type == "tornado":
             # "1" is for READ events
-            self.loop.add_handler(self.descriptor, self.make_tornado_handler_callback(callback), 1)
+            self.loop.add_handler(self.descriptor, self._make_tornado_handler_callback(callback), 1)
         elif self.loop_type == "asyncio":
-            self.loop.add_reader(self.descriptor, self.make_tornado_handler_callback(callback))
+            self.loop.add_reader(self.descriptor, self._make_tornado_handler_callback(callback))
         return self.descriptor
 
     cpdef sniff_and_store(self, container, f=None):
@@ -743,9 +705,9 @@ cdef class NonBlockingSniffer(Sniffer):
         self.descriptor = pcap_get_selectable_fd(self._handle)
         if self.loop_type == "tornado":
             # "1" is for READ events
-            self.loop.add_handler(self.descriptor, self.make_tornado_handle_store(container, f), 1)
+            self.loop.add_handler(self.descriptor, self._make_tornado_handle_store(container, f), 1)
         elif self.loop_type == "asyncio":
-            self.loop.add_reader(self.descriptor, self.make_tornado_handle_store(container, f))
+            self.loop.add_reader(self.descriptor, self._make_tornado_handle_store(container, f))
         return self.descriptor
 
     cpdef stop(self):
@@ -766,11 +728,13 @@ cdef class NonBlockingSniffer(Sniffer):
             s.stop()
 
 cdef void sig_handler(int signum) nogil:
-    cdef thread_pcap_node* current = get_pcap_for_thread(get_thread_id())
+    cdef thread_pcap_node* current = get_pcap_for_thread(pthread_self())
     if current != NULL:
+        # puts('sig_handler: found pcap, sending breakloop')
         current.asked_to_stop = 1
         pcap_breakloop(current.handle)
     else:
+        # puts('sig_handler: no found pcap, sending SIGTERM')
         # the signal was not sent to a specific thread, but to the whole process
         # we translate it to a SIGTERM for the process, so that SIGINT to threads will be sent
         kill(getpid(), SIGTERM)
@@ -786,38 +750,46 @@ cdef thread_pcap_node* get_pcap_for_thread(pthread_t thread) nogil:
         cursor = cursor.next
     return NULL
 
-cdef thread_pcap_node* register_pcap_for_thread(pthread_t thread, pcap_t* handle):
+cdef thread_pcap_node* register_pcap_for_thread(pcap_t* handle) nogil:
     global lock, thread_pcap_global_list
+    if pthread_mutex_lock(&lock) != 0:
+        return NULL
     cdef thread_pcap_node* node
-    with lock:
-        if thread_has_pcap(thread) == 1:
-            return NULL
-        node = <thread_pcap_node*> malloc(sizeof(thread_pcap_node))
-        node.thread = thread
-        node.handle = handle
-        node.asked_to_stop = 0
-        list_add_tail(&node.link, &thread_pcap_global_list)
-        return node
+    cdef pthread_t thread = pthread_self()
+    #with lock:
+    if thread_has_pcap(thread) == 1:
+        return NULL
+    node = <thread_pcap_node*> malloc(sizeof(thread_pcap_node))
+    node.thread = thread
+    node.handle = handle
+    node.asked_to_stop = 0
+    list_add_tail(&node.link, &thread_pcap_global_list)
+    pthread_mutex_unlock(&lock)
+    return node
 
-cdef int unregister_pcap_for_thread(pthread_t thread):
+cdef int unregister_pcap_for_thread() nogil:
     global lock, thread_pcap_global_list
+    if pthread_mutex_lock(&lock) != 0:
+        return -1
     cdef list_head* cursor
     cdef list_head* nextnext
     cdef thread_pcap_node* node
-    with lock:
-        if thread_has_pcap(thread) == 0:
-            return -1
-        cursor = thread_pcap_global_list.next
+    cdef pthread_t thread = pthread_self()
+    if thread_has_pcap(thread) == 0:
+        return -1
+    cursor = thread_pcap_global_list.next
+    nextnext = cursor.next
+    while cursor != &thread_pcap_global_list:
+        node = <thread_pcap_node*>( <char *>cursor - <unsigned long> (&(<thread_pcap_node*>0).link) )
+        if pthread_equal(node.thread, thread):
+            list_del(&node.link)
+            free(node)
+            break
+        cursor = nextnext
         nextnext = cursor.next
-        while cursor != &thread_pcap_global_list:
-            node = <thread_pcap_node*>( <char *>cursor - <unsigned long> (&(<thread_pcap_node*>0).link) )
-            if pthread_equal(node.thread, thread):
-                list_del(&node.link)
-                free(node)
-                break
-            cursor = nextnext
-            nextnext = cursor.next
-        return 0
+    pthread_mutex_unlock(&lock)
+    return 0
+
 
 cdef int thread_has_pcap(pthread_t thread) nogil:
     if get_pcap_for_thread(thread) == NULL:
@@ -825,7 +797,8 @@ cdef int thread_has_pcap(pthread_t thread) nogil:
     else:
         return 1
 
-lock = threading.Lock()
+cdef pthread_mutex_t lock = create_error_check_lock()
+# lock = threading.Lock()
 INIT_LIST_HEAD(&thread_pcap_global_list)
 
 cpdef object PcapExceptionFactory(int return_code, bytes error_msg=b'', default=PcapException):
@@ -852,4 +825,8 @@ cpdef object PcapExceptionFactory(int return_code, bytes error_msg=b'', default=
         return PromiscPermissionDenied(error_msg)
     else:
         return default(error_msg)
+
+
+
+ctypedef int (*store_fun) (packet_node* n, object l, object f) except -1
 
