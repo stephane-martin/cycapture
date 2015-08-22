@@ -168,7 +168,7 @@ cdef class PDU(object):
         cdef cppPDU* pdu = cpp_find_pdu(<const cppPDU*> self.base_ptr, <PDUType> t)
         if pdu is NULL:
             return None
-        # here we return a *reference* of the matching inner PDu
+        # here we return a *reference* of the matching inner PDU
         return (map_classname_to_factory[classname])(pdu, NULL, 0, self)
 
     cpdef find_pdu(self, obj):
@@ -207,24 +207,16 @@ cdef class PDU(object):
         else:
             return self.rfind_pdu_by_type(int(obj))
 
+    @staticmethod
+    def from_typed_memoryview(int pdu_type, unsigned char[:] data):
+        cdef string classname = map_pdutype_to_classname[pdu_type]
+        if classname.size() == 0:
+            raise ValueError("Unknown PDU type")
+        return (map_classname_to_factory[classname])(NULL, <uint8_t*>((<cy_memoryview>data).get_item_pointer([])), len(data), None)
 
-cdef factory_PDU_from_uchar_buf(int pdu_type, uint8_t* buf=NULL, int size=0):
-    cdef string classname = map_pdutype_to_classname[pdu_type]
-    if classname.size() == 0:
-        raise ValueError("Unknown PDU type")
-    return (map_classname_to_factory[classname])(NULL, buf, size, None)
-
-
-cpdef factory_PDU_from_typed_memoryview(int pdu_type, unsigned char[:] data):
-    cdef string classname = map_pdutype_to_classname[pdu_type]
-    if classname.size() == 0:
-        raise ValueError("Unknown PDU type")
-    return (map_classname_to_factory[classname])(NULL, <uint8_t*>((<cy_memoryview>data).get_item_pointer([])), len(data), None)
-
-
-cpdef factory_PDU(int pdu_type, object buf):
-    return (map_pdutype_to_class[pdu_type])(buf=buf)
-
+    @staticmethod
+    def from_generic_buf(int pdu_type, object buf):
+        return (map_pdutype_to_class[pdu_type])(buf=buf)
 
 map_pdutype_to_class = {
     PDU.ETHERNET_II: EthernetII,
@@ -235,7 +227,7 @@ map_pdutype_to_class = {
     PDU.DNS: DNS
 }
 
-cdef cpp_map[int, string] map_pdutype_to_classname
+#cdef cpp_map[int, string] map_pdutype_to_classname
 map_pdutype_to_classname[PDU.ETHERNET_II] = "ethernetii"
 map_pdutype_to_classname[PDU.IP] = "ip"
 map_pdutype_to_classname[PDU.TCP] = "tcp"
@@ -244,17 +236,18 @@ map_pdutype_to_classname[PDU.UDP] = "udp"
 map_pdutype_to_classname[PDU.DNS] = "dns"
 
 
-cdef cpp_map[string, factory] map_classname_to_factory
-map_classname_to_factory["ethernetii"] = &factory_ethernet_ii
-map_classname_to_factory["ip"] = &factory_ip
-map_classname_to_factory["tcp"] = &factory_tcp
-map_classname_to_factory["raw"] = &factory_raw
-map_classname_to_factory["udp"] = &factory_udp
-map_classname_to_factory["dns"] = &factory_dns
+#cdef cpp_map[string, factory] map_classname_to_factory
+map_classname_to_factory["ethernetii"] = &EthernetII.factory
+map_classname_to_factory["ip"] = &IP.factory
+map_classname_to_factory["tcp"] = &TCP.factory
+map_classname_to_factory["raw"] = &RAW.factory
+map_classname_to_factory["udp"] = &UDP.factory
+map_classname_to_factory["dns"] = &DNS.factory
 
 
-cdef cpp_map[string, int] map_classname_to_pdutype
+#cdef cpp_map[string, int] map_classname_to_pdutype
 cdef pair[int, string] p
 for p in map_pdutype_to_classname:
     map_classname_to_pdutype[p.second] = p.first
+
 

@@ -15,12 +15,10 @@ from ._tins import SocketOpenError, SocketCloseError, SocketWriteError, InvalidS
 # addresses and ranges
 from ._tins import IPv4Address, IPv6Address, HWAddress, IPv4Range, IPv6Range, HWRange, NetworkInterface
 
-# abstract PDU
-from ._tins import PDU, factory_PDU_from_typed_memoryview, factory_PDU
-
 # concrete PDUs
 from ._tins import EthernetII, IP, TCP, UDP, RAW
 from ._tins import DNS, DNS_Query, DNS_Resource
 
 # utils
 from ._tins import RouteEntry, get_route_entries, list_network_interfaces, pdutype_to_string
+from ._tins import IPReassembler

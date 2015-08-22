@@ -3,14 +3,7 @@
 RAW packet python class
 """
 
-cdef factory_raw(cppPDU* ptr, uint8_t* buf, int size, object parent):
-    if ptr is NULL and buf is NULL:
-        return RAW()
-    obj = RAW(_raw=True)
-    obj.ptr = new cppRAW(<uint8_t*> buf, <uint32_t> size) if ptr is NULL else <cppRAW*> ptr
-    obj.base_ptr = <cppPDU*> obj.ptr
-    obj.parent = parent
-    return obj
+
 
 cdef class RAW(PDU):
     """
@@ -24,23 +17,11 @@ cdef class RAW(PDU):
             return
         if buf is None:
             buf = b""
-        if PyBytes_Check(buf):
-            self.ptr = new cppRAW(<uint8_t*> PyBytes_AS_STRING(buf), <uint32_t> PyBytes_Size(buf))
-        elif isinstance(buf, bytearray):
-            buf = memoryview(buf)
-            self.ptr = new cppRAW(<uint8_t*> (mview_get_addr(<void*> buf)), len(buf))
-        elif isinstance(buf, memoryview):
-            if buf.itemsize == 1 and buf.ndim == 1:
-                self.ptr = new cppRAW(<uint8_t*> (mview_get_addr(<void*> buf)), len(buf))
-            else:
-                raise ValueError("the memoryview doesn't have the proper format")
-        elif isinstance(buf, cy_memoryview):
-            if buf.itemsize == 1 and buf.ndim == 1:
-                self.ptr = new cppRAW(<uint8_t*> (<cy_memoryview>buf).get_item_pointer([]), <uint32_t> len(buf))
-            else:
-                raise ValueError("the typed memoryview doesn't have the proper format")
-        else:
-            raise ValueError("don't know what to do with type '%s'" % type(buf))
+        cdef uint8_t* buf_addr
+        cdef uint32_t size
+        PDU.prepare_buf_arg(buf, &buf_addr, &size)
+        with nogil:
+            self.ptr = new cppRAW(buf_addr, size)
         self.base_ptr = <cppPDU*> self.ptr
         self.parent = None
 

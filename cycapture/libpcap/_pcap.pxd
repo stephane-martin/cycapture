@@ -19,6 +19,7 @@ from ..pthreadwrap cimport pthread_kill, pthread_t, pthread_equal, pthread_self,
 # noinspection PyUnresolvedReferences
 from ..pthreadwrap cimport create_error_check_lock, pthread_mutex_destroy, pthread_mutex_lock, pthread_mutex_unlock, pthread_mutex_t
 
+ctypedef void (*sighandler_t)(int s) nogil
 
 cdef extern from "signal.h" nogil:
     ctypedef int sigset_t
@@ -161,37 +162,42 @@ cdef extern from "pcap/pcap.h" nogil:
     int pcap_setfilter(pcap_t *p, bpf_program *fp)
 
 
-cdef enum:
-    PCAP_WARNING = 1
-    PCAP_WARNING_PROMISC_NOTSUP = 2
-    PCAP_WARNING_TSTAMP_TYPE_NOTSUP = 3
-    PCAP_ERROR = -1
-    PCAP_ERROR_BREAK = -2
-    PCAP_ERROR_NOT_ACTIVATED = -3
-    PCAP_ERROR_ACTIVATED = -4
-    PCAP_ERROR_NO_SUCH_DEVICE = -5
-    PCAP_ERROR_RFMON_NOTSUP = -6
-    PCAP_ERROR_NOT_RFMON = -7
-    PCAP_ERROR_PERM_DENIED = -8
-    PCAP_ERROR_IFACE_NOT_UP = -9
-    PCAP_ERROR_CANTSET_TSTAMP_TYPE = -10
-    PCAP_ERROR_PROMISC_PERM_DENIED = -11
-    PCAP_ERROR_TSTAMP_PRECISION_NOTSUP = -12
-    AF_INET = 2
-    AF_LINK = 18
-    AF_INET6 = 30
-    PCAP_IF_LOOPBACK = 0x00000001
-    PCAP_IF_UP = 0x00000002
-    PCAP_IF_RUNNING = 0x00000004
-    PCAP_ERRBUF_SIZE = 256
-    PCAP_TSTAMP_PRECISION_MICRO	= 0
-    PCAP_TSTAMP_PRECISION_NANO = 1
-    PCAP_TSTAMP_HOST = 0
-    PCAP_TSTAMP_HOST_LOWPREC = 1
-    PCAP_TSTAMP_HOST_HIPREC = 2
-    PCAP_TSTAMP_ADAPTER = 3
-    PCAP_TSTAMP_ADAPTER_UNSYNCED = 4
+    enum:
+        PCAP_WARNING
+        PCAP_WARNING_PROMISC_NOTSUP
+        PCAP_WARNING_TSTAMP_TYPE_NOTSUP
 
+        PCAP_ERROR
+        PCAP_ERROR_BREAK
+        PCAP_ERROR_NOT_ACTIVATED
+        PCAP_ERROR_ACTIVATED
+        PCAP_ERROR_NO_SUCH_DEVICE
+        PCAP_ERROR_RFMON_NOTSUP
+        PCAP_ERROR_NOT_RFMON
+        PCAP_ERROR_PERM_DENIED
+        PCAP_ERROR_IFACE_NOT_UP
+        PCAP_ERROR_CANTSET_TSTAMP_TYPE
+        PCAP_ERROR_PROMISC_PERM_DENIED
+        PCAP_ERROR_TSTAMP_PRECISION_NOTSUP
+
+        AF_INET
+        AF_LINK
+        AF_INET6
+
+        PCAP_IF_LOOPBACK
+        PCAP_IF_UP
+        PCAP_IF_RUNNING
+
+        PCAP_TSTAMP_PRECISION_MICRO
+        PCAP_TSTAMP_PRECISION_NANO
+        PCAP_TSTAMP_HOST
+        PCAP_TSTAMP_HOST_LOWPREC
+        PCAP_TSTAMP_HOST_HIPREC
+        PCAP_TSTAMP_ADAPTER
+        PCAP_TSTAMP_ADAPTER_UNSYNCED
+
+cdef enum:
+    PCAP_ERRBUF_SIZE = 256
 
 cpdef object lookupdev()
 cpdef object findalldevs()
@@ -246,13 +252,14 @@ cdef class BlockingSniffer(Sniffer):
     cdef unsigned char* python_callback_ptr
     cdef object python_callback
     cdef pthread_t* parent_thread
+    cdef sighandler_t old_sigint
 
     cpdef sniff_and_store(self, container, f=?, int signal_mask=?)
     cpdef sniff_callback(self, f, int signal_mask=?)
     cdef void set_signal_mask(self) nogil
     cpdef ask_stop(self)
     cdef thread_pcap_node* register(self) except NULL
-    cdef unregister(self)
+    cdef int unregister(self)
 
 
 cdef class NonBlockingSniffer(Sniffer):
@@ -274,7 +281,6 @@ cdef void sig_handler(int signum) nogil
 
 cdef thread_pcap_node* register_pcap_for_thread(pcap_t* handle) nogil
 cdef int unregister_pcap_for_thread() nogil
-cdef int thread_has_pcap(pthread_t thread) nogil
 cdef thread_pcap_node* get_pcap_for_thread(pthread_t thread) nogil
 
 
@@ -306,7 +312,7 @@ ctypedef struct thread_pcap_node:
     int asked_to_stop
     pcap_t* handle
 
-ctypedef void (*sighandler_t)(int s) nogil
+ctypedef void (*store_fun) (packet_node* n, object l, object f)
 
 cdef list_head thread_pcap_global_list
 
@@ -326,17 +332,46 @@ cdef inline void _do_c_callback(unsigned char* usr, const pcap_pkthdr_t* pkthdr,
     cdef dispatch_user_param* s = <dispatch_user_param*> usr
     (s.fun)(pkthdr.ts.tv_sec, pkthdr.ts.tv_usec, pkthdr.caplen, pkthdr.len, pkt, s.param)
 
-cdef inline void _do_python_callback(unsigned char* usr, const pcap_pkthdr_t* pkthdr, const unsigned char* pkt) with gil:
-    (<object> (<void*> usr))(
-        pkthdr.ts.tv_sec,
-        pkthdr.ts.tv_usec,
-        pkthdr.caplen,
-        pkthdr.len,
-        make_mview_from_const_uchar_buf(pkt, pkthdr.caplen)
-    )
+#cdef void _do_python_callback(unsigned char* usr, const pcap_pkthdr_t* pkthdr, const unsigned char* pkt) with gil
 
-cdef inline int store_packet_node_in_seq(packet_node* n, object l, object f) except -1:
+#cdef void store_packet_node_in_seq(packet_node* n, object l, object f)
+
+#cdef void store_packet_node_in_seq_with_f(packet_node* n, object l, object f)
+
+cdef object logger
+cdef object LibtinsException
+
+cdef inline void _do_python_callback(unsigned char* usr, const pcap_pkthdr_t* pkthdr, const unsigned char* pkt) with gil:
+    try:
+        (<object> (<void*> usr))(
+            pkthdr.ts.tv_sec,
+            pkthdr.ts.tv_usec,
+            pkthdr.caplen,
+            pkthdr.len,
+            make_mview_from_const_uchar_buf(pkt, pkthdr.caplen)
+        )
+    except LibtinsException as ex:
+        logger.debug('Ignored LibtinsException: %s', str(ex))
+    except Exception as ex:
+        logger.exception('_do_python_callback: an unexpected exception happened')
+
+cdef inline void store_packet_node_in_seq_with_f(packet_node* n, object l, object f):
+    obj = None
+    try:
+        obj = f(make_mview_from_const_uchar_buf(n.buf, n.caplen))
+    except LibtinsException as ex:
+        logger.debug('Ignored LibtinsException: %s', str(ex))
+    except Exception as ex:
+        logger.exception('store_packet_node_in_seq_with_f: an unexpected exception happened in f')
+    else:
+        if obj is not None:
+            l.append((n.tv_sec, n.tv_usec, n.length, obj))
+
+cdef inline void store_packet_node_in_seq(packet_node* n, object l, object f):
     l.append((n.tv_sec, n.tv_usec, n.length, <bytes>(n.buf[:n.caplen])))
 
-cdef inline int store_packet_node_in_seq_with_f(packet_node* n, object l, object f) except -1:
-    l.append((n.tv_sec, n.tv_usec, n.length, f(make_mview_from_const_uchar_buf(n.buf, n.caplen))))
+cdef inline int thread_has_pcap(pthread_t thread) nogil:
+    if get_pcap_for_thread(thread) == NULL:
+        return 0
+    else:
+        return 1

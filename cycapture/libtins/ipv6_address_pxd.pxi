@@ -3,9 +3,9 @@
 cdef extern from "tins/ip_address.h" namespace "Tins" nogil:
     cdef cppclass cppIPv6Address "Tins::IPv6Address":
         cppIPv6Address()
-        cppIPv6Address(const char *addr) except+
-        cppIPv6Address(const string &addr) except+
-        cppIPv6Address(const uint8_t* ptr) except+
+        cppIPv6Address(const char *addr) except +custom_exception_handler
+        cppIPv6Address(const string &addr) except +custom_exception_handler
+        cppIPv6Address(const uint8_t* ptr) except +custom_exception_handler
         string to_string() const
         cpp_bool operator==(const cppIPv6Address &rhs) const
         cpp_bool operator!=(const cppIPv6Address &rhs) const

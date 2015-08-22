@@ -3,16 +3,6 @@
 TCP packet python class
 """
 
-cdef factory_tcp(cppPDU* ptr, uint8_t* buf, int size, object parent):
-    if ptr is NULL and buf is NULL:
-        return TCP()
-    obj = TCP(_raw=True)
-    obj.ptr = new cppTCP(<uint8_t*> buf, <uint32_t> size) if ptr is NULL else <cppTCP*> ptr
-    obj.base_ptr = <cppPDU*> obj.ptr
-    obj.parent = parent
-    return obj
-
-
 cdef class TCP(PDU):
     """
     TCP packet
@@ -59,28 +49,16 @@ cdef class TCP(PDU):
     CHK_16FLETCHER = TCP_CHK_16FLETCHER
 
     def __cinit__(self, dest_src_ports=None, buf=None, _raw=False):
+        cdef uint8_t* buf_addr
+        cdef uint32_t size
         if _raw:
             return
         elif buf is None and dest_src_ports is None:
             self.ptr = new cppTCP()
         elif buf is not None:
-            if PyBytes_Check(buf):
-                self.ptr = new cppTCP(<uint8_t*> PyBytes_AS_STRING(buf), <uint32_t> PyBytes_Size(buf))
-            elif isinstance(buf, bytearray):
-                buf = memoryview(buf)
-                self.ptr = new cppTCP(<uint8_t*> (mview_get_addr(<void*> buf)), len(buf))
-            elif isinstance(buf, memoryview):
-                if buf.itemsize == 1 and buf.ndim == 1:
-                    self.ptr = new cppTCP(<uint8_t*> (mview_get_addr(<void*> buf)), len(buf))
-                else:
-                    raise ValueError("the memoryview doesn't have the proper format")
-            elif isinstance(buf, cy_memoryview):
-                if buf.itemsize == 1 and buf.ndim == 1:
-                    self.ptr = new cppTCP(<uint8_t*> (<cy_memoryview>buf).get_item_pointer([]), <uint32_t> len(buf))
-                else:
-                    raise ValueError("the typed memoryview doesn't have the proper format")
-            else:
-                raise ValueError("don't know what to do with type '%s'" % type(buf))
+            PDU.prepare_buf_arg(buf, &buf_addr, &size)
+            with nogil:
+                self.ptr = new cppTCP(buf_addr, size)
         elif PyTuple_Check(dest_src_ports) or PyList_Check(dest_src_ports):
             dest, src = dest_src_ports
             if src is None:

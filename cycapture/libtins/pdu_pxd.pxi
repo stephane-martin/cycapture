@@ -112,7 +112,34 @@ cdef class PDU(object):
     cpdef set_inner_pdu(self, obj)
     cpdef serialize(self)
 
+    @staticmethod
+    cdef inline prepare_buf_arg(object buf, uint8_t** buf_addr, uint32_t* size):
+        if PyBytes_Check(buf) or isinstance(buf, bytearray):
+            buf = memoryview(buf)
+            buf_addr[0] = <uint8_t*> (mview_get_addr(<void*> buf))
+            size[0] = <uint32_t> len(buf)
+        elif isinstance(buf, memoryview):
+            if buf.itemsize == 1 and buf.ndim == 1:
+                buf_addr[0] = <uint8_t*> (mview_get_addr(<void*> buf))
+                size[0] = <uint32_t> len(buf)
+            else:
+                raise MemoryViewFormat("the memoryview doesn't have the proper format")
+        elif isinstance(buf, cy_memoryview):
+            if buf.itemsize == 1 and buf.ndim == 1:
+                buf_addr[0] = <uint8_t*> (<cy_memoryview>buf).get_item_pointer([])
+                size[0] = <uint32_t> len(buf)
+            else:
+                raise MemoryViewFormat("the typed memoryview doesn't have the proper format")
+        else:
+            raise ValueError("don't know what to do with type '%s'" % type(buf))
 
-cdef factory_PDU_from_uchar_buf(int pdu_type, uint8_t* buf=?, int size=?)
-cpdef factory_PDU_from_typed_memoryview(int pdu_type, unsigned char[:] data)
-cpdef factory_PDU(int pdu_type, object buf)
+cdef inline PDU_from_uchar_buf(int pdu_type, uint8_t* buf, int size):
+    cdef string classname = map_pdutype_to_classname[pdu_type]
+    if classname.size() == 0:
+        raise ValueError("Unknown PDU type")
+    return (map_classname_to_factory[classname])(NULL, buf, size, None)
+
+cdef cpp_map[int, string] map_pdutype_to_classname
+cdef cpp_map[string, factory] map_classname_to_factory
+cdef cpp_map[string, int] map_classname_to_pdutype
+cdef dict map_pdutype_to_class

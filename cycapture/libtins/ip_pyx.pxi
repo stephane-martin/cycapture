@@ -3,15 +3,6 @@
 IP packet python class
 """
 
-cdef factory_ip(cppPDU* ptr, uint8_t* buf, int size, object parent):
-    if ptr is NULL and buf is NULL:
-        return IP()
-    obj = IP(_raw=True)
-    obj.ptr = new cppIP(<uint8_t*> buf, <uint32_t> size) if ptr is NULL else <cppIP*> ptr
-    obj.base_ptr = <cppPDU*> obj.ptr
-    obj.parent = parent
-    return obj
-
 
 cdef class IP(PDU):
     """
@@ -52,35 +43,9 @@ cdef class IP(PDU):
         if buf is None and dest_src_ips is None:
             self.ptr = new cppIP()
         elif buf is not None:
-            if PyBytes_Check(buf):
-                buf_addr = <uint8_t*> PyBytes_AS_STRING(buf)
-                size = <uint32_t> PyBytes_Size(buf)
-                with nogil:
-                    self.ptr = new cppIP(buf_addr, size)
-            elif isinstance(buf, bytearray):
-                buf = memoryview(buf)
-                buf_addr = <uint8_t*> (mview_get_addr(<void*> buf))
-                size = <uint32_t> len(buf)
-                with nogil:
-                    self.ptr = new cppIP(buf_addr, size)
-            elif isinstance(buf, memoryview):
-                if buf.itemsize == 1 and buf.ndim == 1:
-                    buf_addr = <uint8_t*> (mview_get_addr(<void*> buf))
-                    size = <uint32_t> len(buf)
-                    with nogil:
-                        self.ptr = new cppIP(buf_addr, size)
-                else:
-                    raise ValueError("the memoryview doesn't have the proper format")
-            elif isinstance(buf, cy_memoryview):
-                if buf.itemsize == 1 and buf.ndim == 1:
-                    buf_addr = <uint8_t*> (<cy_memoryview>buf).get_item_pointer([])
-                    size = <uint32_t> len(buf)
-                    with nogil:
-                        self.ptr = new cppIP(buf_addr, size)
-                else:
-                    raise ValueError("the typed memoryview doesn't have the proper format")
-            else:
-                raise ValueError("don't know what to do with type '%s'" % type(buf))
+            PDU.prepare_buf_arg(buf, &buf_addr, &size)
+            with nogil:
+                self.ptr = new cppIP(buf_addr, size)
         elif PyTuple_Check(dest_src_ips) or PyList_Check(dest_src_ips):
             dest, src = dest_src_ips
             if src is None:

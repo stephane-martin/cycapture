@@ -7,12 +7,12 @@ cdef extern from "tins/network_interface.h" namespace "Tins" nogil:
             cppHWAddress6 hw_addr
 
         cppNetworkInterface()
-        cppNetworkInterface(const string &name) except +ValueError
-        cppNetworkInterface(const char *name) except +ValueError
-        cppNetworkInterface(cppIPv4Address ip) except +ValueError
+        cppNetworkInterface(const string &name) except +custom_exception_handler
+        cppNetworkInterface(const char *name) except +custom_exception_handler
+        cppNetworkInterface(cppIPv4Address ip) except +custom_exception_handler
         uint32_t ident "id"() const
-        string name() except +IOError
-        cppNetworkInterface.Info addresses() except +IOError
+        string name() except +custom_exception_handler
+        cppNetworkInterface.Info addresses() except +custom_exception_handler
         cpp_bool is_loopback() const
         cpp_bool operator==(const cppNetworkInterface &rhs) const
         cpp_bool operator!=(const cppNetworkInterface &rhs) const

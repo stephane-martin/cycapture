@@ -99,3 +99,5 @@ class ProtocolDisabled(LibtinsException):
     """
 cdef public PyObject* py_protocol_disabled = <PyObject*>ProtocolDisabled
 
+class MemoryViewFormat(LibtinsException, ValueError):
+    pass

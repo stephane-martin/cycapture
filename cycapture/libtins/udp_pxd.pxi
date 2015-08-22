@@ -5,8 +5,8 @@ cdef extern from "tins/udp.h" namespace "Tins" nogil:
 
     cdef cppclass cppUDP "Tins::UDP" (cppPDU):
         cppUDP()
-        cppUDP(uint16_t dport) except +ValueError
-        cppUDP(uint16_t dport, uint16_t sport) except +ValueError
+        cppUDP(uint16_t dport) except +custom_exception_handler
+        cppUDP(uint16_t dport, uint16_t sport) except +custom_exception_handler
         cppUDP(const uint8_t *buf, uint32_t total_sz) except +custom_exception_handler
         uint16_t dport() const
         void dport(uint16_t new_dport)
@@ -21,4 +21,12 @@ cdef extern from "tins/udp.h" namespace "Tins" nogil:
 cdef class UDP(PDU):
     cdef cppUDP* ptr
 
-cdef factory_udp(cppPDU* ptr, uint8_t* buf, int size, object parent)
+    @staticmethod
+    cdef inline factory(cppPDU* ptr, uint8_t* buf, int size, object parent):
+        if ptr is NULL and buf is NULL:
+            return UDP()
+        obj = UDP(_raw=True)
+        obj.ptr = new cppUDP(<uint8_t*> buf, <uint32_t> size) if ptr is NULL else <cppUDP*> ptr
+        obj.base_ptr = <cppPDU*> obj.ptr
+        obj.parent = parent
+        return obj

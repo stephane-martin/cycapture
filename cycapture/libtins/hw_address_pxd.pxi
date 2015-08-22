@@ -4,10 +4,9 @@ cdef extern from "tins/hw_address.h" namespace "Tins" nogil:
     # noinspection PyPep8Naming
     cdef cppclass cppHWAddress6 "Tins::HWAddress<6, uint8_t>":
         cppHWAddress6()
-        cppHWAddress6(const unsigned char* ptr) except +ValueError
-        cppHWAddress6(const string &) except +ValueError
-        cppHWAddress6(const char (&address)[6]) except +ValueError
-        cppHWAddress6(const cppHWAddress6 &) except +ValueError
+        cppHWAddress6(const unsigned char* ptr) except +custom_exception_handler
+        cppHWAddress6(const string &) except +custom_exception_handler
+        cppHWAddress6(const cppHWAddress6 &) except +custom_exception_handler
         const size_t size() const
         string to_string() const
         uint8_t* begin()

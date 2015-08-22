@@ -44,8 +44,8 @@ cdef extern from "tins/ip.h" namespace "Tins" nogil:
 
     cdef cppclass cppIP "Tins::IP" (cppPDU):
         cppIP()
-        cppIP(cppIPv4Address ip_dst) except +ValueError
-        cppIP(cppIPv4Address ip_dst, cppIPv4Address ip_src) except +ValueError
+        cppIP(cppIPv4Address ip_dst) except +custom_exception_handler
+        cppIP(cppIPv4Address ip_dst, cppIPv4Address ip_src) except +custom_exception_handler
         cppIP(const uint8_t* buf, uint32_t total_sz) except +custom_exception_handler
         small_uint4 head_len() const
         uint8_t tos() const
@@ -138,4 +138,12 @@ cdef class IP(PDU):
     cpdef get_ssrr(self)
     cpdef ssrr(self, pointer, routes)
 
-cdef factory_ip(cppPDU* ptr, uint8_t* buf, int size, object parent)
+    @staticmethod
+    cdef inline factory(cppPDU* ptr, uint8_t* buf, int size, object parent):
+        if ptr is NULL and buf is NULL:
+            return IP()
+        obj = IP(_raw=True)
+        obj.ptr = new cppIP(<uint8_t*> buf, <uint32_t> size) if ptr is NULL else <cppIP*> ptr
+        obj.base_ptr = <cppPDU*> obj.ptr
+        obj.parent = parent
+        return obj

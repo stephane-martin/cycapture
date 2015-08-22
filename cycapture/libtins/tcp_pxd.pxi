@@ -32,8 +32,8 @@ cdef extern from "tins/tcp.h" namespace "Tins" nogil:
 
     cdef cppclass cppTCP "Tins::TCP" (cppPDU):
         cppTCP()
-        cppTCP(uint16_t dport) except +ValueError
-        cppTCP(uint16_t dport, uint16_t sport) except +ValueError
+        cppTCP(uint16_t dport) except +custom_exception_handler
+        cppTCP(uint16_t dport, uint16_t sport) except +custom_exception_handler
         cppTCP(const uint8_t *buf, uint32_t total_sz) except +custom_exception_handler
         uint16_t dport() const
         void dport(uint16_t new_dport)
@@ -92,4 +92,12 @@ cdef class TCP(PDU):
     cpdef get_flag(self, flag)
     cpdef set_flag(self, flag, cpp_bool value)
 
-cdef factory_tcp(cppPDU* ptr, uint8_t* buf, int size, object parent)
+    @staticmethod
+    cdef inline factory(cppPDU* ptr, uint8_t* buf, int size, object parent):
+        if ptr is NULL and buf is NULL:
+            return TCP()
+        obj = TCP(_raw=True)
+        obj.ptr = new cppTCP(<uint8_t*> buf, <uint32_t> size) if ptr is NULL else <cppTCP*> ptr
+        obj.base_ptr = <cppPDU*> obj.ptr
+        obj.parent = parent
+        return obj

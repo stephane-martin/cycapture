@@ -72,7 +72,7 @@ cdef extern from "tins/dns.h" namespace "Tins" nogil:
             Query()
 
             const string &dname() const
-            void dname(const string &nm)
+            void dname(const string &nm) except +custom_exception_handler
             QueryType get_type "type"() const
             void set_type "type"(QueryType tp)
             QueryClass query_class() const
@@ -83,9 +83,9 @@ cdef extern from "tins/dns.h" namespace "Tins" nogil:
             Resource()
 
             const string &dname() const
-            void dname(const string &data)
+            void dname(const string &data) except +custom_exception_handler
             const string &data() const
-            void data(const string &data)
+            void data(const string &data) except +custom_exception_handler
             uint16_t get_type "type"() const
             void set_type "type"(uint16_t data)
             uint16_t query_class() const
@@ -142,7 +142,6 @@ cdef extern from "tins/dns.h" namespace "Tins" nogil:
 
     cdef string cpp_encode_domain_name "Tins::DNS::encode_domain_name"(const string &domain_name)
 
-cdef factory_dns(cppPDU* ptr, uint8_t* buf, int size, object parent)
 
 cdef class DNS(PDU):
     cdef cppDNS* ptr
@@ -160,6 +159,15 @@ cdef class DNS(PDU):
     cpdef additional(self)
     cpdef add_additional(self, DNS_Resource additional)
 
+    @staticmethod
+    cdef inline factory(cppPDU* ptr, uint8_t* buf, int size, object parent):
+        if ptr is NULL and buf is NULL:
+            return DNS()
+        obj = DNS(_raw=True)
+        obj.ptr = new cppDNS(<uint8_t*> buf, <uint32_t> size) if ptr is NULL else <cppDNS*> ptr
+        obj.base_ptr = <cppPDU*> obj.ptr
+        obj.parent = parent
+        return obj
 
 cdef class DNS_Query(object):
     cdef cppDNS.cppQuery* ptr

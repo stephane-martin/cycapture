@@ -1,13 +1,3 @@
-
-cdef factory_dns(cppPDU* ptr, uint8_t* buf, int size, object parent):
-    if ptr is NULL and buf is NULL:
-        return DNS()
-    obj = DNS(_raw=True)
-    obj.ptr = new cppDNS(<uint8_t*> buf, <uint32_t> size) if ptr is NULL else <cppDNS*> ptr
-    obj.base_ptr = <cppPDU*> obj.ptr
-    obj.parent = parent
-    return obj
-
 cdef class DNS_Query(object):
     """
     Encapsulate a DNS query
@@ -18,13 +8,9 @@ cdef class DNS_Query(object):
             self.ptr.dname(<string> bytes(name))
         if query_type is not None:
             query_type = int(query_type)
-            #if query_type not in DNS.TYPES:
-            #    raise ValueError("value is not a valid DNS query type: %s " % query_type)
             self.ptr.set_type(<QueryType> query_type)
         if query_class is not None:
             query_class = int(query_class)
-            #if query_class not in DNS.CLASSES:
-            #    raise ValueError("value is not a valid DNS query class: %s" % query_class)
             self.ptr.query_class(<QueryClass> query_class)
 
     def __dealloc__(self):
@@ -159,8 +145,6 @@ cdef class DNS_Resource(object):
             return int(self.ptr.get_type())
         def __set__(self, value):
             value = int(value)
-            #if value not in DNS.TYPES:
-            #    raise ValueError("value is not a valid DNS query type")
             self.ptr.set_type(<QueryType> value)
 
     property query_class:
@@ -269,35 +253,9 @@ cdef class DNS(PDU):
         if buf is None:
             self.ptr = new cppDNS()
         else:
-            if PyBytes_Check(buf):
-                buf_addr = <uint8_t*> PyBytes_AS_STRING(buf)
-                size = <uint32_t> PyBytes_Size(buf)
-                with nogil:
-                    self.ptr = new cppDNS(buf_addr, size)
-            elif isinstance(buf, bytearray):
-                buf = memoryview(buf)
-                buf_addr = <uint8_t*> (mview_get_addr(<void*> buf))
-                size = <uint32_t> len(buf)
-                with nogil:
-                    self.ptr = new cppDNS(buf_addr, size)
-            elif isinstance(buf, memoryview):
-                if buf.itemsize == 1 and buf.ndim == 1:
-                    buf_addr = <uint8_t*> (mview_get_addr(<void*> buf))
-                    size = <uint32_t> len(buf)
-                    with nogil:
-                        self.ptr = new cppDNS(buf_addr, size)
-                else:
-                    raise ValueError("the memoryview doesn't have the proper format")
-            elif isinstance(buf, cy_memoryview):
-                if buf.itemsize == 1 and buf.ndim == 1:
-                    buf_addr = <uint8_t*> (<cy_memoryview>buf).get_item_pointer([])
-                    size = <uint32_t> len(buf)
-                    with nogil:
-                        self.ptr = new cppDNS(buf_addr, size)
-                else:
-                    raise ValueError("the typed memoryview doesn't have the proper format")
-            else:
-                raise ValueError("don't know what to do with type '%s'" % type(buf))
+            PDU.prepare_buf_arg(buf, &buf_addr, &size)
+            with nogil:
+                self.ptr = new cppDNS(buf_addr, size)
 
     def __init__(self, buf=None, _raw=False):
         """

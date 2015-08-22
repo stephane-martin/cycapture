@@ -1,14 +1,5 @@
 # -*- coding: utf-8 -*-
 
-cdef factory_ethernet_ii(cppPDU* ptr, uint8_t* buf, int size, object parent):
-    if ptr is NULL and buf is NULL:
-        return EthernetII()
-    obj = EthernetII(_raw=True)
-    obj.ptr = new cppEthernetII(<uint8_t*> buf, <uint32_t> size) if ptr is NULL else <cppEthernetII*> ptr
-    obj.base_ptr = <cppPDU*> obj.ptr
-    obj.parent = parent
-    return obj
-
 cdef class EthernetII(PDU):
     """
     Ethernet packet
@@ -26,35 +17,9 @@ cdef class EthernetII(PDU):
         if buf is None and dest_src is None:
             self.ptr = new cppEthernetII()
         elif buf is not None:
-            if PyBytes_Check(buf):
-                buf_addr = <uint8_t*> PyBytes_AS_STRING(buf)
-                size = <uint32_t> PyBytes_Size(buf)
-                with nogil:
-                    self.ptr = new cppEthernetII(buf_addr, size)
-            elif isinstance(buf, bytearray):
-                buf = memoryview(buf)
-                buf_addr = <uint8_t*> (mview_get_addr(<void*> buf))
-                size = <uint32_t> len(buf)
-                with nogil:
-                    self.ptr = new cppEthernetII(buf_addr, size)
-            elif isinstance(buf, memoryview):
-                if buf.itemsize == 1 and buf.ndim == 1:
-                    buf_addr = <uint8_t*> (mview_get_addr(<void*> buf))
-                    size = <uint32_t> len(buf)
-                    with nogil:
-                        self.ptr = new cppEthernetII(buf_addr, size)
-                else:
-                    raise ValueError("the memoryview doesn't have the proper format")
-            elif isinstance(buf, cy_memoryview):
-                if buf.itemsize == 1 and buf.ndim == 1:
-                    buf_addr = <uint8_t*> (<cy_memoryview>buf).get_item_pointer([])
-                    size = <uint32_t> len(buf)
-                    with nogil:
-                        self.ptr = new cppEthernetII(buf_addr, size)
-                else:
-                    raise ValueError("the typed memoryview doesn't have the proper format")
-            else:
-                raise ValueError("don't know what to do with type '%s'" % type(buf))
+            PDU.prepare_buf_arg(buf, &buf_addr, &size)
+            with nogil:
+                self.ptr = new cppEthernetII(buf_addr, size)
         elif PyTuple_Check(dest_src) or PyList_Check(dest_src):
             dest, src = dest_src
             if src is None:
@@ -107,5 +72,7 @@ cdef class EthernetII(PDU):
 
         def __set__(self, value):
             self.ptr.payload_type(<uint16_t> int(value))
+
+
 
 
