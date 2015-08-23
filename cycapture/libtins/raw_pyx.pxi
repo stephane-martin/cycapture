@@ -20,8 +20,7 @@ cdef class RAW(PDU):
         cdef uint8_t* buf_addr
         cdef uint32_t size
         PDU.prepare_buf_arg(buf, &buf_addr, &size)
-        with nogil:
-            self.ptr = new cppRAW(buf_addr, size)
+        self.ptr = new cppRAW(buf_addr, size)
         self.base_ptr = <cppPDU*> self.ptr
         self.parent = None
 

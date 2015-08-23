@@ -254,8 +254,7 @@ cdef class DNS(PDU):
             self.ptr = new cppDNS()
         else:
             PDU.prepare_buf_arg(buf, &buf_addr, &size)
-            with nogil:
-                self.ptr = new cppDNS(buf_addr, size)
+            self.ptr = new cppDNS(buf_addr, size)
 
     def __init__(self, buf=None, _raw=False):
         """

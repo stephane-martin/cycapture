@@ -44,8 +44,7 @@ cdef class IP(PDU):
             self.ptr = new cppIP()
         elif buf is not None:
             PDU.prepare_buf_arg(buf, &buf_addr, &size)
-            with nogil:
-                self.ptr = new cppIP(buf_addr, size)
+            self.ptr = new cppIP(buf_addr, size)
         elif PyTuple_Check(dest_src_ips) or PyList_Check(dest_src_ips):
             dest, src = dest_src_ips
             if src is None:

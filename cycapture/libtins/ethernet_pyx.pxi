@@ -18,8 +18,7 @@ cdef class EthernetII(PDU):
             self.ptr = new cppEthernetII()
         elif buf is not None:
             PDU.prepare_buf_arg(buf, &buf_addr, &size)
-            with nogil:
-                self.ptr = new cppEthernetII(buf_addr, size)
+            self.ptr = new cppEthernetII(buf_addr, size)
         elif PyTuple_Check(dest_src) or PyList_Check(dest_src):
             dest, src = dest_src
             if src is None:

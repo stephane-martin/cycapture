@@ -14,8 +14,7 @@ cdef class UDP(PDU):
             self.ptr = new cppUDP()
         elif buf is not None:
             PDU.prepare_buf_arg(buf, &buf_addr, &size)
-            with nogil:
-                self.ptr = new cppUDP(buf_addr, size)
+            self.ptr = new cppUDP(buf_addr, size)
         elif PyTuple_Check(dest_src_ports) or PyList_Check(dest_src_ports):
             dest, src = dest_src_ports
             if src is None:

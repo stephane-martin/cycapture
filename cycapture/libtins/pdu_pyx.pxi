@@ -157,7 +157,7 @@ cdef class PDU(object):
             raise ValueError("Unknown PDU type")
         cdef cppPDU* pdu = cpp_find_pdu(<const cppPDU*> self.base_ptr, <PDUType> t)
         if pdu is NULL:
-            return None
+            raise PDUNotFound
         # here we return a *copy* of the matching inner PDu
         return (map_classname_to_factory[classname])(pdu.clone(), NULL, 0, None)
 
@@ -167,7 +167,7 @@ cdef class PDU(object):
             raise ValueError("Unknown PDU type")
         cdef cppPDU* pdu = cpp_find_pdu(<const cppPDU*> self.base_ptr, <PDUType> t)
         if pdu is NULL:
-            return None
+            raise PDUNotFound
         # here we return a *reference* of the matching inner PDU
         return (map_classname_to_factory[classname])(pdu, NULL, 0, self)
 
