@@ -379,7 +379,6 @@ cdef class BlockingSniffer(Sniffer):
 
     @staticmethod
     cdef inline int thread_has_pcap(pthread_t thread) nogil:
-        # todo: muf
         return <int>(BlockingSniffer.get_pcap_for_thread(thread) != NULL)
 
     @staticmethod

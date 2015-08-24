@@ -171,6 +171,7 @@ cdef class ActivationHelper(object):
 
     def __exit__(self, t, value, traceback):
         if not self.old_status:
+            print('meh close')
             self.sniffer_obj.close()
 
 cdef class Sniffer(object):
@@ -536,7 +537,13 @@ cdef class BlockingSniffer(Sniffer):
             self.parent_thread = NULL
         return res
 
+    def sniff_and_export(self, fname_or_file_object):
+        w = PacketWriter(self.datalink[0], fname_or_file_object)
 
+        def _callback(sec, usec, caplen, length, mview):
+            w.write(mview, sec, usec)
+
+        self.sniff_callback(_callback)
 
     cpdef sniff_callback(self, f, int signal_mask=1):
         global sig_handler
@@ -551,10 +558,10 @@ cdef class BlockingSniffer(Sniffer):
 
         if signal_mask == 1:
             self.set_signal_mask()
-        node = self.register()
+        with self._activate_if_needed():
+            node = self.register()
+            try:
 
-        try:
-            with self._activate_if_needed():
                 # the nogil here is important: without it, the other python threads may not be able to run
                 with nogil:
                     while node.asked_to_stop == 0:
@@ -571,8 +578,8 @@ cdef class BlockingSniffer(Sniffer):
                             node.asked_to_stop = 1
                             break
 
-        finally:
-            self.unregister()
+            finally:
+                self.unregister()
 
         if error_msg != NULL:
             msg = bytes(error_msg)
@@ -604,12 +611,11 @@ cdef class BlockingSniffer(Sniffer):
 
         if signal_mask == 1:
             self.set_signal_mask()
-        node = self.register()
 
+        with self._activate_if_needed():
+            node = self.register()
 
-        try:
-            with self._activate_if_needed():
-
+            try:
                 while node.asked_to_stop == 0:
                     with nogil:
                         INIT_LIST_HEAD(&head)
@@ -634,8 +640,8 @@ cdef class BlockingSniffer(Sniffer):
                         error_message = <bytes> (pcap_geterr(self._handle))
                         node.asked_to_stop = 1
 
-        finally:
-            self.unregister()
+            finally:
+                self.unregister()
 
         if error_message:
             raise PcapExceptionFactory(counted, bytes(error_message), default=SniffingError)
@@ -814,6 +820,7 @@ cdef class PacketWriter(object):
         pass
 
     def __dealloc__(self):
+
         if self.output_lock != NULL:
             destroy_error_check_lock(self.output_lock)
         if self.dumper != NULL:
@@ -859,7 +866,6 @@ cdef class PacketWriter(object):
 cdef void sig_handler(int signum) nogil:
     cdef thread_pcap_node* current = BlockingSniffer.get_pcap_for_thread(pthread_self())
     if current != NULL:
-        # puts('sig_handler: found pcap, sending breakloop')
         current.asked_to_stop = 1
         pcap_breakloop(current.handle)
 
@@ -894,6 +900,4 @@ INIT_LIST_HEAD(&thread_pcap_global_list)
 logger = logging.getLogger('cycapture')
 libpcap_version = <bytes> pcap_lib_version()
 LibtinsException = TinEx
-
-
 
