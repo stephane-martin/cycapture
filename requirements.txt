@@ -5,3 +5,5 @@ wheel
 cython
 sphinx
 sphinx-readable-theme
+enum34
+

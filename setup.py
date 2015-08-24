@@ -229,7 +229,7 @@ if __name__ == "__main__":
     with open('HISTORY.rst') as history_file:
         history = history_file.read().replace('.. :changelog:', '')
 
-    requirements = []
+    requirements = ['enum34']
     remove_requirements_if_rtd = []
 
     if on_rtd:
