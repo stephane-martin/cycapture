@@ -6,13 +6,53 @@ Small cython wrapper around libpcap
 
 import logging
 import struct as struct_module
+from io import UnsupportedOperation
+
+from enum import Enum
+
 from ..libtins import LibtinsException as TinEx
+from ..libtins import PDU
 
 from .exceptions import PcapException, AlreadyActivated, SetTimeoutError, SetDirectionError, SetBufferSizeError
 from .exceptions import SetSnapshotLengthError, SetPromiscModeError, SetMonitorModeError, SetNonblockingModeError
 from .exceptions import ActivationError, NotActivatedError, SniffingError, PermissionDenied, PromiscPermissionDenied
 
+DLT = None
+DIRECTION = None
 
+cdef _make_enums():
+    global DLT, DIRECTION
+    DLT = Enum('DLT', {
+        'DLT_NULL': DLT_NULL,
+        'DLT_EN10MB': DLT_EN10MB,
+        'DLT_EN3MB': DLT_EN3MB,
+        'DLT_AX25': DLT_AX25,
+        'DLT_PRONET': DLT_PRONET,
+        'DLT_CHAOS': DLT_CHAOS,
+        'DLT_IEEE802': DLT_IEEE802,
+        'DLT_ARCNET': DLT_ARCNET,
+        'DLT_SLIP': DLT_SLIP,
+        'DLT_PPP': DLT_PPP,
+        'DLT_FDDI': DLT_FDDI,
+        'DLT_RAW': DLT_RAW,
+        'DLT_IEEE802_11': DLT_IEEE802_11,
+        'DLT_LOOP': DLT_LOOP,
+        'DLT_ENC': DLT_ENC,
+        'DLT_PRISM_HEADER': DLT_PRISM_HEADER,
+        'DLT_AIRONET_HEADER': DLT_AIRONET_HEADER,
+        'DLT_IEEE802_11_RADIO': DLT_IEEE802_11_RADIO,
+        'DLT_IEEE802_11_RADIO_AVS': DLT_IEEE802_11_RADIO_AVS,
+        'DLT_IPV4': DLT_IPV4,
+        'DLT_IPV6': DLT_IPV6
+    })
+
+    DIRECTION = Enum('DIRECTION', {
+        'PCAP_D_INOUT': PCAP_D_INOUT,
+        'PCAP_D_IN': PCAP_D_IN,
+        'PCAP_D_OUT': PCAP_D_OUT
+    })
+
+_make_enums()
 
 
 cpdef object lookupdev():
@@ -298,6 +338,8 @@ cdef class Sniffer(object):
             return self._direction
 
         def __set__(self, value):
+            if isinstance(value, DIRECTION):
+                value = value.value
             value = int(value)
             if value not in (PCAP_D_IN, PCAP_D_OUT, PCAP_D_INOUT):
                 value = PCAP_D_INOUT
@@ -470,9 +512,9 @@ cdef class BlockingSniffer(Sniffer):
     cdef thread_pcap_node* register(self) except NULL:
         if self in self.active_sniffers.values():
             raise RuntimeError("This BlockingSniffer is already actively listening")
-        if thread_has_pcap(pthread_self()) == 1:
+        if BlockingSniffer.thread_has_pcap(pthread_self()) == 1:
             raise RuntimeError("only one sniffing action per thread is allowed")
-        cdef thread_pcap_node* n = register_pcap_for_thread(self._handle)
+        cdef thread_pcap_node* n = BlockingSniffer.register_pcap_for_thread(self._handle)
         if n == NULL:
             raise RuntimeError('register_pcap_for_thread failed')
         self.parent_thread = copy_pthread_self()
@@ -485,7 +527,7 @@ cdef class BlockingSniffer(Sniffer):
     cdef int unregister(self):
         libc_signal(SIGINT, self.old_sigint)
         siginterrupt(SIGINT, 1)
-        cdef int res = unregister_pcap_for_thread()
+        cdef int res = BlockingSniffer.unregister_pcap_for_thread()
         cdef bytes ident = pthread_self_as_bytes()
         if ident in self.active_sniffers:
             del self.active_sniffers[ident]
@@ -555,9 +597,9 @@ cdef class BlockingSniffer(Sniffer):
 
         cdef store_fun store
         if f is None:
-            store = store_packet_node_in_seq
+            store = BlockingSniffer.store_packet_node_in_seq
         else:
-            store = store_packet_node_in_seq_with_f
+            store = BlockingSniffer.store_packet_node_in_seq_with_f
 
 
         if signal_mask == 1:
@@ -727,70 +769,100 @@ cdef class NonBlockingSniffer(Sniffer):
         for s in cls.active_sniffers.values():
             s.stop()
 
+
+cdef class PacketWriter(object):
+
+    def __cinit__(self, linktype, output):
+        cdef int descriptor
+        cdef FILE* f
+
+        if isinstance(linktype, DLT):
+            linktype = linktype.value
+        elif isinstance(linktype, PDU):
+            if linktype.datalink_type == -1:
+                raise TypeError("This kind of PDU doesn't have a clear datalink type")
+            linktype = linktype.datalink_type
+        elif isinstance(linktype, type) and hasattr(linktype, 'datalink_type'):
+            if linktype.datalink_type == -1:
+                raise TypeError("This kind of PDU doesn't have a clear datalink type")
+            linktype = linktype.datalink_type
+        self.linktype = int(linktype)
+
+        self.handle = pcap_open_dead(self.linktype, 65535)
+        if self.handle == NULL:
+            raise RuntimeError
+
+        if isinstance(output, unicode):
+            output = output.encode('utf-8')
+
+        if isinstance(output, bytes):
+            self.dumper = pcap_dump_open(self.handle, <const char*> output)
+        else:
+            try:
+                descriptor = output.fileno()
+            except (AttributeError, UnsupportedOperation):
+                raise ValueError
+            f = fdopen(descriptor, b'w')
+            self.dumper = pcap_dump_fopen(self.handle, f)
+
+        if self.dumper == NULL:
+            raise RuntimeError
+
+        self.output_lock = create_error_check_lock()
+
+    def __init__(self, linktype, output):
+        pass
+
+    def __dealloc__(self):
+        if self.output_lock != NULL:
+            destroy_error_check_lock(self.output_lock)
+        if self.dumper != NULL:
+            pcap_dump_close(self.dumper)
+        if self.handle != NULL:
+            pcap_close(self.handle)
+
+    cdef int write_uchar_buf(self, unsigned char* buf, int length, long tv_sec=-1, int tv_usec=-1) nogil:
+        cdef pcap_pkthdr hdr
+        cdef timeval tv
+        tv.tv_sec = tv_sec
+        tv.tv_usec = tv_usec
+        hdr.ts = tv
+        hdr.caplen = length
+        hdr.len = length
+
+        # serialize the writes to output using a lock
+        pthread_mutex_lock(self.output_lock)
+        pcap_dump(<unsigned char*> (<void*>self.dumper), &hdr, <unsigned char*> buf)
+        pthread_mutex_unlock(self.output_lock)
+
+        return 0
+
+
+    cpdef write(self, object buf, long tv_sec=-1, int tv_usec=-1):
+        if isinstance(buf, PDU):
+            try:
+                buf = buf.rfind_pdu_by_datalink_type(self.linktype)
+            except LibtinsException:
+                raise ValueError("the PDU doesnt contain an appropriate PDU for datalink '%s'" % self.linktype)
+            buf = buf.serialize()
+        if isinstance(buf, memoryview):
+            buf = buf.tobytes()
+        if not isinstance(buf, bytes):
+            buf = bytes(buf)
+        cdef unsigned char* uchar_buf = <unsigned char*> buf
+        self.write_uchar_buf(uchar_buf, len(buf), tv_sec, tv_usec)
+
+
+
 cdef void sig_handler(int signum) nogil:
-    cdef thread_pcap_node* current = get_pcap_for_thread(pthread_self())
+    cdef thread_pcap_node* current = BlockingSniffer.get_pcap_for_thread(pthread_self())
     if current != NULL:
         # puts('sig_handler: found pcap, sending breakloop')
         current.asked_to_stop = 1
         pcap_breakloop(current.handle)
 
 
-cdef thread_pcap_node* get_pcap_for_thread(pthread_t thread) nogil:
-    global thread_pcap_global_list
-    cdef list_head* cursor = thread_pcap_global_list.next
-    cdef thread_pcap_node* node
-    while cursor != &thread_pcap_global_list:
-        node = <thread_pcap_node*>( <char *>cursor - <unsigned long> (&(<thread_pcap_node*>0).link) )
-        if pthread_equal(node.thread, thread):
-            return node
-        cursor = cursor.next
-    return NULL
-
-cdef thread_pcap_node* register_pcap_for_thread(pcap_t* handle) nogil:
-    global lock, thread_pcap_global_list
-    if pthread_mutex_lock(&lock) != 0:
-        return NULL
-    cdef thread_pcap_node* node
-    cdef pthread_t thread = pthread_self()
-    #with lock:
-    if thread_has_pcap(thread) == 1:
-        return NULL
-    node = <thread_pcap_node*> malloc(sizeof(thread_pcap_node))
-    node.thread = thread
-    node.handle = handle
-    node.asked_to_stop = 0
-    list_add_tail(&node.link, &thread_pcap_global_list)
-    pthread_mutex_unlock(&lock)
-    return node
-
-cdef int unregister_pcap_for_thread() nogil:
-    global lock, thread_pcap_global_list
-    if pthread_mutex_lock(&lock) != 0:
-        return -1
-    cdef list_head* cursor
-    cdef list_head* nextnext
-    cdef thread_pcap_node* node
-    cdef pthread_t thread = pthread_self()
-    if thread_has_pcap(thread) == 0:
-        return -1
-    cursor = thread_pcap_global_list.next
-    nextnext = cursor.next
-    while cursor != &thread_pcap_global_list:
-        node = <thread_pcap_node*>( <char *>cursor - <unsigned long> (&(<thread_pcap_node*>0).link) )
-        if pthread_equal(node.thread, thread):
-            list_del(&node.link)
-            free(node)
-            break
-        cursor = nextnext
-        nextnext = cursor.next
-    pthread_mutex_unlock(&lock)
-    return 0
-
-
-
-
-
-cpdef object PcapExceptionFactory(int return_code, bytes error_msg=b'', default=PcapException):
+cpdef PcapExceptionFactory(int return_code, bytes error_msg=b'', default=PcapException):
     # PCAP_ERROR = -1
     # PCAP_ERROR_BREAK = -2
     # PCAP_ERROR_NOT_ACTIVATED = -3
@@ -815,7 +887,7 @@ cpdef object PcapExceptionFactory(int return_code, bytes error_msg=b'', default=
     else:
         return default(error_msg)
 
-cdef pthread_mutex_t lock = create_error_check_lock()
+lock = create_error_check_lock()
 INIT_LIST_HEAD(&thread_pcap_global_list)
 logger = logging.getLogger('cycapture')
 libpcap_version = <bytes> pcap_lib_version()

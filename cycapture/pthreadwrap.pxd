@@ -46,5 +46,5 @@ cdef extern from "pthread.h" nogil:
 cpdef void print_thread_id() nogil
 cpdef bytes pthread_self_as_bytes()
 cdef pthread_t* copy_pthread_self()
-cdef pthread_mutex_t create_error_check_lock()
-
+cdef pthread_mutex_t* create_error_check_lock()
+cdef destroy_error_check_lock(pthread_mutex_t* l)

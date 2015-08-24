@@ -11,16 +11,6 @@ namespace Tins {
         return bool(nwi);
     }
 
-    PDU* cpp_find_pdu(const PDU* pdu, PDU::PDUType t) {
-        PDU* current_pdu = (PDU*) pdu;
-        while(current_pdu) {
-            if(current_pdu->matches_flag(t))
-                return current_pdu;
-            current_pdu = current_pdu->inner_pdu();
-        }
-        return 0;
-    }
-
     WrappedIPv4Range& WrappedIPv4Range::operator=(const WrappedIPv4Range& r) {
         IPv4Range::operator=(r);
         return *this;

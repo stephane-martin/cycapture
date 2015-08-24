@@ -27,7 +27,16 @@ namespace Tins {
     typedef small_uint<12> small_uint12;
     typedef small_uint<24> small_uint24;
 
-    PDU* cpp_find_pdu(const PDU* pdu, PDU::PDUType t);
+    inline PDU* cpp_find_pdu(const PDU* pdu, PDU::PDUType t) {
+        PDU* current_pdu = (PDU*) pdu;
+        while(current_pdu) {
+            if(current_pdu->matches_flag(t))
+                return current_pdu;
+            current_pdu = current_pdu->inner_pdu();
+        }
+        return 0;
+    }
+
 
     class WrappedIPv4Range : public IPv4Range {
     public:

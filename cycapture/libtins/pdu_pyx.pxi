@@ -62,6 +62,7 @@ cdef class PDU(object):
     USER_DEFINED_PDU = PDU_USER_DEFINED_PDU
 
     pdu_type = -1
+    datalink_type = -1
 
     property header_size:
         def __get__(self):
@@ -170,6 +171,18 @@ cdef class PDU(object):
             raise PDUNotFound
         # here we return a *reference* of the matching inner PDU
         return (map_classname_to_factory[classname])(pdu, NULL, 0, self)
+
+    cpdef rfind_pdu_by_datalink_type(self, int t):
+        if t == -1:
+            raise PDUNotFound
+        current_pdu = self
+        while current_pdu is not None:
+            if current_pdu.datalink_type == t:
+                break
+            current_pdu = current_pdu.ref_inner_pdu()
+        if current_pdu is None:
+            raise PDUNotFound
+        return current_pdu
 
     cpdef find_pdu(self, obj):
         if isinstance(obj, type):

@@ -15,7 +15,8 @@ from ._tins import SocketOpenError, SocketCloseError, SocketWriteError, InvalidS
 # addresses and ranges
 from ._tins import IPv4Address, IPv6Address, HWAddress, IPv4Range, IPv6Range, HWRange, NetworkInterface
 
-# concrete PDUs
+# PDUs
+from ._tins import PDU
 from ._tins import EthernetII, IP, TCP, UDP, RAW
 from ._tins import DNS, DNS_Query, DNS_Resource
 

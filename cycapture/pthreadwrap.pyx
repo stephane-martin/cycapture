@@ -21,11 +21,17 @@ cdef pthread_t* copy_pthread_self():
     memcpy(copy, &tid, sizeof(pthread_t))
     return copy
 
-cdef pthread_mutex_t create_error_check_lock():
-    cdef pthread_mutex_t lock
-    cdef pthread_mutexattr_t mattr
+cdef pthread_mutex_t* create_error_check_lock():
+    cdef pthread_mutex_t* lock = <pthread_mutex_t*> malloc(sizeof(pthread_mutex_t))
+    cdef pthread_mutexattr_t* mattr = <pthread_mutexattr_t*> malloc(sizeof(pthread_mutexattr_t))
     cdef int res
-    res = pthread_mutexattr_init(&mattr)
-    res = pthread_mutexattr_settype(&mattr, PTHREAD_MUTEX_ERRORCHECK)
-    res = pthread_mutex_init(&lock, &mattr)
+    res = pthread_mutexattr_init(mattr)
+    res = pthread_mutexattr_settype(mattr, PTHREAD_MUTEX_ERRORCHECK)
+    res = pthread_mutex_init(lock, mattr)
+    pthread_mutexattr_destroy(mattr)
+    free(mattr)
     return lock
+
+cdef destroy_error_check_lock(pthread_mutex_t* l):
+    pthread_mutex_destroy(l)
+    free(l)

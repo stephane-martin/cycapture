@@ -7,6 +7,7 @@ cdef class EthernetII(PDU):
     pdu_flag = PDU.ETHERNET_II
     pdu_type = PDU.ETHERNET_II
     broadcast = HWAddress.broadcast
+    datalink_type = DLT_EN10MB
 
     def __cinit__(self, dest_src=None, buf=None, _raw=False):
         if _raw:

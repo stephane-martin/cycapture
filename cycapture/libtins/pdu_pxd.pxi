@@ -100,11 +100,12 @@ cdef class PDU(object):
     cdef cppPDU* base_ptr
     cdef object parent
 
-    cpdef find_pdu_by_type(self, int t)
-    cpdef rfind_pdu_by_type(self, int t)
     cpdef copy(self)
     cpdef reference(self)
     cpdef int get_pdu_type(self)
+    cpdef find_pdu_by_type(self, int t)
+    cpdef rfind_pdu_by_type(self, int t)
+    cpdef rfind_pdu_by_datalink_type(self, int t)
     cpdef find_pdu(self, obj)
     cpdef rfind_pdu(self, obj)
     cpdef copy_inner_pdu(self)
