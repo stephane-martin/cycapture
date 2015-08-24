@@ -6,6 +6,7 @@ Cython bindings for libpcap
 
 from cpython cimport bool
 from libc.stdlib cimport malloc, free
+from libc.time cimport time
 from libc.signal cimport signal as libc_signal
 from libc.signal cimport SIGINT, SIGTERM
 from posix.signal cimport kill

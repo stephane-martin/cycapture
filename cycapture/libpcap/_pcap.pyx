@@ -821,9 +821,11 @@ cdef class PacketWriter(object):
         if self.handle != NULL:
             pcap_close(self.handle)
 
-    cdef int write_uchar_buf(self, unsigned char* buf, int length, long tv_sec=-1, int tv_usec=-1) nogil:
+    cdef int write_uchar_buf(self, unsigned char* buf, int length, long tv_sec=-1, int tv_usec=0) nogil:
         cdef pcap_pkthdr hdr
         cdef timeval tv
+        if tv_sec == -1:
+            tv_sec = <long> time(NULL)
         tv.tv_sec = tv_sec
         tv.tv_usec = tv_usec
         hdr.ts = tv
@@ -838,7 +840,7 @@ cdef class PacketWriter(object):
         return 0
 
 
-    cpdef write(self, object buf, long tv_sec=-1, int tv_usec=-1):
+    cpdef write(self, object buf, long tv_sec=-1, int tv_usec=0):
         if isinstance(buf, PDU):
             try:
                 buf = buf.rfind_pdu_by_datalink_type(self.linktype)
