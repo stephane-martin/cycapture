@@ -24,9 +24,9 @@ from ..pthreadwrap cimport create_error_check_lock, pthread_mutex_lock, pthread_
 # noinspection PyUnresolvedReferences
 from ..pthreadwrap cimport destroy_error_check_lock, copy_pthread_self
 
-include "list_extern.pxd.pxi"
-include "various_extern.pxd.pxi"
-include "pcap_extern.pxd.pxi"
+include "extern_list.pxd.pxi"
+include "extern_various.pxd.pxi"
+include "extern_pcap.pxd.pxi"
 include "utils_func.pxd.pxi"
 include "sniffer.pxd.pxi"
 include "writer.pxd.pxi"
