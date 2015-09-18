@@ -31,3 +31,7 @@ cdef class IPv4Address(object):
     cpdef equals(self, object other)
     cpdef different(self, object other)
     cpdef less(self, object other)
+
+    @staticmethod
+    cdef inline factory(cppIPv4Address* ptr):
+        return IPv4Address(ptr.to_string())
