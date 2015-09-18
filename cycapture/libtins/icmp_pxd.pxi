@@ -70,7 +70,6 @@ cdef extern from "tins/icmp.h" namespace "Tins" nogil:
         void set_param_problem(cpp_bool set_pointer, uint8_t bad_octet)
         void set_source_quench()
         void set_redirect(uint8_t icode, cppIPv4Address address)
-        cpp_bool matches_response(const uint8_t *ptr, uint32_t total_sz) except +custom_exception_handler
 
 cdef class ICMP(PDU):
     cdef cppICMP* ptr

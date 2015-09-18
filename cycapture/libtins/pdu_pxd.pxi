@@ -28,6 +28,8 @@ cdef extern from "tins/pdu.h" namespace "Tins" nogil:
         (const T*) find_pdu[T]() const
         (T&) rfind_pdu[T]()
         (const T&) rfind_pdu[T]() const
+        cpp_bool matches_response(const uint8_t *ptr, uint32_t total_sz) except +custom_exception_handler
+        cppPDU *recv_response(cppPacketSender &sender, const cppNetworkInterface &iface)
 
     T slash_op "Tins::PDU::operator/" [T] (T lop, const cppPDU& rop)
     (T&) slash_equals_op "Tins::PDU::operator/=" [T] (T& lop, const cppPDU& rop)

@@ -16,8 +16,6 @@ cdef extern from "tins/udp.h" namespace "Tins" nogil:
         void length(uint16_t new_len)
         uint16_t checksum() const
 
-        cpp_bool matches_response(const uint8_t *ptr, uint32_t total_sz) const
-
 cdef class UDP(PDU):
     cdef cppUDP* ptr
 

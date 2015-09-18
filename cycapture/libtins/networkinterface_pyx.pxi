@@ -37,6 +37,7 @@ cdef class NetworkInterface(object):
         addr = IPv4Address(address)
         self.ptr = new cppNetworkInterface(addr.ptr[0])
 
+    # todo: make property
     cpdef int ident(self):
         """
         Returns
@@ -46,6 +47,7 @@ cdef class NetworkInterface(object):
         """
         return int(self.ptr.ident())
 
+    # todo: make property
     cpdef bytes name(self):
         """
         Returns
@@ -55,6 +57,7 @@ cdef class NetworkInterface(object):
         """
         return <bytes> self.ptr.name()
 
+    # todo: make property
     cpdef object addresses(self):
         """
         Returns

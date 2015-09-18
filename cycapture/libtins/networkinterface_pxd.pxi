@@ -32,3 +32,7 @@ cdef class NetworkInterface(object):
     cpdef object addresses(self)
     cpdef cpp_bool is_loopback(self)
     cdef object _make_from_address(self, object address)
+
+    @staticmethod
+    cdef inline factory(cppNetworkInterface* ptr):
+        return NetworkInterface(name=ptr.name())
