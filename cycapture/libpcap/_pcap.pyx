@@ -6,7 +6,10 @@ Small cython wrapper around libpcap
 
 import logging
 import struct as struct_module
+import threading
 from io import UnsupportedOperation
+from time import sleep
+from collections import deque
 
 from enum import Enum
 
@@ -171,7 +174,6 @@ cdef class ActivationHelper(object):
 
     def __exit__(self, t, value, traceback):
         if not self.old_status:
-            print('meh close')
             self.sniffer_obj.close()
 
 cdef class Sniffer(object):
@@ -491,23 +493,20 @@ cdef class BlockingSniffer(Sniffer):
 
     @classmethod
     def stop_all(cls):
-        # puts('stop_all method')
-        for s in cls.active_sniffers.values():
-            s.ask_stop()
+        [s.ask_stop() for s in cls.active_sniffers.values()]
+
 
     cpdef ask_stop(self):
-        # puts('ask_stop method')
         if self.parent_thread != NULL:
-            # puts('sending SIGINT to appropriate thread')
-            if pthread_kill(self.parent_thread[0], SIGINT) != 0:
-                raise RuntimeError("BlockingSniffer.stop (sending SIGINT) failed")
+            if pthread_kill(self.parent_thread[0], SIGUSR1) != 0:
+                raise RuntimeError("BlockingSniffer.stop (sending SIGUSR1) failed")
 
-    cdef void set_signal_mask(self) nogil:
+    cdef void _set_signal_mask(self) nogil:
         cdef sigset_t s
         sigfillset(&s)
         pthread_sigmask(SIG_BLOCK, &s, NULL)
         sigemptyset(&s)
-        sigaddset(&s, SIGINT)
+        sigaddset(&s, SIGUSR1)
         pthread_sigmask(SIG_UNBLOCK, &s, NULL)
 
     cdef thread_pcap_node* register(self) except NULL:
@@ -521,13 +520,13 @@ cdef class BlockingSniffer(Sniffer):
         self.parent_thread = copy_pthread_self()
         self.active_sniffers[pthread_self_as_bytes()] = self
         cdef sighandler_t h = <sighandler_t> sig_handler
-        self.old_sigint = libc_signal(SIGINT, h)
-        siginterrupt(SIGINT, 1)
+        self.old_sigint = libc_signal(SIGUSR1, h)
+        siginterrupt(SIGUSR1, 1)
         return n
 
     cdef int unregister(self):
-        libc_signal(SIGINT, self.old_sigint)
-        siginterrupt(SIGINT, 1)
+        libc_signal(SIGUSR1, self.old_sigint)
+        siginterrupt(SIGUSR1, 1)
         cdef int res = BlockingSniffer.unregister_pcap_for_thread()
         cdef bytes ident = pthread_self_as_bytes()
         if ident in self.active_sniffers:
@@ -537,15 +536,16 @@ cdef class BlockingSniffer(Sniffer):
             self.parent_thread = NULL
         return res
 
-    def sniff_and_export(self, fname_or_file_object):
+    def sniff_and_export(self, fname_or_file_object, int max_p=-1):
         w = PacketWriter(self.datalink[0], fname_or_file_object)
 
         def _callback(sec, usec, caplen, length, mview):
             w.write(mview, sec, usec)
 
-        self.sniff_callback(_callback)
+        self.sniff_callback(_callback, max_p=max_p)
 
-    cpdef sniff_callback(self, f, int signal_mask=1):
+
+    cpdef sniff_callback(self, f, int set_signal_mask=1, int max_p=-1):
         global sig_handler
         cdef int counted
 
@@ -556,12 +556,14 @@ cdef class BlockingSniffer(Sniffer):
         self.python_callback = f
         self.python_callback_ptr = <unsigned char *> (<void*> self.python_callback)
 
-        if signal_mask == 1:
-            self.set_signal_mask()
+        if set_signal_mask:
+            self._set_signal_mask()
+
+        self.total = 0
+        self.max_p = max_p
         with self._activate_if_needed():
             node = self.register()
             try:
-
                 # the nogil here is important: without it, the other python threads may not be able to run
                 with nogil:
                     while node.asked_to_stop == 0:
@@ -577,6 +579,12 @@ cdef class BlockingSniffer(Sniffer):
                                 strcpy(error_msg, error_msg_source)
                             node.asked_to_stop = 1
                             break
+                        else:
+                            self.total += counted
+
+                        if 0 < self.max_p <= self.total:
+                            node.asked_to_stop = 1
+                            break
 
             finally:
                 self.unregister()
@@ -586,7 +594,7 @@ cdef class BlockingSniffer(Sniffer):
             free(error_msg)
             raise PcapExceptionFactory(counted, msg, default=SniffingError)
 
-    cpdef sniff_and_store(self, container, f=None, int signal_mask=1):
+    cpdef sniff_and_store(self, container, f=None, int set_signal_mask=1, int max_p=-1):
         global store_c_callback, sig_handler
         cdef int counted
         cdef sighandler_t h = <sighandler_t> sig_handler
@@ -609,8 +617,11 @@ cdef class BlockingSniffer(Sniffer):
             store = BlockingSniffer.store_packet_node_in_seq_with_f
 
 
-        if signal_mask == 1:
-            self.set_signal_mask()
+        if set_signal_mask:
+            self._set_signal_mask()
+
+        self.total = 0
+        self.max_p = max_p
 
         with self._activate_if_needed():
             node = self.register()
@@ -636,9 +647,17 @@ cdef class BlockingSniffer(Sniffer):
                     if counted == -2:
                         # pcap_breakloop was called
                         node.asked_to_stop = 1
+                        break
                     elif counted < 0:
                         error_message = <bytes> (pcap_geterr(self._handle))
                         node.asked_to_stop = 1
+                        break
+                    else:
+                        self.total += counted
+
+                    if 0 < self.max_p <= self.total:
+                        node.asked_to_stop = 1
+                        break
 
             finally:
                 self.unregister()
@@ -674,6 +693,7 @@ cdef class NonBlockingSniffer(Sniffer):
         self.loop = None
         self.loop_type = None
         self.descriptor = None
+        self.writer = None
 
     cpdef set_loop(self, loop, loop_type="tornado"):
         loop_type = bytes(loop_type).lower().strip()
@@ -694,28 +714,63 @@ cdef class NonBlockingSniffer(Sniffer):
             cdef int counted = 1
             while counted > 0:
                 counted = pcap_dispatch(self._handle, 0, _do_python_callback, ptr)
+                self.total += counted
+            if 0 < self.max_p <= self.total:
+                self.stop()
         return _tornado_handler_callback
 
     def _make_tornado_handle_store(self, container, f):
         if f is None:
-            def _cllbck(sec, usec, caplen, length, mview):
-                container.append((sec, usec, length, mview.tobytes()))
+            if isinstance(container, list):
+                def _cllbck(sec, usec, caplen, length, mview):
+                    (<list> container).append((sec, usec, length, mview.tobytes()))
+            elif hasattr(container, 'append'):
+                def _cllbck(sec, usec, caplen, length, mview):
+                    container.append((sec, usec, length, mview.tobytes()))
+            elif hasattr(container, 'put_nowait'):
+                def _cllbck(sec, usec, caplen, length, mview):
+                    container.put_nowait((sec, usec, length, mview.tobytes()))
+            else:
+                def _cllbck(sec, usec, caplen, length, mview):
+                    pass
+
+
         else:
-            def _cllbck(sec, usec, caplen, length, mview):
-                obj = f(mview)
-                # if an exception happens in f, it will be caught in _do_python_callback
-                if obj is not None:
-                    container.append((sec, usec, length, f(mview)))
+            if isinstance(container, list):
+                def _cllbck(sec, usec, caplen, length, mview):
+                    obj = f(mview)
+                    # if an exception happens in f, it will be caught in _do_python_callback
+                    if obj is not None:
+                        (<list> container).append((sec, usec, length, f(mview)))
+            elif hasattr(container, 'append'):
+                def _cllbck(sec, usec, caplen, length, mview):
+                    obj = f(mview)
+                    # if an exception happens in f, it will be caught in _do_python_callback
+                    if obj is not None:
+                        container.append((sec, usec, length, f(mview)))
+            elif hasattr(container, 'put_nowait'):
+                def _cllbck(sec, usec, caplen, length, mview):
+                    obj = f(mview)
+                    # if an exception happens in f, it will be caught in _do_python_callback
+                    if obj is not None:
+                        container.put_nowait((sec, usec, length, f(mview)))
+            else:
+                def _cllbck(sec, usec, caplen, length, mview):
+                    f(mview)
+
 
         def _tornado_handler_store(fd=None, events=None):
             cdef unsigned char* ptr = <unsigned char*> (<void*> _cllbck)
             cdef int counted = 1
             while counted > 0:
                 counted = pcap_dispatch(self._handle, 0, _do_python_callback, ptr)
+                self.total += counted
+            if 0 < self.max_p <= self.total:
+                self.stop()
         return _tornado_handler_store
 
 
-    cpdef sniff_callback(self, callback):
+    cpdef sniff_callback(self, callback, int max_p=-1):
         if self in self.active_sniffers.values():
             raise RuntimeError("This NonBlockingSniffer is already actively listening")
         if self.loop is None or self.loop_type is None:
@@ -729,6 +784,8 @@ cdef class NonBlockingSniffer(Sniffer):
         self.python_callback = callback
 
         self.descriptor = pcap_get_selectable_fd(self._handle)
+        self.total = 0
+        self.max_p = max_p
         if self.loop_type == "tornado":
             # "1" is for READ events
             self.loop.add_handler(self.descriptor, self._make_tornado_handler_callback(callback), 1)
@@ -736,7 +793,7 @@ cdef class NonBlockingSniffer(Sniffer):
             self.loop.add_reader(self.descriptor, self._make_tornado_handler_callback(callback))
         return self.descriptor
 
-    cpdef sniff_and_store(self, container, f=None):
+    cpdef sniff_and_store(self, container, f=None, int max_p=-1):
         if self in self.active_sniffers.values():
             raise RuntimeError("This NonBlockingSniffer is already actively listening")
         if self.loop is None or self.loop_type is None:
@@ -751,12 +808,26 @@ cdef class NonBlockingSniffer(Sniffer):
         self.python_callback = f
 
         self.descriptor = pcap_get_selectable_fd(self._handle)
+        self.total = 0
+        self.max_p = max_p
         if self.loop_type == "tornado":
             # "1" is for READ events
             self.loop.add_handler(self.descriptor, self._make_tornado_handle_store(container, f), 1)
         elif self.loop_type == "asyncio":
             self.loop.add_reader(self.descriptor, self._make_tornado_handle_store(container, f))
         return self.descriptor
+
+    def sniff_and_export(self, fname_or_file_object, int max_p=-1):
+        if self in self.active_sniffers.values():
+            raise RuntimeError("This NonBlockingSniffer is already actively listening")
+        w = NonBlockingPacketWriter(self.datalink[0], fname_or_file_object)
+
+        def _callback(sec, usec, caplen, length, mview):
+            w.write(mview, sec, usec)
+
+        self.writer = w
+        self.sniff_callback(_callback, max_p=max_p)
+
 
     cpdef stop(self):
         if self.descriptor is not None and self.loop is not None:
@@ -765,6 +836,8 @@ cdef class NonBlockingSniffer(Sniffer):
             elif self.loop_type == "asyncio":
                 self.loop.remove_reader(self.descriptor)
             self.descriptor = None
+        if self.writer is not None:
+            self.writer.stop()
         if id(self) in self.active_sniffers:
             del self.active_sniffers[id(self)]
         if not self.old_status:
@@ -776,63 +849,98 @@ cdef class NonBlockingSniffer(Sniffer):
             s.stop()
 
 
+cdef int _normalize_linktype(object linktype) except -1:
+    if isinstance(linktype, DLT):
+        linktype = linktype.value
+    elif isinstance(linktype, PDU):
+        if linktype.datalink_type == -1:
+            raise TypeError("This kind of PDU doesn't have a clear datalink type")
+        linktype = linktype.datalink_type
+    elif isinstance(linktype, type) and hasattr(linktype, 'datalink_type'):
+        if linktype.datalink_type == -1:
+            raise TypeError("This kind of PDU doesn't have a clear datalink type")
+        linktype = linktype.datalink_type
+    elif isinstance(linktype, unicode):
+        linktype = linktype.encode('utf-8')
+    if isinstance(linktype, bytes):
+        try:
+            linktype = DLT.__getattr__(linktype)
+        except AttributeError:
+            raise ValueError("unknown DLT")
+    return int(linktype)
+
+cdef pcap_dumper_t* _get_dumper(object output, pcap_t* handle) except NULL:
+    cdef pcap_dumper_t* dumper
+    cdef int descriptor
+    cdef FILE* f
+
+    if isinstance(output, unicode):
+        output = output.encode('utf-8')
+
+    if isinstance(output, bytes):
+        dumper = pcap_dump_open(handle, <const char*> output)
+    else:
+        try:
+            descriptor = output.fileno()
+        except (AttributeError, UnsupportedOperation):
+            raise ValueError('the output stream must support fileno')
+        f = fdopen(descriptor, b'w')
+        dumper = pcap_dump_fopen(handle, f)
+
+    if dumper == NULL:
+        raise RuntimeError('could not get a proper dumper')
+    return dumper
+
+cdef _normalize_buf(object buf, int linktype):
+    if isinstance(buf, PDU):
+        try:
+            buf = buf.rfind_pdu_by_datalink_type(linktype)
+        except LibtinsException:
+            raise ValueError("the PDU doesnt contain an appropriate PDU for datalink '%s'" % linktype)
+        buf = buf.serialize()
+    if isinstance(buf, memoryview):
+        buf = buf.tobytes()
+    if not isinstance(buf, bytes):
+        buf = bytes(buf)
+    return buf
+
 cdef class PacketWriter(object):
 
     def __cinit__(self, linktype, output):
-        cdef int descriptor
-        cdef FILE* f
-
-        if isinstance(linktype, DLT):
-            linktype = linktype.value
-        elif isinstance(linktype, PDU):
-            if linktype.datalink_type == -1:
-                raise TypeError("This kind of PDU doesn't have a clear datalink type")
-            linktype = linktype.datalink_type
-        elif isinstance(linktype, type) and hasattr(linktype, 'datalink_type'):
-            if linktype.datalink_type == -1:
-                raise TypeError("This kind of PDU doesn't have a clear datalink type")
-            linktype = linktype.datalink_type
-        self.linktype = int(linktype)
-
+        self.linktype = _normalize_linktype(linktype)
         self.handle = pcap_open_dead(self.linktype, 65535)
         if self.handle == NULL:
-            raise RuntimeError
-
-        if isinstance(output, unicode):
-            output = output.encode('utf-8')
-
-        if isinstance(output, bytes):
-            self.dumper = pcap_dump_open(self.handle, <const char*> output)
-        else:
-            try:
-                descriptor = output.fileno()
-            except (AttributeError, UnsupportedOperation):
-                raise ValueError
-            f = fdopen(descriptor, b'w')
-            self.dumper = pcap_dump_fopen(self.handle, f)
-
-        if self.dumper == NULL:
-            raise RuntimeError
-
+            raise RuntimeError('could not get a pcap handle')
+        self.dumper = _get_dumper(output, self.handle)
         self.output_lock = create_error_check_lock()
 
     def __init__(self, linktype, output):
         pass
 
-    def __dealloc__(self):
-
+    cdef _clean(self):
         if self.output_lock != NULL:
             destroy_error_check_lock(self.output_lock)
+            self.output_lock = NULL
         if self.dumper != NULL:
             pcap_dump_close(self.dumper)
+            self.dumper = NULL
         if self.handle != NULL:
             pcap_close(self.handle)
+            self.handle = NULL
+
+    cpdef stop(self):
+        self._clean()
+
+    def __dealloc__(self):
+        self._clean()
 
     cdef int write_uchar_buf(self, unsigned char* buf, int length, long tv_sec=-1, int tv_usec=0) nogil:
         cdef pcap_pkthdr hdr
         cdef timeval tv
+
         if tv_sec == -1:
             tv_sec = <long> time(NULL)
+
         tv.tv_sec = tv_sec
         tv.tv_usec = tv_usec
         hdr.ts = tv
@@ -841,25 +949,86 @@ cdef class PacketWriter(object):
 
         # serialize the writes to output using a lock
         pthread_mutex_lock(self.output_lock)
+        # pcap_dump might I/O block...
         pcap_dump(<unsigned char*> (<void*>self.dumper), &hdr, <unsigned char*> buf)
         pthread_mutex_unlock(self.output_lock)
 
         return 0
 
-
     cpdef write(self, object buf, long tv_sec=-1, int tv_usec=0):
-        if isinstance(buf, PDU):
-            try:
-                buf = buf.rfind_pdu_by_datalink_type(self.linktype)
-            except LibtinsException:
-                raise ValueError("the PDU doesnt contain an appropriate PDU for datalink '%s'" % self.linktype)
-            buf = buf.serialize()
-        if isinstance(buf, memoryview):
-            buf = buf.tobytes()
-        if not isinstance(buf, bytes):
-            buf = bytes(buf)
+        buf = _normalize_buf(buf, self.linktype)
         cdef unsigned char* uchar_buf = <unsigned char*> buf
         self.write_uchar_buf(uchar_buf, len(buf), tv_sec, tv_usec)
+
+
+cdef class NonBlockingPacketWriter(PacketWriter):
+    def __cinit__(self, linktype, output):
+        self.linktype = _normalize_linktype(linktype)
+        self.handle = pcap_open_dead(self.linktype, 65535)
+        if self.handle == NULL:
+            raise RuntimeError('could not get a pcap handle')
+        self.dumper = _get_dumper(output, self.handle)
+        self.output_lock = create_error_check_lock()
+        self.stopping = 0
+
+    def __init__(self, linktype, output):
+        PacketWriter.__init__(self, linktype, output)
+        self.q = deque()
+        t = threading.Thread(target=self._flush_thread)
+        t.start()
+
+    def __dealloc__(self):
+        self._clean()
+
+    cpdef write(self, object buf, long tv_sec=-1, int tv_usec=0):
+        buf = _normalize_buf(buf, self.linktype)
+        self.q.append((tv_sec, tv_usec, len(buf), buf))
+
+    cpdef stop(self):
+        self.stopping = 1
+
+    def _flush_thread(self):
+        cdef pcap_dumper_t* dumper = self.dumper
+        cdef size_t how_many, i
+        cdef long* list_of_sec
+        cdef int* list_of_usec
+        cdef unsigned int* list_of_length
+        cdef unsigned char** list_of_buf
+        cdef pcap_pkthdr hdr
+        cdef timeval tv
+        temp_q = []
+
+        while (self.stopping == 0) or (len(self.q) > 0):
+            how_many = <int> len(self.q)
+            if how_many == 0:
+                sleep(1)
+                continue
+            # popleft is thread-safe, and we pop from the left (whereas sniff_and_store append on the right)
+            temp_q = [self.q.popleft() for _ in range(how_many)]
+            # copy from python containers to simple C containers, so that we can "nogil" after
+            list_of_sec = <long*> malloc(how_many * sizeof(long))
+            list_of_usec = <int*> malloc(how_many * sizeof(int))
+            list_of_length = <unsigned int*> malloc(how_many * sizeof(unsigned int))
+            list_of_buf = <unsigned char**> malloc(how_many * sizeof(unsigned char*))
+            for i in range(how_many):
+                list_of_sec[i], list_of_usec[i], list_of_length[i], list_of_buf[i] = temp_q[i]
+            with nogil:
+                # here the nogil is important: if pcap_dump actually IO/blocks, the ioloop can continue to run
+                for i in range(how_many):
+                    tv.tv_sec = list_of_sec[i]
+                    tv.tv_usec = list_of_usec[i]
+                    hdr.ts = tv
+                    hdr.caplen = list_of_length[i]
+                    hdr.len = list_of_length[i]
+                    pcap_dump(<unsigned char*> (<void*>dumper), &hdr, <unsigned char*> (list_of_buf[i]))
+                # we can safely flush data to disk, as it won't block the io loop
+                pcap_dump_flush(dumper)
+                free(list_of_buf)
+                free(list_of_length)
+                free(list_of_usec)
+                free(list_of_sec)
+
+        self._clean()
 
 
 

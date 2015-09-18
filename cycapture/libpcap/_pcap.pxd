@@ -8,7 +8,7 @@ from cpython cimport bool
 from libc.stdlib cimport malloc, free
 from libc.time cimport time
 from libc.signal cimport signal as libc_signal
-from libc.signal cimport SIGINT, SIGTERM
+from libc.signal cimport SIGUSR1
 from posix.signal cimport kill
 from posix.unistd cimport getpid
 from libc.string cimport memcpy, strcpy, strlen
@@ -16,11 +16,11 @@ from libc.stdio cimport printf, puts, fdopen, fclose, fopen
 # noinspection PyUnresolvedReferences
 from ..make_mview cimport make_mview_from_const_uchar_buf
 # noinspection PyUnresolvedReferences
-from ..pthreadwrap cimport pthread_kill, pthread_t, pthread_equal, pthread_self, pthread_self_as_bytes, print_thread_id, copy_pthread_self
+from ..pthreadwrap cimport pthread_kill, pthread_t, pthread_equal, pthread_self, pthread_self_as_bytes, print_thread_id
 # noinspection PyUnresolvedReferences
 from ..pthreadwrap cimport create_error_check_lock, pthread_mutex_lock, pthread_mutex_unlock, pthread_mutex_t
 # noinspection PyUnresolvedReferences
-from ..pthreadwrap cimport destroy_error_check_lock
+from ..pthreadwrap cimport destroy_error_check_lock, copy_pthread_self
 
 cdef void sig_handler(int signum) nogil
 
@@ -249,6 +249,7 @@ cdef extern from "pcap/pcap.h" nogil:
     pcap_dumper_t* pcap_dump_fopen(pcap_t* p, FILE* fp)
     void pcap_dump(unsigned char* user, pcap_pkthdr* h, unsigned char* sp)
     void pcap_dump_close(pcap_dumper_t* p)
+    int pcap_dump_flush(pcap_dumper_t *p)
 
 
 cpdef object lookupdev()
@@ -266,7 +267,12 @@ cdef class ActivationHelper(object):
     cdef object old_status
 
 cdef class Sniffer(object):
+    cdef pcap_t* _handle
     cdef readonly bool activated
+    cdef readonly bytes source
+    cdef int total
+    cdef int max_p
+
     cdef int _read_timeout
     cdef int _buffer_size
     cdef int _timestamp_type
@@ -275,15 +281,15 @@ cdef class Sniffer(object):
     cdef int _direction
     cdef int _promisc_mode
     cdef int _monitor_mode
-    cdef readonly bytes source
     cdef char _errbuf[PCAP_ERRBUF_SIZE]
-    cdef pcap_t* _handle
     cdef int _netp
     cdef int _maskp
     cdef bytes _filter
     cdef int _datalink
 
     cpdef close(self)
+    cpdef list_datalinks(self)
+
     cdef _apply_read_timeout(self)
     cdef _apply_buffer_size(self)
     cdef _apply_snapshot_length(self)
@@ -292,7 +298,6 @@ cdef class Sniffer(object):
     cdef _apply_direction(self)
     cdef _apply_filter(self)
     cdef _apply_datalink(self)
-    cpdef list_datalinks(self)
     cdef _activate_if_needed(self)
     cdef _pre_activate(self)
     cdef _post_activate(self)
@@ -306,9 +311,9 @@ cdef class BlockingSniffer(Sniffer):
     cdef pthread_t* parent_thread
     cdef sighandler_t old_sigint
 
-    cpdef sniff_and_store(self, container, f=?, int signal_mask=?)
-    cpdef sniff_callback(self, f, int signal_mask=?)
-    cdef void set_signal_mask(self) nogil
+    cpdef sniff_and_store(self, container, f=?, int set_signal_mask=?, int max_p=?)
+    cpdef sniff_callback(self, f, int set_signal_mask=?, int max_p=?)
+    cdef void _set_signal_mask(self) nogil
     cpdef ask_stop(self)
     cdef thread_pcap_node* register(self) except NULL
     cdef int unregister(self)
@@ -392,12 +397,22 @@ cdef class BlockingSniffer(Sniffer):
             logger.exception('store_packet_node_in_seq_with_f: an unexpected exception happened in f')
         else:
             if obj is not None:
-                l.append((n.tv_sec, n.tv_usec, n.length, obj))
+                if isinstance(l, list):
+                    (<list> l).append((n.tv_sec, n.tv_usec, n.length, obj))
+                elif hasattr(l, 'append'):
+                    l.append((n.tv_sec, n.tv_usec, n.length, obj))
+                elif hasattr(l, 'put_nowait'):
+                    l.put_nowait((n.tv_sec, n.tv_usec, n.length, obj))
+
 
     @staticmethod
     cdef inline void store_packet_node_in_seq(packet_node* n, object l, object f):
-        l.append((n.tv_sec, n.tv_usec, n.length, <bytes>(n.buf[:n.caplen])))
-
+        if isinstance(l, list):
+            (<list> l).append((n.tv_sec, n.tv_usec, n.length, <bytes>(n.buf[:n.caplen])))
+        elif hasattr(l, 'append'):
+            l.append((n.tv_sec, n.tv_usec, n.length, <bytes>(n.buf[:n.caplen])))
+        elif hasattr(l, 'put_nowait'):
+            l.put_nowait((n.tv_sec, n.tv_usec, n.length, <bytes>(n.buf[:n.caplen])))
 
 cdef class NonBlockingSniffer(Sniffer):
     cdef bool _nonblocking_mode
@@ -407,8 +422,9 @@ cdef class NonBlockingSniffer(Sniffer):
     cdef object descriptor
     cdef object container
     cdef object old_status
-    cpdef sniff_callback(self, callback)
-    cpdef sniff_and_store(self, container, f=?)
+    cdef object writer
+    cpdef sniff_callback(self, callback, int max_p=?)
+    cpdef sniff_and_store(self, container, f=?, int max_p=?)
     cpdef set_loop(self, loop, loop_type=?)
     cpdef stop(self)
 
@@ -423,6 +439,12 @@ cdef class PacketWriter(object):
 
     cpdef write(self, object buf, long tv_sec=?, int tv_usec=?)
     cdef int write_uchar_buf(self, unsigned char* buf, int length, long tv_sec=?, int tv_usec=?) nogil
+    cdef _clean(self)
+    cpdef stop(self)
+
+cdef class NonBlockingPacketWriter(PacketWriter):
+    cdef object q
+    cdef int stopping
 
 ctypedef struct packet_node:
     list_head link
