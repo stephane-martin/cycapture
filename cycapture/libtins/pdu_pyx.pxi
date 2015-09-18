@@ -237,7 +237,8 @@ map_pdutype_to_class = {
     PDU.TCP: TCP,
     PDU.RAW: RAW,
     PDU.UDP: UDP,
-    PDU.DNS: DNS
+    PDU.DNS: DNS,
+    PDU.ICMP: ICMP
 }
 
 #cdef cpp_map[int, string] map_pdutype_to_classname
@@ -247,6 +248,8 @@ map_pdutype_to_classname[PDU.TCP] = "tcp"
 map_pdutype_to_classname[PDU.RAW] = "raw"
 map_pdutype_to_classname[PDU.UDP] = "udp"
 map_pdutype_to_classname[PDU.DNS] = "dns"
+map_pdutype_to_classname[PDU.ICMP] = "icmp"
+
 
 
 #cdef cpp_map[string, factory] map_classname_to_factory
@@ -256,6 +259,7 @@ map_classname_to_factory["tcp"] = &TCP.factory
 map_classname_to_factory["raw"] = &RAW.factory
 map_classname_to_factory["udp"] = &UDP.factory
 map_classname_to_factory["dns"] = &DNS.factory
+map_classname_to_factory["icmp"] = &ICMP.factory
 
 
 #cdef cpp_map[string, int] map_classname_to_pdutype
