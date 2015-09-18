@@ -5,7 +5,7 @@ from cpython.ref cimport PyObject
 import socket
 
 
-class LibtinsException(StandardError):
+class LibtinsException(Exception):
     """
     Base exception class used by the cycapture.libtins bindings.
     """
