@@ -23,4 +23,4 @@ cdef public PyObject* py_protocol_disabled
 cdef extern from "custom_exception_handler.h" namespace "Tins":
     cdef void custom_exception_handler()
 
-cdef object MemoryViewFormat
+# cdef object MemoryViewFormat
