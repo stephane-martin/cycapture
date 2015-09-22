@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import distutils.core
 from setuptools import setup, find_packages, Extension
 import os
 import shlex
-import platform
+import sysconfig
 import sys
 import shutil
 from distutils.log import info
@@ -12,15 +13,26 @@ import subprocess
 import urllib
 import tarfile
 from os.path import dirname, abspath, join, commonprefix, exists
+import distutils.sysconfig
 
 on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
 here = abspath(dirname(__file__))
+
+import platform
+IS_MACOSX = platform.system().lower().strip() == "darwin"
+disutils_sysconfig = distutils.sysconfig.get_config_vars()
+if IS_MACOSX:
+    # don't build useless i386 architecture
+    disutils_sysconfig['LDSHARED'] = disutils_sysconfig['LDSHARED'].replace('-arch i386', '')
+    disutils_sysconfig['CFLAGS'] = disutils_sysconfig['CFLAGS'].replace('-arch i386', '')
+    # suppress painful warnings
+    disutils_sysconfig['CFLAGS'] = disutils_sysconfig['CFLAGS'].replace('-Wstrict-prototypes', '')
+
 
 
 class Dependency(object):
     def __init__(self):
         self.name = ""
-        self.language = "c"
         self.static = True
         self.thisdir = abspath(dirname(__file__))
         self.external_dir = join(self.thisdir, 'external')
@@ -30,7 +42,7 @@ class Dependency(object):
         self._library_dirs = None
         self._extra_objects = None
         self._install_dir = None
-
+        self._extra_link_args = None
 
     def download(self):
         pass
@@ -59,14 +71,18 @@ class Dependency(object):
             return self._library_dirs
         return []
 
+    def extra_link_args(self):
+        if self._extra_link_args:
+            return self._extra_link_args
+        return []
 
     def add_to_extension(self, ext):
         ext.include_dirs.extend(self.include_dirs())
         ext.library_dirs.extend(self.library_dirs())
         if self.name:
             ext.libraries.append(self.name)
-        ext.language = self.language
         ext.extra_objects.extend(self.extra_objects())
+        ext.extra_link_args.extend(self.extra_link_args())
 
 
 
@@ -138,9 +154,15 @@ class LibpcapDep(Dependency):
             self._include_dirs = [join(self._install_dir, 'include')]
             self._library_dirs = [join(self._install_dir, 'lib')]
             try:
-                shutil.copy(join(self._install_dir, 'lib', 'libpcap.dylib'), join(self.thisdir, 'cycapture', 'libpcap'))
+                shutil.copy(
+                    join(self._install_dir, 'lib', 'libpcap.dylib'),
+                    join(self.thisdir, 'cycapture', 'libpcap')
+                )
             except:
-                shutil.copy(join(self._install_dir, 'lib', 'libpcap.so'), join(self.thisdir, 'cycapture', 'libpcap'))
+                shutil.copy(
+                    join(self._install_dir, 'lib', 'libpcap.so'),
+                    join(self.thisdir, 'cycapture', 'libpcap')
+                )
         os.chdir(old_dir)
 
     @classmethod
@@ -169,8 +191,7 @@ class LibtinsDep(Dependency):
     def __init__(self, pcap_dep):
         super(LibtinsDep, self).__init__()
         self.pcap_dep = pcap_dep
-        self.name = ""              # we dont want setup.py to add a -ltins to the link step
-        self.language = "c++"
+        self.name = "tins"
         self.src_dir = join(self.external_dir, "libtins")
         self.download()
         self.build()
@@ -196,13 +217,64 @@ class LibtinsDep(Dependency):
         if not exists('build'):
             os.mkdir('build')
         os.chdir('build')
+
+        cmake_options = {
+            'CMAKE_CXX_FLAGS': "'-fPIC'",
+            'LIBTINS_BUILD_SHARED': "'1'",
+            'PCAP_ROOT_DIR': "'{}'".format(self.pcap_dep.install_dir())
+        }
+        if IS_MACOSX:
+            if bool(os.environ["SDKROOT"]):
+                # path to the macosx SDK that was used to compile python
+                cmake_options['CMAKE_OSX_SYSROOT'] = "'{}'".format(os.environ["SDKROOT"])
+            # libtins.dylib will have install dir name using rpath
+            cmake_options['CMAKE_MACOSX_RPATH'] = "'true'"
+
+        cmake_options = ' '.join(['-D{}={}'.format(opt_name, opt_value) for opt_name, opt_value in cmake_options.items()])
+
         subprocess.call(shlex.split(
-            "cmake ../ -DCMAKE_CXX_FLAGS='-fPIC' -DLIBTINS_BUILD_SHARED=0 -DPCAP_ROOT_DIR='%s'" % self.pcap_dep.install_dir()
+            "cmake ../ " + cmake_options
         ))
         subprocess.call('make')
         os.chdir(old_dir)
+
+        files_to_remove = [
+            join(self.thisdir, 'cycapture', 'libtins', 'libtins.3.2.dylib'),
+            join(self.thisdir, 'cycapture', 'libtins', 'libtins.dylib'),
+            join(self.thisdir, 'cycapture', 'libtins', 'libtins.3.2.dylib'),
+            join(self.thisdir, 'cycapture', 'libtins', 'libtins.dylib')
+        ]
+
+        for fname in files_to_remove:
+            try:
+                os.remove(fname)
+            except OSError:
+                pass
+
+        try:
+            shutil.copy(
+                join(self.src_dir, 'build', 'lib', 'libtins.3.2.dylib'),
+                join(self.thisdir, 'cycapture', 'libtins')
+            )
+            os.symlink(
+                join(self.thisdir, 'cycapture', 'libtins', 'libtins.3.2.dylib'),
+                join(self.thisdir, 'cycapture', 'libtins', 'libtins.dylib')
+            )
+        except:
+            shutil.copy(
+                join(self.src_dir, 'build', 'lib', 'libtins.3.2.so'),
+                join(self.thisdir, 'cycapture', 'libtins')
+            )
+            os.symlink(
+                join(self.thisdir, 'cycapture', 'libtins', 'libtins.3.2.so'),
+                join(self.thisdir, 'cycapture', 'libtins', 'libtins.so')
+            )
         self._include_dirs = [join(self.src_dir, 'include')]
-        self._extra_objects = [join(self.src_dir, 'build', 'lib', 'libtins.a')]
+        self._library_dirs = [join(self.thisdir, 'cycapture', 'libtins')]
+        if IS_MACOSX:
+            # all python extensions that are linked against libtins will have a proper rpath
+            self._extra_link_args = ["-Wl,-rpath", "-Wl,@loader_path/"]
+
 
 def list_subdir(subdirname):
     subdirname = join(here, subdirname)
@@ -223,6 +295,16 @@ def list_subdir(subdirname):
 
 
 if __name__ == "__main__":
+    if IS_MACOSX:
+        python_config_vars = sysconfig.get_config_vars()
+        # use the same SDK as python executable
+        if not exists(python_config_vars['UNIVERSALSDK']):
+            sys.stderr.write("\n'{}' SDK does not exist. Aborting.\n".format(python_config_vars['UNIVERSALSDK']))
+            sys.exit(-1)
+        sys.stderr.write("\nBuilding for MacOSX SDK: {}\n\n".format(python_config_vars["MACOSX_DEPLOYMENT_TARGET"]))
+        os.environ["MACOSX_DEPLOYMENT_TARGET"] = python_config_vars["MACOSX_DEPLOYMENT_TARGET"]
+        os.environ["SDKROOT"] = python_config_vars["UNIVERSALSDK"]
+
     with open('README.rst') as readme_file:
         readme = readme_file.read()
 
@@ -241,42 +323,59 @@ if __name__ == "__main__":
     if not on_rtd:
         # utility module to make python memoryviews from char* buffers
         make_mview_extension = Extension(
-            name="cycapture.make_mview",
-            sources=["cycapture/make_mview.pyx"]
+            name="cycapture._make_mview",
+            sources=["cycapture/_make_mview.pyx"]
         )
         extensions.append(make_mview_extension)
 
-        make_mview_extension = Extension(
-            name="cycapture.pthreadwrap",
-            sources=["cycapture/pthreadwrap.pyx"]
+        pthread_extension = Extension(
+            name="cycapture._pthreadwrap",
+            sources=["cycapture/_pthreadwrap.pyx"]
         )
-        extensions.append(make_mview_extension)
+        extensions.append(pthread_extension)
 
         # build libpcap and the cycapture.libpcap python extension
         pcap_extension = Extension(
             name="cycapture.libpcap._pcap",
             sources=["cycapture/libpcap/_pcap.pyx"]
         )
-        pcap_dep = LibpcapDep()
+        libpcap_dep = LibpcapDep()
         # noinspection PyTypeChecker
-        pcap_dep.add_to_extension(pcap_extension)
+        libpcap_dep.add_to_extension(pcap_extension)
         extensions.append(pcap_extension)
+
+        tins_dep = LibtinsDep(libpcap_dep)
+
+        tins_exceptions_extension = Extension(
+            name="cycapture.libtins._py_exceptions",
+            sources=[
+                "cycapture/libtins/_py_exceptions.pyx",
+                "cycapture/libtins/custom_exception_handler.cpp"
+            ],
+            language="c++"
+        )
+
+        # noinspection PyTypeChecker
+        tins_dep.add_to_extension(tins_exceptions_extension)
+        extensions.append(tins_exceptions_extension)
 
         # build libtins and cycapture.libtins python extension
         tins_extension = Extension(
             name="cycapture.libtins._tins",
-            sources=["cycapture/libtins/_tins.pyx", "cycapture/libtins/wrap.cpp", "cycapture/libtins/custom_exception_handler.cpp"]
+            sources=[
+                "cycapture/libtins/_tins.pyx",
+                "cycapture/libtins/wrap.cpp",
+                "cycapture/libtins/py_tcp_stream_functor.cpp",
+                "cycapture/libtins/py_pdu_iterator.cpp"
+            ],
+            language="c++"
         )
-        tins_dep = LibtinsDep(pcap_dep)
         # noinspection PyTypeChecker
         tins_dep.add_to_extension(tins_extension)
         extensions.append(tins_extension)
+
     data_files = []
 
-    # see http://lists.gnu.org/archive/html/libtool-patches/2014-09/msg00002.html`
-    # http://stackoverflow.com/questions/26563079/mac-osx-getting-segmentation-faults-on-every-c-program-even-hello-world-af
-    if platform.mac_ver()[0].startswith('10.10'):
-        os.environ["MACOSX_DEPLOYMENT_TARGET"] = "10.9"
     setup(
         name='cycapture',
         version='0.2',
@@ -290,7 +389,7 @@ if __name__ == "__main__":
             'setuptools_git', 'setuptools', 'twine', 'wheel', 'cython'
         ],
         include_package_data=True,
-        exclude_package_data={'': ['*.c', '*.cpp', '*.h']},
+        exclude_package_data={'': ['_*.c', '_*.cpp', '_*.h']},
         install_requires=requirements,
         license="LGPLv3+",
         zip_safe=False,
@@ -315,3 +414,4 @@ if __name__ == "__main__":
         ext_modules=extensions
 
     )
+
