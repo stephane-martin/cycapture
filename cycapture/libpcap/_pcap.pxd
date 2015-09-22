@@ -16,13 +16,13 @@ from libc.string cimport memcpy, strcpy, strlen
 from libc.stdio cimport printf, puts, fdopen, fclose, fopen
 
 # noinspection PyUnresolvedReferences
-from ..make_mview cimport make_mview_from_const_uchar_buf
+from .._make_mview cimport make_mview_from_const_uchar_buf
 # noinspection PyUnresolvedReferences
-from ..pthreadwrap cimport pthread_kill, pthread_t, pthread_equal, pthread_self, pthread_self_as_bytes, print_thread_id
+from .._pthreadwrap cimport pthread_kill, pthread_t, pthread_equal, pthread_self, pthread_self_as_bytes, print_thread_id
 # noinspection PyUnresolvedReferences
-from ..pthreadwrap cimport create_error_check_lock, pthread_mutex_lock, pthread_mutex_unlock, pthread_mutex_t
+from .._pthreadwrap cimport create_error_check_lock, pthread_mutex_lock, pthread_mutex_unlock, pthread_mutex_t
 # noinspection PyUnresolvedReferences
-from ..pthreadwrap cimport destroy_error_check_lock, copy_pthread_self
+from .._pthreadwrap cimport destroy_error_check_lock, copy_pthread_self
 
 include "extern_list.pxd.pxi"
 include "extern_various.pxd.pxi"

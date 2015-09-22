@@ -10,8 +10,10 @@ cdef class BlockingSniffer(Sniffer):
 
     cpdef sniff_and_store(self, container, f=?, int set_signal_mask=?, int max_p=?)
     cpdef sniff_callback(self, f, int set_signal_mask=?, int max_p=?)
-    cdef void _set_signal_mask(self) nogil
     cpdef ask_stop(self)
+    cpdef iterator(self, f=?, int max_p=?, int cache_size=?)
+
+    cdef void _set_signal_mask(self) nogil
     cdef thread_pcap_node* register(self) except NULL
     cdef int unregister(self)
 
@@ -111,3 +113,13 @@ cdef class BlockingSniffer(Sniffer):
         elif hasattr(l, 'put_nowait'):
             l.put_nowait((n.tv_sec, n.tv_usec, n.length, <bytes>(n.buf[:n.caplen])))
 
+cdef class SniffingIterator(object):
+    cdef BlockingSniffer sniffer
+    cdef object queue
+    cdef object thread
+    cdef readonly object f
+    cdef readonly int max_p
+    cdef readonly int cache_size
+    cdef int total_returned
+
+    cpdef stop(self)

@@ -8,8 +8,8 @@ cdef class Sniffer(object):
     cdef pcap_t* _handle
     cdef readonly bool activated
     cdef readonly bytes source
-    cdef int total
-    cdef int max_p
+    cdef readonly int total
+    cdef readonly int max_p
 
     cdef int _read_timeout
     cdef int _buffer_size

@@ -12,15 +12,18 @@ cdef class BlockingSniffer(Sniffer):
 
     def __cinit__(self, source, read_timeout=5000, buffer_size=0, snapshot_length=2000, promisc_mode=False,
                   monitor_mode=False, direction=PCAP_D_INOUT):
+
         if source is None:
             self.source = None
             self._handle = NULL
             return
+
         source = bytes(source)
         if len(source) == 0:
             self.source = None
             self._handle = NULL
             return
+
         self.source = source
         self._handle = pcap_create(<char*> source, self._errbuf)
         self.parent_thread = NULL
@@ -51,7 +54,7 @@ cdef class BlockingSniffer(Sniffer):
         pthread_sigmask(SIG_UNBLOCK, &s, NULL)
 
     cdef thread_pcap_node* register(self) except NULL:
-        if self in self.active_sniffers.values():
+        if self in BlockingSniffer.active_sniffers.values():
             raise RuntimeError("This BlockingSniffer is already actively listening")
         if BlockingSniffer.thread_has_pcap(pthread_self()) == 1:
             raise RuntimeError("only one sniffing action per thread is allowed")
@@ -85,10 +88,13 @@ cdef class BlockingSniffer(Sniffer):
 
         self.sniff_callback(_callback, max_p=max_p)
 
+    cpdef iterator(self, f=None, int max_p=-1, int cache_size=10000):
+        return iter(SniffingIterator(self, f, max_p, cache_size))
+
 
     cpdef sniff_callback(self, f, int set_signal_mask=1, int max_p=-1):
         global sig_handler
-        cdef int counted
+        cdef int counted = 0
 
         cdef char* error_msg = NULL
         cdef char* error_msg_source = NULL
@@ -137,7 +143,7 @@ cdef class BlockingSniffer(Sniffer):
 
     cpdef sniff_and_store(self, container, f=None, int set_signal_mask=1, int max_p=-1):
         global _store_c_callback, sig_handler
-        cdef int counted
+        cdef int counted = 0
         cdef sighandler_t h = <sighandler_t> sig_handler
         cdef sighandler_t old_sigint
         cdef bytes error_message = b''
@@ -205,3 +211,64 @@ cdef class BlockingSniffer(Sniffer):
 
         if error_message:
             raise PcapExceptionFactory(counted, bytes(error_message), default=SniffingError)
+
+
+cdef class SniffingIterator(object):
+
+    def __init__(self, BlockingSniffer sniffer, f=None, int max_p=-1, int cache_size=10000):
+        if sniffer is None:
+            raise TypeError('sniffer must be a BlockingSniffer object')
+        if sniffer in BlockingSniffer.active_sniffers.values():
+            raise RuntimeError('sniffer is already actively listening')
+        self.sniffer = sniffer
+        self.queue = deque() if cache_size <= 0 else deque([], cache_size)
+        self.max_p = max_p
+        self.total_returned = 0
+        self.cache_size = cache_size
+        self.f = f
+
+        self.thread = threading.Thread(target=self._background_sniff)
+        self.thread.start()
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        if self.queue is None:
+            # the iterator is closed
+            raise StopIteration
+        if 0 < self.max_p <= self.total_returned:
+            # we already returned enough packets
+            self.queue = None     # try to free memory...
+            raise StopIteration
+        if self.queue:
+            self.total_returned += 1
+            return self.queue.popleft()
+        while self.thread.isAlive():
+            # wait that something is appended into the queue
+            sleep(1)
+            if self.queue:
+                self.total_returned += 1
+                return self.queue.popleft()
+        if self.queue:
+            self.total_returned += 1
+            return self.queue.popleft()
+        # the sniffer is not anymore active and we don't have any available packet
+        self.queue = None     # try to free memory...
+        raise StopIteration
+
+    def _background_sniff(self):
+        # let's start to sniff and store the results in queue
+        self.sniffer.sniff_and_store(self.queue, f=self.f, max_p=self.max_p)
+
+    property internal_queue_size:
+        def __get__(self):
+            return len(self.queue) if self.queue is not None else None
+
+    property currently_sniffing:
+        def __get__(self):
+            return self.thread.isAlive()
+
+    cpdef stop(self):
+        if self.sniffer in BlockingSniffer.active_sniffers.values():
+            self.sniffer.ask_stop()
