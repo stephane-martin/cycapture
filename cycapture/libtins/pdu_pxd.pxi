@@ -98,7 +98,7 @@ cdef extern from "wrap.h" namespace "Tins" nogil:
     cppPDU* cpp_find_pdu(const cppPDU* pdu, PDUType t)
 
 
-cdef class PDU(object):
+cdef public class PDU(object)[type PyPDUType, object PyPDUObject]:
     cdef cppPDU* base_ptr
     cdef object parent
 
