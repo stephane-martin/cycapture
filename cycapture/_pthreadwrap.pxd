@@ -3,7 +3,6 @@
 from libc.stdlib cimport malloc, free
 from libc.string cimport memcpy
 
-
 cdef extern from "pthread.h" nogil:
     ctypedef struct pthread_t:
         pass
@@ -41,7 +40,6 @@ cdef extern from "pthread.h" nogil:
         PTHREAD_MUTEX_ERRORCHECK
         PTHREAD_MUTEX_RECURSIVE
         PTHREAD_MUTEX_DEFAULT
-
 
 cpdef void print_thread_id() nogil
 cpdef bytes pthread_self_as_bytes()
