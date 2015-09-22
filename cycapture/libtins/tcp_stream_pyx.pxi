@@ -1,14 +1,9 @@
 # -*- coding: utf-8 -*-
 
-# noinspection PyUnresolvedReferences
-from libc.stdint cimport uint16_t, uint32_t, uint8_t, uintptr_t, uint64_t
-# noinspection PyUnresolvedReferences
-from cpython.ref cimport PyObject
-from cpython.ref cimport Py_INCREF
-
 
 cdef class TCPStream(object):
-    def __cinit__(self, client_addr, server_addr, client_port, server_port, ident, finished, client_payload, server_payload):
+
+    def __init__(self, client_addr, server_addr, client_port, server_port, ident, finished, client_payload, server_payload):
         try:
             if isinstance(client_addr, IPv4Address):
                 self.client_addr = client_addr
@@ -44,11 +39,5 @@ cdef class TCPStream(object):
 
         self._client_payload = client_payload
         self._server_payload = server_payload
-
-    def __init__(self, client_addr, server_addr, client_port, server_port, ident, finished, client_payload, server_payload):
-        pass
-
-    def __dealloc__(self):
-        pass
 
 

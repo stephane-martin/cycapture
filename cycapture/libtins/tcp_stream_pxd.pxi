@@ -1,16 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from libcpp.string cimport string
-from libcpp.vector cimport vector
-# noinspection PyUnresolvedReferences
-from libcpp cimport bool as cpp_bool
-# noinspection PyUnresolvedReferences
-from cpython.ref cimport PyObject
-# noinspection PyUnresolvedReferences
-from libc.stdint cimport uint16_t, uint32_t, uint8_t, uintptr_t, uint64_t
-
-from ._tins cimport cppIPv4Address, cppIP, cppTCP, IPv4Address
-
 cdef extern from "tins/tcp_stream.h" namespace "Tins" nogil:
 
     cppclass cppTCPStream "Tins::TCPStream":
