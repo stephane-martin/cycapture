@@ -3,6 +3,7 @@
 // we need PyPDUType and PyPDUObject
 #include "_tins.h"
 
+
 namespace Tins {
 
     PDUIterator::PDUIterator() {
@@ -30,7 +31,7 @@ namespace Tins {
         Py_INCREF(it);            // prevent the iterator to be garbage collected
         py_iterator = it;
 
-        next_obj();
+        load_next_obj();
 
     }
 
@@ -46,7 +47,7 @@ namespace Tins {
 
     }
 
-    void PDUIterator::next_obj() {
+    void PDUIterator::load_next_obj() {
         if (py_iterator == 0) {
             // we already reached the end
             return;
@@ -58,7 +59,11 @@ namespace Tins {
 
         current_py_pdu = PyIter_Next(py_iterator);    // new python reference -> need Py_DECREF
         if (current_py_pdu == 0) {
-            // the iterator was empty... end of iteration
+            if (PyErr_Occurred()) {
+                std::cout << "exception occured :(" << std::endl;
+            } else {
+                std::cout << "the iterator was empty... end of iteration" << std::endl;
+            }
             Py_DECREF(py_iterator);     // decrement the python iterator reference
             py_iterator = 0;
             current_pdu = 0;
@@ -68,14 +73,15 @@ namespace Tins {
         // check if current_py_pdu is a python PDU
         if (!PyObject_IsInstance(current_py_pdu, reinterpret_cast<PyObject*>(&PyPDUType))) {
             // we ignore the current object and check the next one
-            next_obj();
+            std::cout << "some non-PDU was in iterator"  << std::endl;
+            load_next_obj();
             return;
         }
         PyPDUObject* tmp = (PyPDUObject*) current_py_pdu;
         current_pdu = tmp->base_ptr;
     }
 
-    PDUIterator::reference PDUIterator::operator*() {
+    PDU& PDUIterator::operator*() {
         if (current_pdu == 0) {
             // what to do ?!
             throw std::runtime_error("bleh");

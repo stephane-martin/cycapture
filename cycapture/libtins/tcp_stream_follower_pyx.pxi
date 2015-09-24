@@ -1,22 +1,28 @@
 # -*- coding: utf-8 -*-
 
-def dummy_callback(stream):
-    return True
+cdef void dummy_f(cppTCPStream& s):
+    pass
 
 cdef class TCPStreamFollower(object):
     def __cinit__(self, data_callback=None, end_callback=None):
         self.follower = new cppTCPStreamFollower()
+
         if data_callback is None:
-            data_callback = dummy_callback
+            self.data_functor = NULL
+        else:
+            if callable(data_callback):
+                self.data_functor = new TCPStreamPyFunctor(<PyObject*> data_callback)
+            else:
+                raise TypeError("data_callback and end_callback must be callables")
+
         if end_callback is None:
-            end_callback = dummy_callback
+            self.end_functor = NULL
+        else:
+            if callable(end_callback):
+                self.end_functor = new TCPStreamPyFunctor(<PyObject*> end_callback)
+            else:
+                raise TypeError("data_callback and end_callback must be callables")
 
-        # check that the callbacks are functions and accept one and only argument
-        if (not callable(data_callback)) or (not callable(end_callback)):
-            raise TypeError("data_callback and end_callback must be callables")
-
-        self.data_functor = new TCPStreamPyFunctor(<PyObject*> data_callback)
-        self.end_functor = new TCPStreamPyFunctor(<PyObject*> end_callback)
 
     def __dealloc__(self):
         if self.end_functor != NULL:
@@ -37,13 +43,22 @@ cdef class TCPStreamFollower(object):
             return
         if isinstance(list_of_pdu, PDU):
             list_of_pdu = [list_of_pdu]
-        if PySequence_Check(list_of_pdu):
-            if len(list_of_pdu) == 0:
-                return
-            list_of_pdu = iter(list_of_pdu)
-        if not PyIter_Check(list_of_pdu):
-            raise TypeError("don't know what to do with list_of_pdu type: %s" % type(list_of_pdu))
-        cdef PDUIterator start = PDUIterator(<PyObject*> list_of_pdu)
-        cdef PDUIterator end
-        self.follower.follow_streams(start, end, self.data_functor[0], self.end_functor[0])
+
+        cdef vector[cppPDU*] v
+        for pdu in list_of_pdu:
+            if not isinstance(pdu, PDU):
+                continue
+            v.push_back((<PDU> pdu).base_ptr)
+            #print(pdu)
+            try:
+                if self.data_functor != NULL and self.end_functor != NULL:
+                    self.follower.follow_streams(v.begin(), v.end(), self.data_functor[0], self.end_functor[0])
+                elif self.data_functor == NULL and self.end_functor == NULL:
+                    self.follower.follow_streams(v.begin(), v.end(), dummy_f, dummy_f)
+                elif self.data_functor != NULL:
+                    self.follower.follow_streams(v.begin(), v.end(), self.data_functor[0], dummy_f)
+                else:
+                    self.follower.follow_streams(v.begin(), v.end(), dummy_f, self.end_functor[0])
+            finally:
+                v.pop_back()
 

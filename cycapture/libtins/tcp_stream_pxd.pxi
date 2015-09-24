@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-cdef extern from "tins/tcp_stream.h" namespace "Tins" nogil:
+cdef extern from "tins/tcp_stream.h" namespace "Tins":
 
     cppclass cppTCPStream "Tins::TCPStream":
 
@@ -32,6 +32,6 @@ cdef public class TCPStream(object)[type PyTCPStreamType, object PyTCPStreamObje
     cdef readonly int server_port
     cdef readonly uint64_t identifier
     cdef readonly int finished
-    cdef object _client_payload
-    cdef object _server_payload
+    cdef readonly object client_payload
+    cdef readonly object server_payload
 

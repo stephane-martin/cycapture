@@ -21,10 +21,13 @@ from .exceptions import SetSnapshotLengthError, SetPromiscModeError, SetMonitorM
 from .exceptions import ActivationError, NotActivatedError, SniffingError, PermissionDenied, PromiscPermissionDenied
 from .exceptions import PcapExceptionFactory
 
+
 include "definitions.pyx.pxi"
 include "utils_func.pyx.pxi"
 include "sniffer.pyx.pxi"
 include "writer.pyx.pxi"
+include "iterator.pyx.pxi"
+
 
 lock = create_error_check_lock()
 INIT_LIST_HEAD(&thread_pcap_global_list)

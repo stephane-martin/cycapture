@@ -2,9 +2,9 @@
 
 // we need PyTCPStreamType and PyTCPStreamObject
 #include "_tins.h"
+#include <iostream>
 
 namespace Tins {
-
 
     PyObject* std_string_to_pyobj(const std::string s) {
         return PyString_FromStringAndSize(s.c_str(), (Py_ssize_t) s.size());
@@ -59,21 +59,26 @@ namespace Tins {
     }
 
     TCPStreamPyFunctor::TCPStreamPyFunctor(PyObject* callabl) {
-        if (!PyCallable_Check(callabl)) {
-            // ooops, callabl is not a python callable
+        if (callabl == NULL) {
+            throw std::runtime_error("TCPStreamPyFunctor: argument is NULL");
         }
-        Py_INCREF(callabl);
+        if (!PyCallable_Check(callabl)) {
+            throw std::runtime_error("TCPStreamPyFunctor: argument is not a callable");
+        }
         callback = callabl;
+        Py_INCREF(callback);
     }
 
     TCPStreamPyFunctor::~TCPStreamPyFunctor() {
-        Py_DECREF(callback);
+        if (callback != NULL) {
+            Py_DECREF(callback);
+        }
     }
 
 
     bool TCPStreamPyFunctor::operator()(TCPStream& stream) const {
         PyObject* client_mview = make_mview(stream.client_payload());       // new reference
-        PyObject* server_mview;
+        PyObject* server_mview = NULL;
         try {
             server_mview = make_mview(stream.server_payload());
         } catch(std::runtime_error&) {
@@ -95,19 +100,32 @@ namespace Tins {
             client_mview,
             server_mview
         );
-        if (py_stream == 0) {
+
+        if (py_stream == NULL) {
             Py_DECREF(client_mview);
             Py_DECREF(server_mview);
-            throw std::runtime_error("Creating the TCPStream pyobject failed in TCPStreamPyFunctor::operator()");
+
+            if (!PyErr_Occurred()) {
+                throw std::runtime_error("Creating the TCPStream pyobject failed in TCPStreamPyFunctor::operator()");
+            } else {
+                // python already set an exception
+                return false;
+            }
         }
 
         // call the python callback
         PyObject* result = PyObject_CallFunctionObjArgs(callback, py_stream, NULL);     // new reference
-        if (result == 0) {
+        if (result == NULL) {
             Py_DECREF(client_mview);
             Py_DECREF(server_mview);
             Py_DECREF(py_stream);
-            throw std::runtime_error("Calling python callback failed in TCPStreamPyFunctor::operator()");
+
+            if (!PyErr_Occurred()) {
+                throw std::runtime_error("Calling python callback failed in TCPStreamPyFunctor::operator()");
+            } else {
+                // python already set an exception
+                return false;
+            }
         }
 
         // cleaning
@@ -115,7 +133,7 @@ namespace Tins {
         Py_DECREF(server_mview);
         Py_DECREF(py_stream);
 
-        // return the callback result as a C bool
+        // return the result as a C bool
         if (PyObject_IsTrue(result) == 1) {
             Py_DECREF(result);
             return true;

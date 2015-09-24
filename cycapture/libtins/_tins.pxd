@@ -10,6 +10,8 @@ from cpython.list cimport PyList_Check
 from cpython.mem cimport PyMem_Malloc, PyMem_Realloc, PyMem_Free
 from cpython.sequence cimport PySequence_Check
 from cpython.iterator cimport PyIter_Check
+# noinspection PyUnresolvedReferences
+from cpython.ref cimport PyObject
 
 # noinspection PyUnresolvedReferences
 from libc.stdint cimport uint16_t, uint32_t, uint8_t, uintptr_t, uint64_t

@@ -31,6 +31,7 @@ include "utils_func.pxd.pxi"
 include "sniffer.pxd.pxi"
 include "writer.pxd.pxi"
 include "definitions.pxd.pxi"
+include "iterator.pxd.pxi"
 
 cdef pthread_mutex_t* lock
 cdef object logger

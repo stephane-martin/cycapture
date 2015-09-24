@@ -120,10 +120,10 @@ cdef class NonBlockingPacketWriter(PacketWriter):
             raise RuntimeError('could not get a pcap handle')
         self.dumper = _get_dumper(output, self.handle)
         self.output_lock = create_error_check_lock()
-        self.stopping = 0
 
     def __init__(self, linktype, output):
         PacketWriter.__init__(self, linktype, output)
+        self.stopping = 0
         self.q = deque()
         t = threading.Thread(target=self._flush_thread)
         t.start()
