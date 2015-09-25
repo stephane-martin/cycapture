@@ -27,6 +27,7 @@ include "utils_func.pyx.pxi"
 include "sniffer.pyx.pxi"
 include "writer.pyx.pxi"
 include "iterator.pyx.pxi"
+include "offline_filter.pyx.pxi"
 
 
 lock = create_error_check_lock()

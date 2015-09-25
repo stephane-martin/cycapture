@@ -50,7 +50,8 @@ cdef class SniffingIterator(object):
             return self.queue.popleft()
         while self.thread.isAlive():
             # wait that something is appended into the queue
-            sleep(1)
+            with nogil:
+                csleep(1)
             if self.queue:
                 self.total_returned += 1
                 return self.queue.popleft()
@@ -61,5 +62,3 @@ cdef class SniffingIterator(object):
         self.queue = None     # try to free memory...
         raise StopIteration
 
-    def next(self):
-        return self.__next__()

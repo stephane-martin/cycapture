@@ -184,7 +184,7 @@ cdef class BlockingSniffer(Sniffer):
                     nextnext = cursor.next
                     while cursor != &head:
                         pkt_node = <packet_node*>( <char *>cursor - <unsigned long> (&(<packet_node*>0).link) )
-                        store(pkt_node, container, f)
+                        store(pkt_node, container, f)           # python code... need the GIL
                         free(pkt_node.buf)
                         list_del(&pkt_node.link)
                         free(pkt_node)

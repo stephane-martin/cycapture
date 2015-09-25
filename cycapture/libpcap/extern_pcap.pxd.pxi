@@ -154,6 +154,7 @@ cdef extern from "pcap/pcap.h" nogil:
     int pcap_compile(pcap_t *p, bpf_program *fp, const char*, int optimize, unsigned int netmask)
     void pcap_freecode(bpf_program*)
     int pcap_setfilter(pcap_t *p, bpf_program *fp)
+    int pcap_offline_filter(const bpf_program *fp, const pcap_pkthdr *h, const unsigned char *pkt)
 
     pcap_t* pcap_open_dead(int linktype, int snaplen)
     pcap_dumper_t* pcap_dump_open(pcap_t* p, const char* fname)

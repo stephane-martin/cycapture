@@ -8,5 +8,5 @@ from .exceptions import PcapException, AlreadyActivated, SetTimeoutError, SetDir
 from .exceptions import SetSnapshotLengthError, SetPromiscModeError, SetMonitorModeError, SetNonblockingModeError
 from .exceptions import ActivationError, NotActivatedError, SniffingError, PermissionDenied, PromiscPermissionDenied
 
-from ._pcap import BlockingSniffer, NonBlockingSniffer, PacketWriter, DLT
+from ._pcap import BlockingSniffer, NonBlockingSniffer, PacketWriter, DLT, OfflineFilter
 from ._pcap import lookupdev, findalldevs, lookupnet, libpcap_version

@@ -152,7 +152,8 @@ cdef class NonBlockingPacketWriter(PacketWriter):
         while (self.stopping == 0) or (len(self.q) > 0):
             how_many = <int> len(self.q)
             if how_many == 0:
-                sleep(1)
+                with nogil:
+                    csleep(1)
                 continue
             # popleft is thread-safe, and we pop from the left (whereas sniff_and_store append on the right)
             temp_q = [self.q.popleft() for _ in range(how_many)]
