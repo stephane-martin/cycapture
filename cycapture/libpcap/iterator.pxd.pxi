@@ -8,3 +8,6 @@ cdef class SniffingIterator(object):
     cdef int max_p
     cdef int total_returned
     cdef int cache_size
+
+    cpdef start(self)
+    cpdef stop(self)
