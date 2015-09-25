@@ -59,9 +59,14 @@ namespace Tins {
         return tcp_stream_obj;
     }
 
+    TCPStreamPyFunctor::TCPStreamPyFunctor() {
+        callback = NULL;
+    }
+
     TCPStreamPyFunctor::TCPStreamPyFunctor(PyObject* callabl) {
         if (callabl == NULL) {
-            throw std::runtime_error("TCPStreamPyFunctor: argument is NULL");
+            callback = NULL;
+            return;
         }
         if (!PyCallable_Check(callabl)) {
             throw std::runtime_error("TCPStreamPyFunctor: argument is not a callable");
@@ -78,6 +83,9 @@ namespace Tins {
 
 
     bool TCPStreamPyFunctor::operator()(TCPStream& stream) const {
+        if (callback == NULL) {
+            return true;
+        }
         PyObject* client_mview = make_mview(stream.client_payload());       // new reference
         PyObject* server_mview = NULL;
         try {

@@ -13,6 +13,7 @@ cdef extern from "tins/tcp_stream.h" namespace "Tins":
 
 cdef extern from "py_tcp_stream_functor.h" namespace "Tins":
     cppclass TCPStreamPyFunctor:
+        TCPStreamPyFunctor()
         TCPStreamPyFunctor(PyObject* callabl)
 
 

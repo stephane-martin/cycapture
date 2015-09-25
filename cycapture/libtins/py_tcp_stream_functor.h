@@ -13,6 +13,7 @@ namespace Tins {
 
     class TCPStreamPyFunctor {
     public:
+        TCPStreamPyFunctor();
         TCPStreamPyFunctor(PyObject* callabl);
         ~TCPStreamPyFunctor();
         bool operator()(TCPStream& stream) const;
