@@ -33,6 +33,7 @@ namespace Tins {
     PyObject* py_tcp_stream_factory(std::string caddr, std::string saddr, int cport, int sport, uint64_t id,
                                            int finished, PyObject* cmview, PyObject* smview) {
 
+        // build the PyObject* arguments
         PyObject* client_addr = std_string_to_pyobj(caddr);
         PyObject* server_addr = std_string_to_pyobj(saddr);
         PyObject* client_port = Py_BuildValue("i", cport);
@@ -40,7 +41,7 @@ namespace Tins {
         PyObject* identifier = Py_BuildValue("K", (long long unsigned int) id);
         PyObject* is_finished = Py_BuildValue("i", finished);
 
-        // build a python TCPStream object from args (we just call the class object just as in normal python)
+        // build a python TCPStream object from args (we just call the class object, just as in normal python)
         PyObject *tcp_stream_obj = PyObject_CallFunctionObjArgs(
             (PyObject *) &PyTCPStreamType,
             client_addr, server_addr, client_port, server_port, identifier, is_finished, cmview, smview,

@@ -39,26 +39,22 @@ cdef class TCPStreamFollower(object):
         pass
 
     cpdef feed(self, list_of_pdu):
+        cdef cppPDU* p = NULL
         if list_of_pdu is None:
             return
         if isinstance(list_of_pdu, PDU):
             list_of_pdu = [list_of_pdu]
 
-        cdef vector[cppPDU*] v
         for pdu in list_of_pdu:
             if not isinstance(pdu, PDU):
                 continue
-            v.push_back((<PDU> pdu).base_ptr)
-            #print(pdu)
-            try:
-                if self.data_functor != NULL and self.end_functor != NULL:
-                    self.follower.follow_streams(v.begin(), v.end(), self.data_functor[0], self.end_functor[0])
-                elif self.data_functor == NULL and self.end_functor == NULL:
-                    self.follower.follow_streams(v.begin(), v.end(), dummy_f, dummy_f)
-                elif self.data_functor != NULL:
-                    self.follower.follow_streams(v.begin(), v.end(), self.data_functor[0], dummy_f)
-                else:
-                    self.follower.follow_streams(v.begin(), v.end(), dummy_f, self.end_functor[0])
-            finally:
-                v.pop_back()
+            p = (<PDU> pdu).base_ptr
 
+            if self.data_functor != NULL and self.end_functor != NULL:
+                self.follower.follow_streams(p, p + 1, self.data_functor[0], self.end_functor[0])
+            elif self.data_functor == NULL and self.end_functor == NULL:
+                self.follower.follow_streams(p, p + 1, dummy_f, dummy_f)
+            elif self.data_functor != NULL:
+                self.follower.follow_streams(p, p + 1, self.data_functor[0], dummy_f)
+            else:
+                self.follower.follow_streams(p, p + 1, dummy_f, self.end_functor[0])

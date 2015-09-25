@@ -27,8 +27,6 @@ cdef extern from "py_pdu_iterator.h" namespace "Tins":
     cpp_bool operator!=(const PDUIterator& lhs, const PDUIterator& rhs)
 
 
-
-
 cdef class TCPStreamFollower(object):
     cdef cppTCPStreamFollower* follower
     cdef TCPStreamPyFunctor* data_functor
