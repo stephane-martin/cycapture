@@ -1,30 +1,18 @@
+# -*- coding: utf-8 -*-
 
-
-
-# noinspection PyAttributeOutsideInit
 cdef class NonBlockingSniffer(Sniffer):
     active_sniffers = {}
 
-    def __cinit__(self, source, read_timeout=5000, buffer_size=0, snapshot_length=2000, promisc_mode=False,
-                  monitor_mode=False, direction=PCAP_D_INOUT):
-        if source is None:
-            self.source = None
-            self._handle = NULL
-            return
-        source = bytes(source)
-        if len(source) == 0:
-            self.source = None
-            self._handle = NULL
-            return
-        self.source = source
-        self._handle = pcap_create(<char*> source, self._errbuf)
+    def __cinit__(self, interface=None, filename=None, int read_timeout=5000, int buffer_size=0, int snapshot_length=2000,
+                  promisc_mode=False, monitor_mode=False, direction=PCAP_D_INOUT):
+        self._do_cinit(interface, filename, read_timeout, buffer_size, snapshot_length, promisc_mode, monitor_mode,direction)
 
     def __dealloc__(self):
         self.close()
 
-    def __init__(self, source, read_timeout=5000, buffer_size=0, snapshot_length=2000, promisc_mode=False,
-                 monitor_mode=False, direction=PCAP_D_INOUT):
-        Sniffer.__init__(self, source, read_timeout, buffer_size, snapshot_length, promisc_mode, monitor_mode, direction)
+    def __init__(self, interface=None, filename=None, int read_timeout=5000, int buffer_size=0, int snapshot_length=2000,
+                  promisc_mode=False, monitor_mode=False, direction=PCAP_D_INOUT):
+        Sniffer.__init__(self, interface, filename, read_timeout, buffer_size, snapshot_length, promisc_mode, monitor_mode, direction)
         self.loop = None
         self.loop_type = None
         self.descriptor = None

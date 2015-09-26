@@ -10,6 +10,7 @@ import threading
 from io import UnsupportedOperation
 from time import sleep
 from collections import deque
+from os.path import exists
 
 from enum import Enum
 

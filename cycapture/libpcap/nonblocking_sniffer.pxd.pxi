@@ -1,4 +1,4 @@
-
+# -*- coding: utf-8 -*-
 
 cdef class NonBlockingSniffer(Sniffer):
     cdef bool _nonblocking_mode

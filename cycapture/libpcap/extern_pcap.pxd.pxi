@@ -13,28 +13,9 @@ cdef extern from "pcap/bpf.h":
         unsigned int bf_len
         bpf_insn* bf_insns
     enum:
-        DLT_NULL,
-        DLT_EN10MB,
-        DLT_EN3MB,
-        DLT_AX25,
-        DLT_PRONET,
-        DLT_CHAOS,
-        DLT_IEEE802,
-        DLT_ARCNET,
-        DLT_SLIP,
-        DLT_PPP,
-        DLT_FDDI,
-        DLT_RAW,
-        DLT_IEEE802_11,
-        DLT_LOOP,
-        DLT_ENC,
-        DLT_PRISM_HEADER,
-        DLT_AIRONET_HEADER,
-        DLT_IEEE802_11_RADIO,
-        DLT_IEEE802_11_RADIO_AVS,
-        DLT_IPV4,
-        DLT_IPV6
-
+        DLT_NULL, DLT_EN10MB, DLT_EN3MB, DLT_AX25, DLT_PRONET, DLT_CHAOS, DLT_IEEE802, DLT_ARCNET, DLT_SLIP, DLT_PPP,
+        DLT_FDDI, DLT_RAW, DLT_IEEE802_11, DLT_LOOP, DLT_ENC, DLT_PRISM_HEADER, DLT_AIRONET_HEADER, DLT_IEEE802_11_RADIO,
+        DLT_IEEE802_11_RADIO_AVS, DLT_IPV4, DLT_IPV6
 
 cdef extern from "pcap/pcap.h":
     ctypedef struct pcap_t
@@ -69,46 +50,29 @@ cdef extern from "pcap/pcap.h":
         PCAP_D_OUT
 
     enum:
-        PCAP_WARNING
-        PCAP_WARNING_PROMISC_NOTSUP
-        PCAP_WARNING_TSTAMP_TYPE_NOTSUP
+        PCAP_WARNING, PCAP_WARNING_PROMISC_NOTSUP, PCAP_WARNING_TSTAMP_TYPE_NOTSUP
 
-        PCAP_ERROR
-        PCAP_ERROR_BREAK
-        PCAP_ERROR_NOT_ACTIVATED
-        PCAP_ERROR_ACTIVATED
-        PCAP_ERROR_NO_SUCH_DEVICE
-        PCAP_ERROR_RFMON_NOTSUP
-        PCAP_ERROR_NOT_RFMON
-        PCAP_ERROR_PERM_DENIED
-        PCAP_ERROR_IFACE_NOT_UP
-        PCAP_ERROR_CANTSET_TSTAMP_TYPE
-        PCAP_ERROR_PROMISC_PERM_DENIED
-        PCAP_ERROR_TSTAMP_PRECISION_NOTSUP
+        PCAP_ERROR, PCAP_ERROR_BREAK, PCAP_ERROR_NOT_ACTIVATED, PCAP_ERROR_ACTIVATED, PCAP_ERROR_NO_SUCH_DEVICE
+        PCAP_ERROR_RFMON_NOTSUP, PCAP_ERROR_NOT_RFMON, PCAP_ERROR_PERM_DENIED, PCAP_ERROR_IFACE_NOT_UP
+        PCAP_ERROR_CANTSET_TSTAMP_TYPE, PCAP_ERROR_PROMISC_PERM_DENIED, PCAP_ERROR_TSTAMP_PRECISION_NOTSUP
 
-        AF_INET
-        AF_LINK
-        AF_INET6
+        AF_INET, AF_LINK, AF_INET6
 
-        PCAP_IF_LOOPBACK
-        PCAP_IF_UP
-        PCAP_IF_RUNNING
+        PCAP_IF_LOOPBACK, PCAP_IF_UP, PCAP_IF_RUNNING
 
-        PCAP_TSTAMP_PRECISION_MICRO
-        PCAP_TSTAMP_PRECISION_NANO
-        PCAP_TSTAMP_HOST
-        PCAP_TSTAMP_HOST_LOWPREC
-        PCAP_TSTAMP_HOST_HIPREC
-        PCAP_TSTAMP_ADAPTER
-        PCAP_TSTAMP_ADAPTER_UNSYNCED
+        PCAP_TSTAMP_PRECISION_MICRO, PCAP_TSTAMP_PRECISION_NANO, PCAP_TSTAMP_HOST, PCAP_TSTAMP_HOST_LOWPREC
+        PCAP_TSTAMP_HOST_HIPREC, PCAP_TSTAMP_ADAPTER, PCAP_TSTAMP_ADAPTER_UNSYNCED
+
 
 ctypedef pcap_pkthdr pcap_pkthdr_t
 ctypedef bpf_program bpf_program_t
 # noinspection PyUnresolvedReferences
 ctypedef void (*pcap_handler) (unsigned char*, const pcap_pkthdr_t*, const unsigned char*)
 
+
 cdef extern from "pcap/pcap.h" nogil:
     pcap_t *pcap_create(const char*, char*)
+    pcap_t *pcap_open_offline(const char *fname, char *errbuf)
     int pcap_set_snaplen(pcap_t*, int)
     int pcap_set_timeout(pcap_t *, int)
     int pcap_set_tstamp_type(pcap_t*, int)

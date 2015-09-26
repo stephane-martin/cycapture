@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 
 cdef void sig_handler(int signum) nogil
 ctypedef void (*sighandler_t)(int s) nogil

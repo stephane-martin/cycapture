@@ -1,10 +1,11 @@
-
+# -*- coding: utf-8 -*-
 
 cdef class Sniffer(object):
     """
     Sniffer
 
-    :param source: source interface
+    :param interface: network interface to use
+    :param filename: file to read packets from
     :param read_timeout: reading timeout (default = 5000ms)
     :param buffer_size: buffer size (default = 0, default buffer size)
     :param snapshot_length: reading size for each packet (default: 2000 bytes)
@@ -13,34 +14,44 @@ cdef class Sniffer(object):
     :param direction: PCAP_D_INOUT, PCAP_D_OUT or PCAP_D_IN
     """
 
-    def __cinit__(self, source, read_timeout=5000, buffer_size=0, snapshot_length=2000, promisc_mode=False,
-                  monitor_mode=False, direction=PCAP_D_INOUT):
-        if source is None:
-            self.source = None
-            self._handle = NULL
-            return
-        source = bytes(source)
-        if len(source) == 0:
-            self.source = None
-            self._handle = NULL
-            return
-        self.source = source
-        self._handle = pcap_create(<char*> source, self._errbuf)
+    def __cinit__(self, interface=None, filename=None, int read_timeout=5000, int buffer_size=0, int snapshot_length=2000,
+                  promisc_mode=False, monitor_mode=False, direction=PCAP_D_INOUT):
+        self._do_cinit(interface, filename, read_timeout, buffer_size, snapshot_length, promisc_mode, monitor_mode,direction)
 
-    cpdef close(self):
-        if self._handle != NULL:
-            pcap_close(self._handle)
-        self._handle = NULL
-        self.activated = False
+    cdef _do_cinit(self, interface=None, filename=None, int read_timeout=5000, int buffer_size=0, int snapshot_length=2000,
+                   promisc_mode=False, monitor_mode=False, direction=PCAP_D_INOUT):
+        if interface is None and filename is None:
+            raise ValueError("provide interface or filename")
+        elif interface is not None and filename is not None:
+            raise ValueError("provide interface OR filename")
 
-    def __dealloc__(self):
-        self.close()
+        if interface is not None:
+            self.interface = bytes(interface)
+            if len(interface) == 0:
+                raise ValueError("interface can't be empty")
+            try:
+                self._netp, self._maskp, _, _ = lookupnet(interface)     # IPV6 compatible ?
+            except PcapException:
+                logging.getLogger('cycapture').exception("Could not retrieve netp and masp")
+                self._netp = -1
+                self._maskp = -1
 
-    def __init__(self, source, read_timeout=5000, buffer_size=0, snapshot_length=2000, promisc_mode=False,
-                 monitor_mode=False, direction=PCAP_D_INOUT):
-        source = bytes(source)
-        if self._handle == NULL:
-            raise PcapException("Initialization failed: " + <bytes> self._errbuf)
+        else:
+            self.filename = bytes(filename)
+            if len(filename) == 0:
+                raise ValueError("filename can't be empty")
+            elif not exists(filename):
+                raise ValueError("file '%s' does not exist" % filename)
+            self._netp = -1
+            self._maskp = -1
+
+        self._set_pcap_handle()
+
+
+
+    def __init__(self, interface=None, filename=None, int read_timeout=5000, int buffer_size=0, int snapshot_length=2000,
+                  promisc_mode=False, monitor_mode=False, direction=PCAP_D_INOUT):
+
         self.read_timeout = read_timeout
         self.buffer_size = buffer_size
         self.snapshot_length = snapshot_length
@@ -50,13 +61,25 @@ cdef class Sniffer(object):
         self.direction = direction
         self.filter = b''
         self._datalink = -1
-        try:
-            self._netp, self._maskp, _, _ = lookupnet(source)     # IPV6 compatible ?
-        except PcapException:
-            logging.getLogger('cycapture').exception("Could not retrieve netp and masp")
-            self._netp = -1
-            self._maskp = -1
 
+    cdef _set_pcap_handle(self):
+        if self._handle != NULL:
+            return
+        if self.interface is not None:
+            self._handle = pcap_create(<char*> self.interface, self._errbuf)
+        else:
+            self._handle = pcap_open_offline(<const char *> self.filename, self._errbuf)
+        if self._handle == NULL:
+            raise PcapException("Initialization failed: " + <bytes> self._errbuf)
+
+    cpdef close(self):
+        if self._handle != NULL:
+            pcap_close(self._handle)
+        self._handle = NULL
+        self.activated = False
+
+    def __dealloc__(self):
+        self.close()
 
     property read_timeout:
         def __get__(self):
@@ -255,8 +278,7 @@ cdef class Sniffer(object):
     cdef _pre_activate(self):
         if self.activated:
             return
-        if self._handle == NULL:
-            self._handle = pcap_create(<char*> self.source, self._errbuf)
+        self._set_pcap_handle()
         self._apply_read_timeout()
         self._apply_buffer_size()
         self._apply_snapshot_length()

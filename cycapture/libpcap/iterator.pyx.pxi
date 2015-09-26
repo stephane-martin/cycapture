@@ -1,17 +1,16 @@
 # -*- coding: utf-8 -*-
 
-
 cdef class SniffingIterator(object):
 
     def __init__(self, BlockingSniffer sniffer, f=None, int max_p=-1, int cache_size=10000):
         if sniffer is None:
             raise TypeError('sniffer must be a BlockingSniffer object')
         self.sniffer = sniffer
-        self.queue = deque() if cache_size <= 0 else deque([], cache_size)
         self.max_p = int(max_p)
         self.total_returned = 0
         self.cache_size = int(cache_size)
         self.f = f
+        self.queue = deque() if self.cache_size <= 0 else deque([], self.cache_size)
         self.thread = threading.Thread(target=self._background_sniff)
 
     def __enter__(self):
@@ -22,13 +21,18 @@ cdef class SniffingIterator(object):
         self.stop()
 
     cpdef start(self):
-        if self.sniffer in BlockingSniffer.active_sniffers.values():
-            raise RuntimeError('sniffer is already actively listening')
-        self.thread.start()
+        if not self.thread.is_alive():
+            if self.sniffer in BlockingSniffer.active_sniffers.values():
+                raise RuntimeError('sniffer is already actively listening')
+            self.thread.start()
 
     cpdef stop(self):
-        if self.sniffer in BlockingSniffer.active_sniffers.values():
-            self.sniffer.ask_stop()
+        if self.thread.is_alive():
+            if self.sniffer in BlockingSniffer.active_sniffers.values():
+                self.sniffer.ask_stop()
+            self.thread.join()
+            self.queue = deque() if self.cache_size <= 0 else deque([], self.cache_size)
+            self.total_returned = 0
 
     def _background_sniff(self):
         # let's start to sniff and store the results in queue
@@ -38,17 +42,13 @@ cdef class SniffingIterator(object):
         return self
 
     def __next__(self):
-        if self.queue is None:
-            # the iterator is closed
-            raise StopIteration
         if 0 < self.max_p <= self.total_returned:
             # we already returned enough packets
-            self.queue = None     # try to free memory...
             raise StopIteration
         if self.queue:
             self.total_returned += 1
             return self.queue.popleft()
-        while self.thread.isAlive():
+        while self.thread.is_alive():
             # wait that something is appended into the queue
             with nogil:
                 csleep(1)
@@ -58,7 +58,6 @@ cdef class SniffingIterator(object):
         if self.queue:
             self.total_returned += 1
             return self.queue.popleft()
-        # the sniffer is not anymore active and we don't have any available packet
-        self.queue = None     # try to free memory...
+        # the sniffer thread is not active and we don't have any available packet
         raise StopIteration
 
