@@ -249,7 +249,9 @@ map_pdutype_to_classname[PDU.RAW] = "raw"
 map_pdutype_to_classname[PDU.UDP] = "udp"
 map_pdutype_to_classname[PDU.DNS] = "dns"
 map_pdutype_to_classname[PDU.ICMP] = "icmp"
-
+map_pdutype_to_classname[PDU.ICMP] = "icmp"
+map_pdutype_to_classname[PDU.ARP] = "arp"
+map_pdutype_to_classname[PDU.RADIOTAP] = "radiotap"
 
 
 #cdef cpp_map[string, factory] map_classname_to_factory
@@ -260,7 +262,8 @@ map_classname_to_factory["raw"] = &RAW.factory
 map_classname_to_factory["udp"] = &UDP.factory
 map_classname_to_factory["dns"] = &DNS.factory
 map_classname_to_factory["icmp"] = &ICMP.factory
-
+map_classname_to_factory["arp"] = &ARP.factory
+map_classname_to_factory["radiotap"] = &RadioTap.factory
 
 #cdef cpp_map[string, int] map_classname_to_pdutype
 cdef pair[int, string] p
