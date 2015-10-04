@@ -73,6 +73,11 @@ cdef class EthernetII(PDU):
         def __set__(self, value):
             self.ptr.payload_type(<uint16_t> int(value))
 
-
+    cpdef send(self, PacketSender sender, NetworkInterface iface):
+        if sender is None:
+            raise ValueError("sender can't be None")
+        if iface is None:
+            raise ValueError("iface can't be None")
+        self.ptr.send((<PacketSender> sender).ptr[0], (<NetworkInterface> iface).ptr[0])
 
 

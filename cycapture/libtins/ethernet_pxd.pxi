@@ -10,6 +10,9 @@ cdef extern from "tins/ethernetII.h" namespace "Tins" nogil:
         cppEthernetII(const cppHWAddress6 &dst_hw_addr) except +custom_exception_handler
         cppEthernetII(const cppHWAddress6 &dst_hw_addr, const cppHWAddress6 &src_hw_addr) except +custom_exception_handler
         cppEthernetII(const unsigned char *buf, uint32_t total_sz) except +custom_exception_handler
+
+        void send(cppPacketSender &sender, const cppNetworkInterface &iface) except +custom_exception_handler
+
         cppHWAddress6 dst_addr() const
         cppHWAddress6 src_addr() const
         uint16_t payload_type() const
@@ -32,6 +35,7 @@ cdef class EthernetII(PDU):
         obj.parent = parent
         return obj
 
-#cdef factory_ethernetii(cppPDU* ptr, uint8_t* buf, int size, object parent)
+    cpdef send(self, PacketSender sender, NetworkInterface iface)
+
 
 
