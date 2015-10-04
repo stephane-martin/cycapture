@@ -14,7 +14,7 @@ from cpython.iterator cimport PyIter_Check
 from cpython.ref cimport PyObject
 
 # noinspection PyUnresolvedReferences
-from libc.stdint cimport uint16_t, uint32_t, uint8_t, uintptr_t, uint64_t
+from libc.stdint cimport uint16_t, uint32_t, uint8_t, uintptr_t, uint64_t, int8_t
 
 from libcpp.vector cimport vector
 from libcpp.list cimport list as cpp_list
@@ -60,6 +60,8 @@ include "udp_pxd.pxi"
 include "raw_pxd.pxi"
 include "dns_pxd.pxi"
 include "icmp_pxd.pxi"
+include "radiotap_pxd.pxi"
+include "arp_pxd.pxi"
 include "ipv4_reassembler_pxd.pxi"
 include "datalink_pxd.pxi"
 include "packet_sender_pxd.pxi"
