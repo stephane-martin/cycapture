@@ -33,33 +33,23 @@ cdef class IP(PDU):
     UMP = IP_OPT_NUMBER_UMP
     QS = IP_OPT_NUMBER_QS
 
-    def __cinit__(self, dest_src_ips=None, buf=None, _raw=False):
+    def __cinit__(self, dest=None, src=None, buf=None, _raw=False):
         if _raw:
             return
 
         cdef uint8_t* buf_addr
         cdef uint32_t size
 
-        if buf is None and dest_src_ips is None:
-            self.ptr = new cppIP()
-        elif buf is not None:
+        if buf is not None:
             PDU.prepare_buf_arg(buf, &buf_addr, &size)
             self.ptr = new cppIP(buf_addr, size)
-        elif PyTuple_Check(dest_src_ips) or PyList_Check(dest_src_ips):
-            dest, src = dest_src_ips
-            if src is None:
-                src = IPv4Address()
-            if dest is None:
-                dest = IPv4Address()
+        else:
             if not isinstance(src, IPv4Address):
                 src = IPv4Address(src)
             if not isinstance(dest, IPv4Address):
                 dest = IPv4Address(dest)
             self.ptr = new cppIP(<cppIPv4Address> ((<IPv4Address> dest).ptr[0]), <cppIPv4Address> ((<IPv4Address> src).ptr[0]))
-        elif isinstance(dest_src_ips, IPv4Address):
-            self.ptr = new cppIP(<cppIPv4Address> ((<IPv4Address> dest_src_ips).ptr[0]))
-        else:
-            self.ptr = new cppIP(<cppIPv4Address> (IPv4Address(dest_src_ips)).ptr[0])
+
         self.base_ptr = <cppPDU*> self.ptr
         self.parent = None
 
@@ -69,7 +59,7 @@ cdef class IP(PDU):
         self.ptr = NULL
         self.parent = None
 
-    def __init__(self, dest_src_ips=None, buf=None, _raw=False):
+    def __init__(self, dest=None, src=None, buf=None, _raw=False):
         pass
 
     cpdef eol(self):

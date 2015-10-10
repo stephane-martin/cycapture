@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 cdef extern from "tins/ethernetII.h" namespace "Tins" nogil:
-    # noinspection PyUnresolvedReferences
     PDUType ethII_pdu_flag "Tins::EthernetII::pdu_flag"
     cppHWAddress6 ethII_BROADCAST "Tins::EthernetII::BROADCAST"
 

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 """
 TCP packet python class
 """
@@ -48,25 +49,22 @@ cdef class TCP(PDU):
     CHK_8FLETCHER = TCP_CHK_8FLETCHER
     CHK_16FLETCHER = TCP_CHK_16FLETCHER
 
-    def __cinit__(self, dest_src_ports=None, buf=None, _raw=False):
-        cdef uint8_t* buf_addr
-        cdef uint32_t size
+    def __cinit__(self, dest=None, src=None, buf=None, _raw=False):
         if _raw:
             return
-        elif buf is None and dest_src_ports is None:
-            self.ptr = new cppTCP()
-        elif buf is not None:
+        cdef uint8_t* buf_addr
+        cdef uint32_t size
+
+        if buf is not None:
             PDU.prepare_buf_arg(buf, &buf_addr, &size)
             self.ptr = new cppTCP(buf_addr, size)
-        elif PyTuple_Check(dest_src_ports) or PyList_Check(dest_src_ports):
-            dest, src = dest_src_ports
+        else:
             if src is None:
                 src = 0
             if dest is None:
                 dest = 0
             self.ptr = new cppTCP(<uint16_t>int(dest), <uint16_t>int(src))
-        else:
-            self.ptr = new cppTCP(<uint16_t>int(dest_src_ports))
+
         self.base_ptr = <cppPDU*> self.ptr
         self.parent = None
 
@@ -76,7 +74,7 @@ cdef class TCP(PDU):
         self.ptr = NULL
         self.parent = None
 
-    def __init__(self, dest_src_ports=None, buf=None, _raw=False):
+    def __init__(self, dest=None, src=None, buf=None, _raw=False):
         pass
 
     property sport:

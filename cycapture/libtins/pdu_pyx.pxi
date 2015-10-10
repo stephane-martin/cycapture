@@ -11,6 +11,7 @@ cdef class PDU(object):
     ETHERNETII = PDU_ETHERNET_II
     ETHERNET_II = PDU_ETHERNET_II
     IEEE802_3 = PDU_IEEE802_3
+    DOT3 = PDU_IEEE802_3
     RADIOTAP = PDU_RADIOTAP
     DOT11 = PDU_DOT11
     DOT11_ACK = PDU_DOT11_ACK
@@ -238,10 +239,34 @@ map_pdutype_to_class = {
     PDU.RAW: RAW,
     PDU.UDP: UDP,
     PDU.DNS: DNS,
-    PDU.ICMP: ICMP
+    PDU.ICMP: ICMP,
+    PDU.ARP: ARP,
+    PDU.RADIOTAP: RadioTap,
+    PDU.DOT3: Dot3,
+    PDU.DOT11: Dot11,
+    PDU.DOT11_DATA: Dot11Data,
+    PDU.DOT11_QOS_DATA: Dot11QoSData,
+    PDU.DOT11_DIASSOC: Dot11Disassoc,
+    PDU.DOT11_ASSOC_REQ: Dot11AssocRequest,
+    PDU.DOT11_ASSOC_RESP: Dot11AssocResponse,
+    PDU.DOT11_REASSOC_REQ: Dot11ReAssocRequest,
+    PDU.DOT11_REASSOC_RESP: Dot11ReAssocResponse,
+    PDU.DOT11_AUTH: Dot11Authentication,
+    PDU.DOT11_DEAUTH: Dot11Deauthentication,
+    PDU.DOT11_BEACON: Dot11Beacon,
+    PDU.DOT11_PROBE_REQ: Dot11ProbeRequest,
+    PDU.DOT11_PROBE_RESP: Dot11ProbeResponse,
+    PDU.DOT11_CONTROL: Dot11Control,
+    PDU.DOT11_RTS: Dot11RTS,
+    PDU.DOT11_PS_POLL: Dot11PSPoll,
+    PDU.DOT11_CF_END: Dot11CFEnd,
+    PDU.DOT11_END_CF_ACK: Dot11EndCFAck,
+    PDU.DOT11_ACK: Dot11Ack,
+    PDU.DOT11_BLOCK_ACK_REQ: Dot11BlockAckRequest,
+    PDU.DOT11_BLOCK_ACK: Dot11BlockAck
 }
 
-#cdef cpp_map[int, string] map_pdutype_to_classname
+# cdef cpp_map[int, string] map_pdutype_to_classname
 map_pdutype_to_classname[PDU.ETHERNET_II] = "ethernetii"
 map_pdutype_to_classname[PDU.IP] = "ip"
 map_pdutype_to_classname[PDU.TCP] = "tcp"
@@ -249,12 +274,32 @@ map_pdutype_to_classname[PDU.RAW] = "raw"
 map_pdutype_to_classname[PDU.UDP] = "udp"
 map_pdutype_to_classname[PDU.DNS] = "dns"
 map_pdutype_to_classname[PDU.ICMP] = "icmp"
-map_pdutype_to_classname[PDU.ICMP] = "icmp"
 map_pdutype_to_classname[PDU.ARP] = "arp"
 map_pdutype_to_classname[PDU.RADIOTAP] = "radiotap"
+map_pdutype_to_classname[PDU.DOT3] = "dot3"
+map_pdutype_to_classname[PDU.DOT11] = "dot11"
+map_pdutype_to_classname[PDU.DOT11_DATA] = "dot11data"
+map_pdutype_to_classname[PDU.DOT11_QOS_DATA] = "dot11qosdata"
+map_pdutype_to_classname[PDU.DOT11_DIASSOC] = "dot11disassoc"
+map_pdutype_to_classname[PDU.DOT11_ASSOC_REQ] = "dot11assocreq"
+map_pdutype_to_classname[PDU.DOT11_ASSOC_RESP] = " dot11assocresp"
+map_pdutype_to_classname[PDU.DOT11_REASSOC_REQ] = "dot11reassocreq"
+map_pdutype_to_classname[PDU.DOT11_REASSOC_RESP] = "dot11reassocresp"
+map_pdutype_to_classname[PDU.DOT11_AUTH] = "dot11auth"
+map_pdutype_to_classname[PDU.DOT11_DEAUTH] = "dot11deauth"
+map_pdutype_to_classname[PDU.DOT11_BEACON] = " dot11beacon"
+map_pdutype_to_classname[PDU.DOT11_PROBE_REQ] = "dot11probereq"
+map_pdutype_to_classname[PDU.DOT11_PROBE_RESP] = "dot11proberesp"
+map_pdutype_to_classname[PDU.DOT11_CONTROL] = "dot11control"
+map_pdutype_to_classname[PDU.DOT11_RTS] = "dot11rts"
+map_pdutype_to_classname[PDU.DOT11_PS_POLL] = "dot11pspoll"
+map_pdutype_to_classname[PDU.DOT11_CF_END] = "dot11cfend"
+map_pdutype_to_classname[PDU.DOT11_END_CF_ACK] = "dot11endcfack"
+map_pdutype_to_classname[PDU.DOT11_ACK] = "dot11ack"
+map_pdutype_to_classname[PDU.DOT11_BLOCK_ACK_REQ] = "dot11blockackreq"
+map_pdutype_to_classname[PDU.DOT11_BLOCK_ACK] = "dot11clockack"
 
-
-#cdef cpp_map[string, factory] map_classname_to_factory
+# cdef cpp_map[string, factory] map_classname_to_factory
 map_classname_to_factory["ethernetii"] = &EthernetII.factory
 map_classname_to_factory["ip"] = &IP.factory
 map_classname_to_factory["tcp"] = &TCP.factory
@@ -264,8 +309,32 @@ map_classname_to_factory["dns"] = &DNS.factory
 map_classname_to_factory["icmp"] = &ICMP.factory
 map_classname_to_factory["arp"] = &ARP.factory
 map_classname_to_factory["radiotap"] = &RadioTap.factory
+map_classname_to_factory["dot3"] = &Dot3.factory
+map_classname_to_factory["dot11"] = &Dot11.factory
+map_classname_to_factory["dot11data"] = &Dot11Data.factory_dot11data
+map_classname_to_factory["dot11qosdata"] = &Dot11QoSData.factory_dot11qosdata
+map_classname_to_factory["dot11disassoc"] = &Dot11Disassoc.factory_dot11disassoc
+map_classname_to_factory["dot11assocreq"] = &Dot11AssocRequest.factory_dot11assocrequest
+map_classname_to_factory["dot11assocresp"] = &Dot11AssocResponse.factory_dot11assocresponse
+map_classname_to_factory["dot11reassocreq"] = &Dot11ReAssocRequest.factory_dot11reassocrequest
+map_classname_to_factory["dot11reassocresp"] = &Dot11ReAssocResponse.factory_dot11reassocresponse
+map_classname_to_factory["dot11auth"] = &Dot11Authentication.factory_dot11auth
+map_classname_to_factory["dot11deauth"] = &Dot11Deauthentication.factory_dot11deauth
+map_classname_to_factory["dot11beacon"] = &Dot11Beacon.factory_dot11beacon
+map_classname_to_factory["dot11probereq"] = &Dot11ProbeRequest.factory_dot11proberequest
+map_classname_to_factory["dot11proberesp"] = &Dot11ProbeResponse.factory_dot11proberesponse
+map_classname_to_factory["dot11control"] = &Dot11Control.factory_dot11control
+map_classname_to_factory["dot11rts"] = &Dot11RTS.factory_dot11rts
+map_classname_to_factory["dot11pspoll"] = &Dot11PSPoll.factory_dot11pspoll
+map_classname_to_factory["dot11cfend"] = &Dot11CFEnd.factory_dot11cfend
+map_classname_to_factory["dot11endcfack"] = &Dot11EndCFAck.factory_dot11endcfack
+map_classname_to_factory["dot11ack"] = &Dot11Ack.factory_dot11ack
+map_classname_to_factory["dot11blockackreq"] = &Dot11BlockAckRequest.factory_dot11blockackrequest
+map_classname_to_factory["dot11clockack"] = &Dot11BlockAck.factory_dot11blockack
 
-#cdef cpp_map[string, int] map_classname_to_pdutype
+
+
+# cdef cpp_map[string, int] map_classname_to_pdutype
 cdef pair[int, string] p
 for p in map_pdutype_to_classname:
     map_classname_to_pdutype[p.second] = p.first

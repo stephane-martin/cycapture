@@ -148,6 +148,8 @@ namespace Tins {
             return true;
         } else {
             Py_DECREF(result);
+            // a False return value from the python functors clears the server payload (... incremental server payload)
+            // stream.server_payload().clear();
             return false;
         }
     }

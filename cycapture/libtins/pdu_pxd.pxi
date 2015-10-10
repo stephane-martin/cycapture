@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from ._py_exceptions import MemoryViewFormat
+
 cdef extern from "tins/pdu.h" namespace "Tins" nogil:
     ctypedef vector[uint8_t] byte_array
     ctypedef vector[uint8_t] serialization_type "Tins::PDU::serialization_type"

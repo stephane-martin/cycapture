@@ -1,22 +1,6 @@
 # -*- coding: utf-8 -*-
 
-cdef extern from "wrap.h" namespace "Tins" nogil:
-    cdef cppclass small_uint1:
-        small_uint1()
-        small_uint1(uint8_t) except +ValueError
-    cdef cppclass small_uint4:
-        small_uint4()
-        small_uint4(uint8_t) except +ValueError
-    cdef cppclass small_uint12:
-        small_uint12()
-        small_uint12(uint16_t) except +ValueError
-    cdef cppclass small_uint24:
-        small_uint24()
-        small_uint24(uint32_t) except +ValueError
-
-
 cdef extern from "tins/ip.h" namespace "Tins" nogil:
-    # noinspection PyUnresolvedReferences
     PDUType ip_pdu_flag "Tins::IP::pdu_flag"
     ctypedef enum OptionClass "Tins::IP::OptionClass":
         IP_OPT_CLASS_CONTROL "Tins::IP::CONTROL"

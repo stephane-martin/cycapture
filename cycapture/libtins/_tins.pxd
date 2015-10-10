@@ -37,21 +37,19 @@ from .._make_mview cimport make_mview_from_const_uchar_buf, make_mview_from_ucha
 
 # noinspection PyUnresolvedReferences
 from ._py_exceptions cimport custom_exception_handler
-from ._py_exceptions import LibtinsException, MalformedAddress, MalformedPacket, MalformedOption, OptionNotFound
-from ._py_exceptions import OptionPayloadTooLarge, FieldNotPresent, PDUNotFound, InvalidInterface, UnknownLinkType
-from ._py_exceptions import SocketOpenError, SocketCloseError, SocketWriteError, InvalidSocketType, BadTinsCast
-from ._py_exceptions import ProtocolDisabled, MemoryViewFormat
 
 #cdef extern from "custom_exception_handler.h" namespace "Tins":
 #    cdef void custom_exception_handler()
 
 
+include "small_uint_pxd.pxi"
 include "ipv4_address_pxd.pxi"
 include "ipv6_address_pxd.pxi"
 include "hw_address_pxd.pxi"
 include "address_range_pxd.pxi"
 include "networkinterface_pxd.pxi"
 include "utils_pxd.pxi"
+include "rsn_pxd.pxi"
 include "pdu_pxd.pxi"
 include "ethernet_pxd.pxi"
 include "ip_pxd.pxi"
@@ -62,6 +60,8 @@ include "dns_pxd.pxi"
 include "icmp_pxd.pxi"
 include "radiotap_pxd.pxi"
 include "arp_pxd.pxi"
+include "dot3_pxd.pxi"
+include "dot11_pxd.pxi"
 include "ipv4_reassembler_pxd.pxi"
 include "datalink_pxd.pxi"
 include "packet_sender_pxd.pxi"

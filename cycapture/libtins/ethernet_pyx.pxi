@@ -9,32 +9,21 @@ cdef class EthernetII(PDU):
     broadcast = HWAddress.broadcast
     datalink_type = DLT_EN10MB
 
-    def __cinit__(self, dest_src=None, buf=None, _raw=False):
+    def __cinit__(self, dest=None, src=None, buf=None, _raw=False):
         if _raw:
             return
         cdef uint8_t* buf_addr
         cdef uint32_t size
 
-        if buf is None and dest_src is None:
-            self.ptr = new cppEthernetII()
-        elif buf is not None:
+        if buf is not None:
             PDU.prepare_buf_arg(buf, &buf_addr, &size)
             self.ptr = new cppEthernetII(buf_addr, size)
-        elif PyTuple_Check(dest_src) or PyList_Check(dest_src):
-            dest, src = dest_src
-            if src is None:
-                src = HWAddress()
-            if dest is None:
-                dest = HWAddress()
+        else:
             if not isinstance(src, HWAddress):
                 src = HWAddress(src)
             if not isinstance(dest, HWAddress):
                 dest = HWAddress(dest)
             self.ptr = new cppEthernetII(<cppHWAddress6> ((<HWAddress> dest).ptr[0]), <cppHWAddress6> ((<HWAddress> src).ptr[0]))
-        elif isinstance(dest_src, HWAddress):
-            self.ptr = new cppEthernetII(<cppHWAddress6> ((<HWAddress> dest_src).ptr[0]))
-        else:
-            self.ptr = new cppEthernetII(<cppHWAddress6> ((<HWAddress> (HWAddress(dest_src))).ptr[0]))
 
         self.base_ptr = <cppPDU*> self.ptr
         self.parent = None
@@ -45,7 +34,7 @@ cdef class EthernetII(PDU):
         self.ptr = NULL
         self.parent = None
 
-    def __init__(self, dest_src=None, buf=None, _raw=False):
+    def __init__(self, dest=None, src=None, buf=None, _raw=False):
         pass
 
     property src_addr:
