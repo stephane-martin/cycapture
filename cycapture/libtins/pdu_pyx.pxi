@@ -250,6 +250,7 @@ map_pdutype_to_class = {
     PDU.SNAP: SNAP,
     PDU.STP: STP,
     PDU.SLL: SLL,
+    PDU.PPPOE: PPPoE,
     PDU.EAPOL: EAPOL,
     PDU.RC4EAPOL: RC4EAPOL,
     PDU.RSNEAPOL: RSNEAPOL,
@@ -294,6 +295,7 @@ map_pdutype_to_classname[PDU.LLC] = "llc"
 map_pdutype_to_classname[PDU.SNAP] = "snap"
 map_pdutype_to_classname[PDU.STP] = "stp"
 map_pdutype_to_classname[PDU.SLL] = "sll"
+map_pdutype_to_classname[PDU.PPPOE] = "pppoe"
 map_pdutype_to_classname[PDU.EAPOL] = "eapol"
 map_pdutype_to_classname[PDU.RC4EAPOL] = "rc4eapol"
 map_pdutype_to_classname[PDU.RSNEAPOL] = "rsneapol"
@@ -336,6 +338,7 @@ map_classname_to_factory["loopback"] = &Loopback.factory
 map_classname_to_factory["llc"] = &LLC.factory
 map_classname_to_factory["snap"] = &SNAP.factory
 map_classname_to_factory["sll"] = &SLL.factory
+map_classname_to_factory["pppoe"] = &PPPoE.factory
 map_classname_to_factory["stp"] = &STP.factory
 map_classname_to_factory["rc4eapol"] = &RC4EAPOL.factory
 map_classname_to_factory["rsneapol"] = &RSNEAPOL.factory
