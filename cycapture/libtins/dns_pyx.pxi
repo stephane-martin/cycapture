@@ -14,7 +14,7 @@ cdef class DNS_Query(object):
             self.ptr.query_class(<QueryClass> query_class)
 
     def __dealloc__(self):
-        if self.ptr is not NULL:
+        if self.ptr is not NULL and self.parent is None:
             del self.ptr
             self.ptr = NULL
 

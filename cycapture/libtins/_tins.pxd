@@ -38,9 +38,8 @@ from .._make_mview cimport make_mview_from_const_uchar_buf, make_mview_from_ucha
 # noinspection PyUnresolvedReferences
 from ._py_exceptions cimport custom_exception_handler
 
-#cdef extern from "custom_exception_handler.h" namespace "Tins":
-#    cdef void custom_exception_handler()
-
+cdef extern from "wrap.h":
+    cdef bint BSD_OR_ZERO
 
 include "small_uint_pxd.pxi"
 include "ipv4_address_pxd.pxi"
@@ -61,6 +60,15 @@ include "icmp_pxd.pxi"
 include "radiotap_pxd.pxi"
 include "arp_pxd.pxi"
 include "dot3_pxd.pxi"
+include "bootp_pxd.pxi"
+include "dot1q_pxd.pxi"
+include "loopback_pxd.pxi"
+include "llc_pxd.pxi"
+include "snap_pxd.pxi"
+include "eapol_pxd.pxi"
+include "stp_pxd.pxi"
+include "sll_pxd.pxi"
+include "pppoe_pxd.pxi"
 include "dot11_pxd.pxi"
 include "ipv4_reassembler_pxd.pxi"
 include "datalink_pxd.pxi"

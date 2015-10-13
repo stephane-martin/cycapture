@@ -96,7 +96,7 @@ cdef extern from "tins/dot11/dot11_base.h" namespace "Tins" nogil:
     cppclass cppDot11 "Tins::Dot11" (cppPDU):
         cppDot11()
         cppDot11(const cppHWAddress6 &dst_hw_addr)
-        cppDot11(const uint8_t *buf, uint32_t total_sz)
+        cppDot11(const uint8_t *buf, uint32_t total_sz) except +custom_exception_handler
 
         small_uint2 protocol() const
         void protocol(small_uint2 new_proto)
@@ -141,7 +141,7 @@ cdef extern from "tins/dot11/dot11_base.h" namespace "Tins" nogil:
         const cpp_list[dot11_pdu_option]& options() const
 
     # Note: allocate a cppDot11 with 'new' -> careful with memory management
-    cppDot11* dot11_from_bytes "Tins::Dot11::from_bytes" (const uint8_t *buf, uint32_t total_sz)
+    cppDot11* dot11_from_bytes "Tins::Dot11::from_bytes" (const uint8_t *buf, uint32_t total_sz) except +custom_exception_handler
 
 
 cdef class Dot11(PDU):
@@ -171,7 +171,7 @@ cdef extern from "tins/dot11/dot11_data.h" namespace "Tins" nogil:
         cppDot11Data()
         cppDot11Data(const cppHWAddress6 &dst_hw_addr)
         cppDot11Data(const cppHWAddress6 &dst_hw_addr, const cppHWAddress6 &src_hw_addr)
-        cppDot11Data(const uint8_t *buf, uint32_t total_sz)
+        cppDot11Data(const uint8_t *buf, uint32_t total_sz) except +custom_exception_handler
 
         cppHWAddress6 addr2() const
         void addr2(const cppHWAddress6 &new_addr2)

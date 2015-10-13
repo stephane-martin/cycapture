@@ -2,6 +2,7 @@
 #define TINS_WRAPPER_CY
 
 #include <string>
+#include "tins/macros.h"
 #include "tins/ip_address.h"
 #include "tins/hw_address.h"
 #include "tins/pdu.h"
@@ -10,27 +11,26 @@
 #include "tins/pdu_option.h"
 #include "tins/network_interface.h"
 #include "tins/tcp.h"
+#include "tins/pppoe.h"
 #include "tins/address_range.h"
 #include "tins/dot11/dot11_base.h"
+
+#ifdef BSD
+#define BSD_OR_ZERO BSD
+#else
+#define BSD_OR_ZERO 0
+#endif
 
 namespace Tins {
     uint32_t convert_to_big_endian_int (IPv4Address& addr);
     bool network_interface_to_bool(const NetworkInterface& nwi);
 
-    typedef HWAddress<6, uint8_t> cppHWAddress6;
-    typedef HWAddress<3, uint8_t> cppHWAddress3;
+    typedef HWAddress<6, uint8_t> HWAddress6;
+
     typedef PDUOption<IP::option_identifier, IP> ip_pdu_option;
     typedef PDUOption<uint8_t, TCP> tcp_pdu_option;
     typedef PDUOption<uint8_t, Dot11> dot11_pdu_option;
-
-
-    //const HWAddress6 hw6_broadcast = HWAddress6::broadcast;
-
-    typedef small_uint<1> small_uint1;
-    typedef small_uint<2> small_uint2;
-    typedef small_uint<4> small_uint4;
-    typedef small_uint<12> small_uint12;
-    typedef small_uint<24> small_uint24;
+    typedef PDUOption<PPPoE::TagTypes, PPPoE> pppoe_tag;
 
     inline PDU* cpp_find_pdu(const PDU* pdu, PDU::PDUType t) {
         PDU* current_pdu = (PDU*) pdu;
@@ -63,12 +63,12 @@ namespace Tins {
         WrappedIPv6Range& operator=(const IPv6Range& r);
     };
 
-    typedef AddressRange<cppHWAddress6> HWAddressRange;
+    typedef AddressRange<HWAddress6> HWAddressRange;
 
     class WrappedHWRange : public HWAddressRange {
     public:
-        WrappedHWRange(): HWAddressRange(cppHWAddress6(), cppHWAddress6(), false) {}
-        WrappedHWRange(const cppHWAddress6 &first, const cppHWAddress6 &last, bool only_hosts = false):
+        WrappedHWRange(): HWAddressRange(HWAddress6(), HWAddress6(), false) {}
+        WrappedHWRange(const HWAddress6 &first, const HWAddress6 &last, bool only_hosts = false):
             HWAddressRange(first, last, only_hosts) {}
         WrappedHWRange(const WrappedHWRange& r): HWAddressRange(r) {}
         WrappedHWRange& operator=(const WrappedHWRange& r);

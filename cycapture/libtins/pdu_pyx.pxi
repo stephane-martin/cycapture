@@ -243,6 +243,16 @@ map_pdutype_to_class = {
     PDU.ARP: ARP,
     PDU.RADIOTAP: RadioTap,
     PDU.DOT3: Dot3,
+    PDU.BOOTP: BootP,
+    PDU.DOT1Q: Dot1Q,
+    PDU.LOOPBACK: Loopback,
+    PDU.LLC: LLC,
+    PDU.SNAP: SNAP,
+    PDU.STP: STP,
+    PDU.SLL: SLL,
+    PDU.EAPOL: EAPOL,
+    PDU.RC4EAPOL: RC4EAPOL,
+    PDU.RSNEAPOL: RSNEAPOL,
     PDU.DOT11: Dot11,
     PDU.DOT11_DATA: Dot11Data,
     PDU.DOT11_QOS_DATA: Dot11QoSData,
@@ -277,6 +287,16 @@ map_pdutype_to_classname[PDU.ICMP] = "icmp"
 map_pdutype_to_classname[PDU.ARP] = "arp"
 map_pdutype_to_classname[PDU.RADIOTAP] = "radiotap"
 map_pdutype_to_classname[PDU.DOT3] = "dot3"
+map_pdutype_to_classname[PDU.BOOTP] = "bootp"
+map_pdutype_to_classname[PDU.DOT1Q] = "dot1q"
+map_pdutype_to_classname[PDU.LOOPBACK] = "loopback"
+map_pdutype_to_classname[PDU.LLC] = "llc"
+map_pdutype_to_classname[PDU.SNAP] = "snap"
+map_pdutype_to_classname[PDU.STP] = "stp"
+map_pdutype_to_classname[PDU.SLL] = "sll"
+map_pdutype_to_classname[PDU.EAPOL] = "eapol"
+map_pdutype_to_classname[PDU.RC4EAPOL] = "rc4eapol"
+map_pdutype_to_classname[PDU.RSNEAPOL] = "rsneapol"
 map_pdutype_to_classname[PDU.DOT11] = "dot11"
 map_pdutype_to_classname[PDU.DOT11_DATA] = "dot11data"
 map_pdutype_to_classname[PDU.DOT11_QOS_DATA] = "dot11qosdata"
@@ -310,6 +330,15 @@ map_classname_to_factory["icmp"] = &ICMP.factory
 map_classname_to_factory["arp"] = &ARP.factory
 map_classname_to_factory["radiotap"] = &RadioTap.factory
 map_classname_to_factory["dot3"] = &Dot3.factory
+map_classname_to_factory["bootp"] = &BootP.factory
+map_classname_to_factory["dot1q"] = &Dot1Q.factory
+map_classname_to_factory["loopback"] = &Loopback.factory
+map_classname_to_factory["llc"] = &LLC.factory
+map_classname_to_factory["snap"] = &SNAP.factory
+map_classname_to_factory["sll"] = &SLL.factory
+map_classname_to_factory["stp"] = &STP.factory
+map_classname_to_factory["rc4eapol"] = &RC4EAPOL.factory
+map_classname_to_factory["rsneapol"] = &RSNEAPOL.factory
 map_classname_to_factory["dot11"] = &Dot11.factory
 map_classname_to_factory["dot11data"] = &Dot11Data.factory_dot11data
 map_classname_to_factory["dot11qosdata"] = &Dot11QoSData.factory_dot11qosdata
@@ -331,7 +360,6 @@ map_classname_to_factory["dot11endcfack"] = &Dot11EndCFAck.factory_dot11endcfack
 map_classname_to_factory["dot11ack"] = &Dot11Ack.factory_dot11ack
 map_classname_to_factory["dot11blockackreq"] = &Dot11BlockAckRequest.factory_dot11blockackrequest
 map_classname_to_factory["dot11clockack"] = &Dot11BlockAck.factory_dot11blockack
-
 
 
 # cdef cpp_map[string, int] map_classname_to_pdutype

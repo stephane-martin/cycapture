@@ -21,6 +21,7 @@ cdef class Dot11(PDU):
     """
     pdu_flag = PDU.DOT11
     pdu_type = PDU.DOT11
+    datalink_type = DLT_IEEE802_11
 
     OptionTypes = IntEnum('OptionTypes', {
         "SSID": D11_SSID,
@@ -126,7 +127,7 @@ cdef class Dot11(PDU):
 
     def __dealloc__(self):
         cdef cppDot11* p = <cppDot11*> self.ptr
-        if self.ptr != NULL and self.parent is None:
+        if self.ptr is not NULL and self.parent is None:
             del p
         self.ptr = NULL
         self.parent = None
@@ -232,34 +233,13 @@ cdef class Dot11(PDU):
     cdef c_from_bytes(uint8_t* buf_addr, uint32_t size):
         if buf_addr is NULL or size == 0:
             return Dot11()
-        cdef cppDot11* p = dot11_from_bytes(buf_addr, size)
-        cdef PDUType t = p.pdu_type()
-        if t == PDU_DOT11:
-            pass
-        elif t == PDU_DOT11_ACK:
-            pass
-
-        # Dot11Beacon
-        # Dot11Disassoc
-        # Dot11AssocRequest
-        # Dot11AssocResponse
-        # Dot11ReAssocRequest
-        # Dot11ReAssocResponse
-        # Dot11Authentication
-        # Dot11Deauthentication
-        # Dot11ProbeRequest
-        # Dot11ProbeResponse
-        # Dot11Data
-        # Dot11QoSData
-        # Dot11Ack
-        # Dot11CFEnd
-        # Dot11EndCFAck
-        # Dot11PSPoll
-        # Dot11RTS
-        # Dot11BlockAck
-        # Dot11BlockAckRequest
-        # Dot11
-
+        cdef cppDot11* p = dot11_from_bytes(buf_addr, size)         # equivalent to new
+        cdef string classname
+        if p is not NULL:
+            classname = map_pdutype_to_classname[p.pdu_type()]
+            return (map_classname_to_factory[classname])(p, NULL, 0, None)
+        else:
+            raise MalformedPacket
 
 cdef class Dot11Data(Dot11):
     """
@@ -295,7 +275,7 @@ cdef class Dot11Data(Dot11):
 
     def __dealloc__(self):
         cdef cppDot11Data* p = <cppDot11Data*> self.ptr
-        if self.ptr != NULL and self.parent is None:
+        if self.ptr is not NULL and self.parent is None:
             del p
         self.ptr = NULL
         self.parent = None
@@ -380,7 +360,7 @@ cdef class Dot11QoSData(Dot11Data):
 
     def __dealloc__(self):
         cdef cppDot11QoSData* p = <cppDot11QoSData*> self.ptr
-        if self.ptr != NULL and self.parent is None:
+        if self.ptr is not NULL and self.parent is None:
             del p
         self.ptr = NULL
         self.parent = None
@@ -980,7 +960,7 @@ cdef class Dot11Disassoc(Dot11ManagementFrame):
 
     def __dealloc__(self):
         cdef cppDot11Disassoc* p = <cppDot11Disassoc*> self.ptr
-        if self.ptr is not NULL:
+        if self.ptr is not NULL and self.parent is None:
             del p
         self.ptr = NULL
 
@@ -1022,7 +1002,7 @@ cdef class Dot11AssocRequest(Dot11ManagementFrame):
 
     def __dealloc__(self):
         cdef cppDot11AssocRequest* p = <cppDot11AssocRequest*> self.ptr
-        if self.ptr is not NULL:
+        if self.ptr is not NULL and self.parent is None:
             del p
         self.ptr = NULL
 
@@ -1069,7 +1049,7 @@ cdef class Dot11AssocResponse(Dot11ManagementFrame):
 
     def __dealloc__(self):
         cdef cppDot11AssocResponse* p = <cppDot11AssocResponse*> self.ptr
-        if self.ptr is not NULL:
+        if self.ptr is not NULL and self.parent is None:
             del p
         self.ptr = NULL
 
@@ -1123,7 +1103,7 @@ cdef class Dot11ReAssocRequest(Dot11ManagementFrame):
 
     def __dealloc__(self):
         cdef cppDot11ReAssocRequest* p = <cppDot11ReAssocRequest*> self.ptr
-        if self.ptr is not NULL:
+        if self.ptr is not NULL and self.parent is None:
             del p
         self.ptr = NULL
 
@@ -1179,7 +1159,7 @@ cdef class Dot11ReAssocResponse(Dot11ManagementFrame):
 
     def __dealloc__(self):
         cdef cppDot11ReAssocResponse* p = <cppDot11ReAssocResponse*> self.ptr
-        if self.ptr is not NULL:
+        if self.ptr is not NULL and self.parent is None:
             del p
         self.ptr = NULL
 
@@ -1233,7 +1213,7 @@ cdef class Dot11Authentication(Dot11ManagementFrame):
 
     def __dealloc__(self):
         cdef cppDot11Authentication* p = <cppDot11Authentication*> self.ptr
-        if self.ptr is not NULL:
+        if self.ptr is not NULL and self.parent is None:
             del p
         self.ptr = NULL
 
@@ -1290,7 +1270,7 @@ cdef class Dot11Deauthentication(Dot11ManagementFrame):
 
     def __dealloc__(self):
         cdef cppDot11Deauthentication* p = <cppDot11Deauthentication*> self.ptr
-        if self.ptr is not NULL:
+        if self.ptr is not NULL and self.parent is None:
             del p
         self.ptr = NULL
 
@@ -1333,7 +1313,7 @@ cdef class Dot11Beacon(Dot11ManagementFrame):
 
     def __dealloc__(self):
         cdef cppDot11Beacon* p = <cppDot11Beacon*> self.ptr
-        if self.ptr is not NULL:
+        if self.ptr is not NULL and self.parent is None:
             del p
         self.ptr = NULL
 
@@ -1387,7 +1367,7 @@ cdef class Dot11ProbeRequest(Dot11ManagementFrame):
 
     def __dealloc__(self):
         cdef cppDot11ProbeRequest* p = <cppDot11ProbeRequest*> self.ptr
-        if self.ptr is not NULL:
+        if self.ptr is not NULL and self.parent is None:
             del p
         self.ptr = NULL
 
@@ -1423,7 +1403,7 @@ cdef class Dot11ProbeResponse(Dot11ManagementFrame):
 
     def __dealloc__(self):
         cdef cppDot11ProbeResponse* p = <cppDot11ProbeResponse*> self.ptr
-        if self.ptr is not NULL:
+        if self.ptr is not NULL and self.parent is None:
             del p
         self.ptr = NULL
 
@@ -1475,7 +1455,7 @@ cdef class Dot11Control(Dot11):
 
     def __dealloc__(self):
         cdef cppDot11Control* p = <cppDot11Control*> self.ptr
-        if self.ptr is not NULL:
+        if self.ptr is not NULL and self.parent is None:
             del p
         self.ptr = NULL
 
@@ -1511,7 +1491,7 @@ cdef class Dot11RTS(Dot11Control):
 
     def __dealloc__(self):
         cdef cppDot11RTS* p = <cppDot11RTS*> self.ptr
-        if self.ptr is not NULL:
+        if self.ptr is not NULL and self.parent is None:
             del p
         self.ptr = NULL
 
@@ -1555,7 +1535,7 @@ cdef class Dot11PSPoll(Dot11Control):
 
     def __dealloc__(self):
         cdef cppDot11PSPoll* p = <cppDot11PSPoll*> self.ptr
-        if self.ptr is not NULL:
+        if self.ptr is not NULL and self.parent is None:
             del p
         self.ptr = NULL
 
@@ -1599,7 +1579,7 @@ cdef class Dot11CFEnd(Dot11Control):
 
     def __dealloc__(self):
         cdef cppDot11CFEnd* p = <cppDot11CFEnd*> self.ptr
-        if self.ptr is not NULL:
+        if self.ptr is not NULL and self.parent is None:
             del p
         self.ptr = NULL
 
@@ -1643,7 +1623,7 @@ cdef class Dot11EndCFAck(Dot11Control):
 
     def __dealloc__(self):
         cdef cppDot11EndCFAck* p = <cppDot11EndCFAck*> self.ptr
-        if self.ptr is not NULL:
+        if self.ptr is not NULL and self.parent is None:
             del p
         self.ptr = NULL
 
@@ -1686,7 +1666,7 @@ cdef class Dot11Ack(Dot11Control):
 
     def __dealloc__(self):
         cdef cppDot11Ack* p = <cppDot11Ack*> self.ptr
-        if self.ptr is not NULL:
+        if self.ptr is not NULL and self.parent is None:
             del p
         self.ptr = NULL
 
@@ -1721,7 +1701,7 @@ cdef class Dot11BlockAckRequest(Dot11Control):
 
     def __dealloc__(self):
         cdef cppDot11BlockAckRequest* p = <cppDot11BlockAckRequest*> self.ptr
-        if self.ptr is not NULL:
+        if self.ptr is not NULL and self.parent is None:
             del p
         self.ptr = NULL
 
@@ -1784,7 +1764,7 @@ cdef class Dot11BlockAck(Dot11Control):
 
     def __dealloc__(self):
         cdef cppDot11BlockAck* p = <cppDot11BlockAck*> self.ptr
-        if self.ptr is not NULL:
+        if self.ptr is not NULL and self.parent is None:
             del p
         self.ptr = NULL
 

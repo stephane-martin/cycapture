@@ -28,7 +28,7 @@ cdef class UDP(PDU):
         self.parent = None
 
     def __dealloc__(self):
-        if self.ptr != NULL and self.parent is None:
+        if self.ptr is not NULL and self.parent is None:
             del self.ptr
         self.ptr = NULL
         self.parent = None

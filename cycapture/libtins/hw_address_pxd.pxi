@@ -40,6 +40,44 @@ cdef extern from "tins/hw_address.h" namespace "Tins" nogil:
 
     const cppHWAddress3 hw3_broadcast "Tins::HWAddress<3, uint8_t>::broadcast"
 
+    cdef cppclass cppHWAddress8 "Tins::HWAddress<8, uint8_t>":
+        cppHWAddress8()
+        cppHWAddress8(const unsigned char* ptr) except +custom_exception_handler
+        cppHWAddress8(const string &) except +custom_exception_handler
+        cppHWAddress8(const cppHWAddress8 &) except +custom_exception_handler
+        const size_t size() const
+        string to_string() const
+        uint8_t* begin()
+        uint8_t* end()
+        cpp_bool is_broadcast() const
+        cpp_bool is_multicast() const
+        cpp_bool is_unicast() const
+        cpp_bool equals "operator==" (const cppHWAddress8 &)
+        cpp_bool different "operator!=" (const cppHWAddress8 &) const
+        cpp_bool less "operator<" (const cppHWAddress8 &) const
+        unsigned char operator[](size_t i) const
+
+    const cppHWAddress8 hw8_broadcast "Tins::HWAddress<8, uint8_t>::broadcast"
+
+    cdef cppclass cppHWAddress16 "Tins::HWAddress<16, uint8_t>":
+        cppHWAddress16()
+        cppHWAddress16(const unsigned char* ptr) except +custom_exception_handler
+        cppHWAddress16(const string &) except +custom_exception_handler
+        cppHWAddress16(const cppHWAddress16 &) except +custom_exception_handler
+        const size_t size() const
+        string to_string() const
+        uint8_t* begin()
+        uint8_t* end()
+        cpp_bool is_broadcast() const
+        cpp_bool is_multicast() const
+        cpp_bool is_unicast() const
+        cpp_bool equals "operator==" (const cppHWAddress16 &)
+        cpp_bool different "operator!=" (const cppHWAddress16 &) const
+        cpp_bool less "operator<" (const cppHWAddress16 &) const
+        unsigned char operator[](size_t i) const
+
+    const cppHWAddress3 hw16_broadcast "Tins::HWAddress<16, uint8_t>::broadcast"
+
 
 cdef class HWAddress(object):
     cdef cppHWAddress6* ptr
