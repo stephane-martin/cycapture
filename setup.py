@@ -227,8 +227,10 @@ class LibtinsDep(Dependency):
             if bool(os.environ["SDKROOT"]):
                 # path to the macosx SDK that was used to compile python
                 cmake_options['CMAKE_OSX_SYSROOT'] = "'{}'".format(os.environ["SDKROOT"])
+                print('CMAKE_OSX_SYSROOT: {}\n'.format(os.environ["SDKROOT"]))
             # libtins.dylib will have install dir name using rpath
             cmake_options['CMAKE_MACOSX_RPATH'] = "'true'"
+            print('CMAKE_MACOSX_RPATH: true\n')
 
         cmake_options = ' '.join(['-D{}={}'.format(opt_name, opt_value) for opt_name, opt_value in cmake_options.items()])
 

@@ -254,6 +254,10 @@ map_pdutype_to_class = {
     PDU.EAPOL: EAPOL,
     PDU.RC4EAPOL: RC4EAPOL,
     PDU.RSNEAPOL: RSNEAPOL,
+    PDU.PKTAP: PKTAP,
+    PDU.PPI: PPI,
+    PDU.IPSEC_AH: IPSecAH,
+    PDU.IPSEC_ESP: IPSecESP,
     PDU.DOT11: Dot11,
     PDU.DOT11_DATA: Dot11Data,
     PDU.DOT11_QOS_DATA: Dot11QoSData,
@@ -299,6 +303,10 @@ map_pdutype_to_classname[PDU.PPPOE] = "pppoe"
 map_pdutype_to_classname[PDU.EAPOL] = "eapol"
 map_pdutype_to_classname[PDU.RC4EAPOL] = "rc4eapol"
 map_pdutype_to_classname[PDU.RSNEAPOL] = "rsneapol"
+map_pdutype_to_classname[PDU.PPI] = "ppi"
+map_pdutype_to_classname[PDU.PKTAP] = "pktap"
+map_pdutype_to_classname[PDU.IPSEC_ESP] = "ipsecesp"
+map_pdutype_to_classname[PDU.IPSEC_AH] = "ipsecah"
 map_pdutype_to_classname[PDU.DOT11] = "dot11"
 map_pdutype_to_classname[PDU.DOT11_DATA] = "dot11data"
 map_pdutype_to_classname[PDU.DOT11_QOS_DATA] = "dot11qosdata"
@@ -342,6 +350,10 @@ map_classname_to_factory["pppoe"] = &PPPoE.factory
 map_classname_to_factory["stp"] = &STP.factory
 map_classname_to_factory["rc4eapol"] = &RC4EAPOL.factory
 map_classname_to_factory["rsneapol"] = &RSNEAPOL.factory
+map_classname_to_factory["ppi"] = &PPI.factory
+map_classname_to_factory["pktap"] = &PKTAP.factory
+map_classname_to_factory["ipsecah"] = &IPSecAH.factory
+map_classname_to_factory["ipsecesp"] = &IPSecESP.factory
 map_classname_to_factory["dot11"] = &Dot11.factory
 map_classname_to_factory["dot11data"] = &Dot11Data.factory_dot11data
 map_classname_to_factory["dot11qosdata"] = &Dot11QoSData.factory_dot11qosdata
