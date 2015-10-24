@@ -37,7 +37,7 @@ class IPv6AddressTest(unittest.TestCase):
         for s in l:
             self.assertEquals(s, str(IPv6Address(s)))
 
-    def test_equals(self):
+    def test_ipv6_equals(self):
         self.assertEquals(IPv6Address("::1"), IPv6Address("::1"))
         self.assertEquals(IPv6Address("1::"), IPv6Address("1::"))
         self.assertEquals(IPv6Address("17f8::1"), IPv6Address("17f8:0::0:1"))

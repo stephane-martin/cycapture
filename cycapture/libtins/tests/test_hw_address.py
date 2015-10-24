@@ -17,7 +17,7 @@ class HWAddressTest(unittest.TestCase):
     def test_short(self):
         self.assertEquals(HWAddress("33:34:35:00:00:00"), HWAddress("33:34:35"))
 
-    def test_equals(self):
+    def test_hwaddr_equals(self):
         self.assertEquals(HWAddress(addr), HWAddress(addr))
 
     def test_different(self):

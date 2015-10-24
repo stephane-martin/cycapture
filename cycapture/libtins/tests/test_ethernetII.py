@@ -56,13 +56,13 @@ class EthernetIITest(unittest.TestCase):
         self.assertEquals(eth.get_pdu_type(), PDU.ETHERNETII)
 
     def test_copy(self):
-        eth = EthernetII(buf=expected_packet)
+        eth = EthernetII.from_buffer(expected_packet)
         eth2 = eth.copy()
         eth_equals(self, eth, eth2)
 
     def test_nested(self):
-        nested = EthernetII(buf=expected_packet)
-        eth1 = EthernetII(buf=expected_packet)
+        nested = EthernetII.from_buffer(expected_packet)
+        eth1 = EthernetII.from_buffer(expected_packet)
         eth1.set_inner_pdu(nested)
         eth2 = eth1.copy()
         eth_equals(self, eth1, eth2)
@@ -89,20 +89,20 @@ class EthernetIITest(unittest.TestCase):
         self.assertEquals(eth.payload_type, 0)
 
     def test_serialize(self):
-        eth = EthernetII(buf=smallip_packet)
+        eth = EthernetII.from_buffer(smallip_packet)
         self.assertTrue(eth.ref_inner_pdu() is not None)
         serialized = eth.serialize()
         self.assertEquals(len(serialized), len(smallip_packet))
         self.assertEquals(serialized, smallip_packet)
 
     def test_buffer_constructor(self):
-        eth = EthernetII(buf=expected_packet)
+        eth = EthernetII.from_buffer(expected_packet)
         self.assertEquals(eth.src_addr, src_addr)
         self.assertEquals(eth.dst_addr, dst_addr)
         self.assertEquals(eth.payload_type, p_type)
 
     def test_constructor_from_ip_buffer(self):
-        eth = EthernetII(buf=ip_packet)
+        eth = EthernetII.from_buffer(ip_packet)
         self.assertTrue(eth.ref_inner_pdu() is not None)
         self.assertEquals(eth.rfind_pdu(IP).serialize(), eth.ref_inner_pdu().serialize())
 
@@ -113,7 +113,7 @@ class EthernetIITest(unittest.TestCase):
 
 
     def test_eliminate_ethernet_padding(self):
-        eth = EthernetII(buf=smallip_packet)
+        eth = EthernetII.from_buffer(smallip_packet)
         self.assertTrue(eth.ref_inner_pdu() is not None)
         self.assertTrue(eth.rfind_pdu(IP) is not None)
         self.assertTrue(eth.rfind_pdu(TCP) is not None)
