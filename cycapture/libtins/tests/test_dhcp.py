@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import unittest
-from nose.tools import ok_, eq_, assert_equal, assert_false, assert_true
+from nose.tools import ok_, eq_, assert_equal, assert_false, assert_true, assert_raises
 # noinspection PyUnresolvedReferences
 from .._tins import EthernetII, HWAddress, PDU, IP, TCP, RAW, PDUNotFound, UDP, ICMP, OptionNotFound, DNS, DHCP, IPv4Address
 
