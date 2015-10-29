@@ -60,12 +60,7 @@ class DHCPTest(unittest.TestCase):
         eq_(dhcp1.chaddr, dhcp2.chaddr)
         eq_(dhcp1.sname, dhcp2.sname)
         eq_(dhcp1.file, dhcp2.file)
-        opts1 = dhcp1.options()
-        opts2 = dhcp2.options()
-        eq_(len(opts1), len(opts2))
-        eq_(opts1.keys(), opts2.keys())
-        for key in opts1:
-            eq_(opts1[key], opts2[key])
+        eq_(set(dhcp1.options()), set(dhcp1.options()))
 
     def test_constr(self):
         dhcp = DHCP()
