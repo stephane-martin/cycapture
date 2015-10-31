@@ -5,7 +5,9 @@ import collections
 from nose.tools import ok_, eq_, assert_equal, assert_false, assert_true, assert_raises
 from .. import fh_pattern, HWAddress, PDU, Dot11, channel_switch_t, Dot11Ack, Dot11BlockAckRequest, country_params, Dot11Data
 from .. import Dot11Authentication, Dot11Deauthentication, Dot11RTS, Dot11PSPoll, Dot11Beacon, cf_params, dfs_params, quiet_t, tim_t
-from .. import RSNInformation
+from .. import RSNInformation, Dot11CFEnd, Dot11EndCFAck, Dot11Disassoc, Dot11AssocRequest, Dot11AssocResponse, Dot11ReAssocRequest
+from .. import Dot11ReAssocResponse, Dot11ProbeRequest, Dot11ProbeResponse
+
 
 import platform
 IS_MACOSX = platform.system().lower().strip() == "darwin"
@@ -965,3 +967,377 @@ class Dot11BeaconTest(unittest.TestCase, ResourcesBeacon):
         tim = tim_t(0, 1, 0, [1])
         dot11.tim = tim
         eq_(dot11.tim, tim)
+
+class ResourcesCFEnd(ResourcesControlTA):
+    expected_packet = _f([229, 1, 79, 35, 0, 1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 6])
+
+    def check_equals_expected(self, dot11):
+        eq_(dot11.subtype, Dot11.ControlSubtypes.CF_END)
+        super(ResourcesCFEnd, self).check_equals_expected(dot11)
+
+class CFEndTest(unittest.TestCase, ResourcesCFEnd):
+    def test_constr(self):
+        dot11 = Dot11CFEnd()
+        self.check_empty(dot11)
+        eq_(dot11.subtype, Dot11.ControlSubtypes.CF_END)
+
+    def test_constr_buf(self):
+        dot11 = Dot11CFEnd.from_buffer(self.expected_packet)
+        self.check_equals_expected(dot11)
+
+    def test_copy(self):
+        dot1 = Dot11CFEnd.from_buffer(self.expected_packet)
+        dot2 = dot1.copy()
+        self.check_equals(dot1, dot2)
+
+    def test_from_bytes(self):
+        dot11 = Dot11.from_bytes(self.expected_packet)
+        ok_(isinstance(dot11, Dot11CFEnd))
+        self.check_equals_expected(dot11)
+
+    def test_serialize(self):
+        dot11 = Dot11CFEnd.from_buffer(self.expected_packet)
+        buf = dot11.serialize()
+        eq_(self.expected_packet, buf)
+
+
+
+class ResourcesCFEndACK(ResourcesControlTA):
+    expected_packet = _f([245, 1, 79, 35, 0, 1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 6])
+
+    def check_equals_expected(self, dot11):
+        eq_(dot11.subtype, Dot11.ControlSubtypes.CF_END_ACK)
+        super(ResourcesCFEndACK, self).check_equals_expected(dot11)
+
+
+class CFEndACKTest(unittest.TestCase, ResourcesCFEndACK):
+    def test_constr(self):
+        dot11 = Dot11EndCFAck()
+        self.check_empty(dot11)
+        eq_(dot11.subtype, Dot11.ControlSubtypes.CF_END_ACK)
+
+    def test_constr_buf(self):
+        dot11 = Dot11EndCFAck.from_buffer(self.expected_packet)
+        self.check_equals_expected(dot11)
+
+    def test_copy(self):
+        dot1 = Dot11EndCFAck.from_buffer(self.expected_packet)
+        dot2 = dot1.copy()
+        self.check_equals(dot1, dot2)
+
+    def test_from_bytes(self):
+        dot11 = Dot11.from_bytes(self.expected_packet)
+        ok_(isinstance(dot11, Dot11EndCFAck))
+        self.check_equals_expected(dot11)
+
+    def test_serialize(self):
+        dot11 = Dot11EndCFAck.from_buffer(self.expected_packet)
+        buf = dot11.serialize()
+        eq_(self.expected_packet, buf)
+
+
+class ResourcesDisassoc(ResourcesManagement):
+    expected_packet = _f([161, 1, 79, 35, 0, 1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 7, 0, 0, 18, 35])
+
+    def check_equals(self, dot1, dot2):
+        eq_(dot1.reason_code, dot2.reason_code)
+        super(ResourcesDisassoc, self).check_equals(dot1, dot2)
+
+    def check_equals_expected(self, dot11):
+        eq_(dot11.reason_code, 0x2312)
+        eq_(dot11.subtype, Dot11.ManagementSubtypes.DISASSOC)
+
+class Dot11DisassocTest(unittest.TestCase, ResourcesDisassoc):
+    def test_constr(self):
+        dot11 = Dot11Disassoc()
+        self.check_empty(dot11)
+        eq_(dot11.reason_code, 0)
+        eq_(dot11.subtype, Dot11.ManagementSubtypes.DISASSOC)
+
+    def test_constr_buf(self):
+        dot11 = Dot11Disassoc.from_buffer(self.expected_packet)
+        self.check_equals_expected(dot11)
+
+    def test_copy(self):
+        dot1 = Dot11Disassoc.from_buffer(self.expected_packet)
+        dot2 = dot1.copy()
+        self.check_equals(dot1, dot2)
+
+    def test_reason_code(self):
+        dot11 = Dot11Disassoc()
+        dot11.reason_code = 0x92f3
+        eq_(dot11.reason_code, 0x92f3)
+
+    def test_from_bytes(self):
+        dot11 = Dot11.from_bytes(self.expected_packet)
+        ok_(isinstance(dot11, Dot11Disassoc))
+        self.check_equals_expected(dot11)
+
+    def test_serialize(self):
+        dot11 = Dot11Disassoc.from_buffer(self.expected_packet)
+        buf = dot11.serialize()
+        eq_(self.expected_packet, buf)
+
+class ResourcesAssocRequest(ResourcesManagement):
+    expected_packet = _f([1, 1, 79, 35, 0, 1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 7, 0, 0, 21, 32, 243, 146])
+
+    def check_equals(self, dot1, dot2):
+        self.check_capinfo_equals(dot1.capabilities, dot2.capabilities)
+        eq_(dot1.listen_interval, dot2.listen_interval)
+        super(ResourcesAssocRequest, self).check_equals(dot1, dot2)
+
+    def check_equals_expected(self, dot11):
+        eq_(dot11.listen_interval, 0x92f3)
+        eq_(dot11.subtype, Dot11.ManagementSubtypes.ASSOC_REQ)
+        super(ResourcesAssocRequest, self).check_equals_expected(dot11)
+
+class Dot11AssocRequestTest(unittest.TestCase, ResourcesAssocRequest):
+    def test_constr(self):
+        dot11 = Dot11AssocRequest()
+        self.check_empty(dot11)
+        eq_(dot11.listen_interval, 0)
+        eq_(dot11.subtype, Dot11.ManagementSubtypes.ASSOC_REQ)
+
+    def test_constr_buf(self):
+        dot11 = Dot11AssocRequest.from_buffer(self.expected_packet)
+        self.check_equals_expected(dot11)
+
+    def test_copy(self):
+        dot1 = Dot11AssocRequest.from_buffer(self.expected_packet)
+        dot2 = dot1.copy()
+        self.check_equals(dot1, dot2)
+
+    def test_listen_interval(self):
+        dot11 = Dot11AssocRequest()
+        dot11.listen_interval = 0x92fd
+        eq_(dot11.listen_interval, 0x92fd)
+
+    def test_from_bytes(self):
+        dot11 = Dot11.from_bytes(self.expected_packet)
+        ok_(isinstance(dot11, Dot11AssocRequest))
+        self.check_equals_expected(dot11)
+
+    def test_serialize(self):
+        eq_(Dot11AssocRequest.from_buffer(self.expected_packet).serialize(), self.expected_packet)
+
+
+class ResourcesAssocResponse(ResourcesManagement):
+    expected_packet = _f([17, 1, 79, 35, 0, 1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 7, 0, 0, 21, 32, 243, 146, 58, 242])
+
+    def check_equals(self, dot1, dot2):
+        self.check_capinfo_equals(dot1.capabilities, dot2.capabilities)
+        eq_(dot1.status_code, dot2.status_code)
+        eq_(dot1.aid, dot2.aid)
+        super(ResourcesAssocResponse, self).check_equals(dot1, dot2)
+
+    def check_equals_expected(self, dot11):
+        super(ResourcesAssocResponse, self).check_equals_expected(dot11)
+        eq_(dot11.status_code, 0x92f3)
+        eq_(dot11.aid, 0xf23a)
+        eq_(dot11.subtype, Dot11.ManagementSubtypes.ASSOC_RESP)
+
+class Dot11AssocResponseTest(unittest.TestCase, ResourcesAssocResponse):
+    def test_constr(self):
+        dot11 = Dot11AssocResponse()
+        self.check_empty(dot11)
+        eq_(dot11.status_code, 0)
+        eq_(dot11.aid, 0)
+        eq_(dot11.subtype, Dot11.ManagementSubtypes.ASSOC_RESP)
+
+    def test_constr_buf(self):
+        self.check_equals_expected(Dot11AssocResponse.from_buffer(self.expected_packet))
+
+    def test_copy(self):
+        dot1 = Dot11AssocResponse.from_buffer(self.expected_packet)
+        self.check_equals(dot1, dot1.copy())
+
+    def test_status_code(self):
+        dot11 = Dot11AssocResponse()
+        dot11.status_code = 0x92f3
+        eq_(dot11.status_code, 0x92f3)
+
+    def test_aid(self):
+        dot11 = Dot11AssocResponse()
+        dot11.aid = 0x92f3
+        eq_(dot11.aid, 0x92f3)
+
+    def test_from_bytes(self):
+        dot11 = Dot11.from_bytes(self.expected_packet)
+        ok_(isinstance(dot11, Dot11AssocResponse))
+        self.check_equals_expected(dot11)
+
+    def test_serialize(self):
+        eq_(self.expected_packet, Dot11AssocResponse.from_buffer(self.expected_packet).serialize())
+
+class ResourcesReAssocRequest(ResourcesManagement):
+    expected_packet = _f([33, 1, 79, 35, 0, 1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 7, 0, 0, 21, 32, 243, 146, 3, 4, 5, 6, 7, 8])
+
+    def check_equals(self, dot1, dot2):
+        self.check_capinfo_equals(dot1.capabilities, dot2.capabilities)
+        eq_(dot1.listen_interval, dot2.listen_interval)
+        eq_(dot1.current_ap, dot2.current_ap)
+        super(ResourcesReAssocRequest, self).check_equals(dot1, dot2)
+
+    def check_equals_expected(self, dot11):
+        eq_(dot11.listen_interval, 0x92f3)
+        eq_(dot11.subtype, Dot11.ManagementSubtypes.REASSOC_REQ)
+        super(ResourcesReAssocRequest, self).check_equals_expected(dot11)
+
+class Dot11ReAssocRequestTest(unittest.TestCase, ResourcesReAssocRequest):
+    def test_constr(self):
+        dot11 = Dot11ReAssocRequest()
+        self.check_empty(dot11)
+        eq_(dot11.listen_interval, 0)
+        eq_(dot11.current_ap, HWAddress())
+        eq_(dot11.subtype, Dot11.ManagementSubtypes.REASSOC_REQ)
+
+    def test_constr_buf(self):
+        dot11 = Dot11ReAssocRequest.from_buffer(self.expected_packet)
+        self.check_equals_expected(dot11)
+
+    def test_copy(self):
+        dot1 = Dot11ReAssocRequest.from_buffer(self.expected_packet)
+        dot2 = dot1.copy()
+        self.check_equals(dot1, dot2)
+
+    def test_listen_interval(self):
+        dot11 = Dot11ReAssocRequest()
+        dot11.listen_interval = 0x92fd
+        eq_(dot11.listen_interval, 0x92fd)
+
+    def test_current_ap(self):
+        dot11 = Dot11ReAssocRequest()
+        dot11.current_ap = "00:01:02:03:04:05"
+        eq_(dot11.current_ap, "00:01:02:03:04:05")
+
+    def test_from_bytes(self):
+        dot11 = Dot11.from_bytes(self.expected_packet)
+        ok_(isinstance(dot11, Dot11ReAssocRequest))
+        self.check_equals_expected(dot11)
+
+    def test_serialize(self):
+        eq_(Dot11ReAssocRequest.from_buffer(self.expected_packet).serialize(), self.expected_packet)
+
+
+class ResourcesReAssocResponse(ResourcesManagement):
+    expected_packet = _f([49, 1, 79, 35, 0, 1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 7, 0, 0, 21, 32, 243, 146, 58, 242])
+
+    def check_equals(self, dot1, dot2):
+        self.check_capinfo_equals(dot1.capabilities, dot2.capabilities)
+        eq_(dot1.status_code, dot2.status_code)
+        eq_(dot1.aid, dot2.aid)
+        super(ResourcesReAssocResponse, self).check_equals(dot1, dot2)
+
+    def check_equals_expected(self, dot11):
+        super(ResourcesReAssocResponse, self).check_equals_expected(dot11)
+        eq_(dot11.status_code, 0x92f3)
+        eq_(dot11.aid, 0xf23a)
+        eq_(dot11.subtype, Dot11.ManagementSubtypes.REASSOC_RESP)
+
+
+class Dot11ReAssocResponseTest(unittest.TestCase, ResourcesReAssocResponse):
+    def test_constr(self):
+        dot11 = Dot11ReAssocResponse()
+        self.check_empty(dot11)
+        eq_(dot11.status_code, 0)
+        eq_(dot11.aid, 0)
+        eq_(dot11.subtype, Dot11.ManagementSubtypes.REASSOC_RESP)
+
+    def test_constr_buf(self):
+        self.check_equals_expected(Dot11ReAssocResponse.from_buffer(self.expected_packet))
+
+    def test_copy(self):
+        dot1 = Dot11ReAssocResponse.from_buffer(self.expected_packet)
+        self.check_equals(dot1, dot1.copy())
+
+    def test_status_code(self):
+        dot11 = Dot11ReAssocResponse()
+        dot11.status_code = 0x92f3
+        eq_(dot11.status_code, 0x92f3)
+
+    def test_aid(self):
+        dot11 = Dot11ReAssocResponse()
+        dot11.aid = 0x92f3
+        eq_(dot11.aid, 0x92f3)
+
+    def test_from_bytes(self):
+        dot11 = Dot11.from_bytes(self.expected_packet)
+        ok_(isinstance(dot11, Dot11ReAssocResponse))
+        self.check_equals_expected(dot11)
+
+    def test_serialize(self):
+        eq_(self.expected_packet, Dot11ReAssocResponse.from_buffer(self.expected_packet).serialize())
+
+class ResourcesProbeRequest(ResourcesManagement):
+    expected_packet = _f([65, 1, 79, 35, 0, 1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 7, 0, 0])
+
+    def check_equals_expected(self, dot11):
+        eq_(dot11.subtype, Dot11.ManagementSubtypes.PROBE_REQ)
+        super(ResourcesProbeRequest, self).check_equals_expected(dot11)
+
+class Dot11ProbeRequestTest(unittest.TestCase, ResourcesProbeRequest):
+    def test_constr(self):
+        dot11 = Dot11ProbeRequest()
+        self.check_empty(dot11)
+        eq_(dot11.subtype, Dot11.ManagementSubtypes.PROBE_REQ)
+
+    def test_constr_buf(self):
+        dot11 = Dot11ProbeRequest.from_buffer(self.expected_packet)
+        self.check_equals_expected(dot11)
+
+    def test_copy(self):
+        dot1 = Dot11ProbeRequest.from_buffer(self.expected_packet)
+        self.check_equals(dot1, dot1.copy())
+
+    def test_from_bytes(self):
+        dot11 = Dot11.from_bytes(self.expected_packet)
+        ok_(isinstance(dot11, Dot11ProbeRequest))
+        self.check_equals_expected(dot11)
+
+class ResourcesProbeResponse(ResourcesManagement):
+    expected_packet = _f([81, 1, 79, 35, 0, 1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 6, 2, 3, 4, 5, 6, 7, 0, 0, 145, 138, 131, 39, 223, 152, 166, 23, 141, 146, 0, 0])
+
+    def check_equals(self, dot1, dot2):
+        eq_(dot1.interval, dot2.interval)
+        eq_(dot1.timestamp, dot2.timestamp)
+        super(ResourcesProbeResponse, self).check_equals(dot1, dot2)
+
+    def check_equals_expected(self, dot11):
+        super(ResourcesProbeResponse, self).check_equals_expected(dot11)
+        eq_(dot11.timestamp, 0x17a698df27838a91)
+        eq_(dot11.interval, 0x928d)
+        eq_(dot11.subtype, Dot11.ManagementSubtypes.PROBE_RESP)
+
+class Dot11ProbeResponseTest(unittest.TestCase, ResourcesProbeResponse):
+    def test_constr(self):
+        dot11 = Dot11ProbeResponse()
+        self.check_empty(dot11)
+        eq_(dot11.timestamp, 0)
+        eq_(dot11.interval, 0)
+        eq_(dot11.subtype, Dot11.ManagementSubtypes.PROBE_RESP)
+
+    def test_constr_buf(self):
+        dot11 = Dot11ProbeResponse.from_buffer(self.expected_packet)
+        self.check_equals_expected(dot11)
+
+    def test_copy(self):
+        dot1 = Dot11ProbeResponse.from_buffer(self.expected_packet)
+        self.check_equals(dot1, dot1.copy())
+
+    def test_interval(self):
+        dot11 = Dot11ProbeResponse()
+        dot11.interval = 0x92af
+        eq_(dot11.interval, 0x92af)
+
+    def test_timestamp(self):
+        dot11 = Dot11ProbeResponse()
+        dot11.timestamp = 0x92af8a72df928a7c
+        eq_(dot11.timestamp, 0x92af8a72df928a7c)
+
+    def test_from_bytes(self):
+        dot11 = Dot11.from_bytes(self.expected_packet)
+        ok_(isinstance(dot11, Dot11ProbeResponse))
+        self.check_equals_expected(dot11)
+
+    def test_serialize(self):
+        eq_(self.expected_packet, Dot11ProbeResponse.from_buffer(self.expected_packet).serialize())
