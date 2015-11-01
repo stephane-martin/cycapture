@@ -21,15 +21,14 @@ else:
     # we are on readthedocs...
     print("Im on readthedocs")
 
-import sphinx_readable_theme
 project = u'cycapture'
 copyright = u'2015, Stephane Martin'
 author = u'Stephane Martin'
 version = '0.2'
 release = '0.2'
 
-html_theme_path = [sphinx_readable_theme.get_html_theme_path()]
-html_theme = 'readable'
+html_theme_path = [abspath(join(dirname(__file__), 'theme'))]
+html_theme = 'cycapture'
 html_theme_options = {}
 html_title = "cycapture documentation"
 html_short_title = "cycapture"
@@ -69,7 +68,7 @@ keep_warnings = False
 todo_include_todos = False
 html_use_smartypants = False
 html_static_path = ['_static']
-html_sidebars = {'**': ['globaltoc.html', 'relations.html', 'sourcelink.html', 'searchbox.html']}
+html_sidebars = {'**': ['mytoc.html', 'searchbox.html']}
 html_domain_indices = True
 html_use_index = True
 html_split_index = False
