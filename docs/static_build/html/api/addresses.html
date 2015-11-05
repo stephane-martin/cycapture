@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Addresses and ranges &mdash; cycapture documentation</title>
+    <title>Addresses, ranges and interfaces &mdash; cycapture documentation</title>
     
     <link rel="stylesheet" href="../_static/readable.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -58,13 +58,51 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="addresses-and-ranges">
-<h1>Addresses and ranges<a class="headerlink" href="#addresses-and-ranges" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="addresses-ranges-and-interfaces">
+<h1>Addresses, ranges and interfaces<a class="headerlink" href="#addresses-ranges-and-interfaces" title="Permalink to this headline">¶</a></h1>
+<div class="contents local topic" id="contents">
+<ul class="simple">
+<li><a class="reference internal" href="#addresses" id="id1">Addresses</a><ul>
+<li><a class="reference internal" href="#ipv4-addresses" id="id2">IPv4 addresses</a></li>
+<li><a class="reference internal" href="#ipv6-addresses" id="id3">IPv6 addresses</a></li>
+<li><a class="reference internal" href="#hardware-addresses" id="id4">Hardware addresses</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ranges" id="id5">Ranges</a><ul>
+<li><a class="reference internal" href="#ipv4-address-ranges" id="id6">IPv4 address ranges</a></li>
+<li><a class="reference internal" href="#ipv6-address-ranges" id="id7">IPv6 address ranges</a></li>
+<li><a class="reference internal" href="#harware-address-ranges" id="id8">Harware address ranges</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#network-interfaces" id="id9">Network interfaces</a></li>
+</ul>
+</div>
+<div class="section" id="addresses">
+<h2><a class="toc-backref" href="#contents">Addresses</a><a class="headerlink" href="#addresses" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="ipv4-addresses">
+<h3><a class="toc-backref" href="#contents">IPv4 addresses</a><a class="headerlink" href="#ipv4-addresses" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="cycapture.libtins.IPv4Address">
-<em class="property">class </em><code class="descname">IPv4Address</code><span class="sig-paren">(</span><em>self</em>, <em>object addr=None</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins.IPv4Address" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descname">IPv4Address</code><span class="sig-paren">(</span><em>self</em>, <em>addr=None</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins.IPv4Address" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
 <p>Encapsulate an IPv4 address.</p>
+<p>IPv4Address implements rich comparison:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">IPv4Address</span><span class="p">(</span><span class="s">&quot;192.168.0.1&quot;</span><span class="p">)</span> <span class="o">!=</span> <span class="n">IPv4Address</span><span class="p">(</span><span class="s">&quot;8.8.8.8&quot;</span><span class="p">)</span>
+<span class="n">IPv4Address</span><span class="p">(</span><span class="s">&quot;192.168.0.1&quot;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">IPv4Address</span><span class="p">(</span><span class="s">&quot;8.8.8.8&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>IPv4Address can be hashed:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">print</span><span class="p">(</span><span class="nb">hash</span><span class="p">(</span><span class="n">IPv4Address</span><span class="p">(</span><span class="s">&quot;192.168.0.1&quot;</span><span class="p">)))</span>
+</pre></div>
+</div>
+<p>To get the integer representation:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">print</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">IPv4Address</span><span class="p">(</span><span class="s">&quot;192.168.0.1&quot;</span><span class="p">)))</span>
+</pre></div>
+</div>
+<p>IPv4 ranges can be be built from addresses:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nb">range</span> <span class="o">=</span> <span class="n">IPv4Address</span><span class="p">(</span><span class="s">&quot;192.168.0.1&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="mi">24</span>
+</pre></div>
+</div>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -146,6 +184,9 @@ True if the address is a unicast address.</td>
 
 </dd></dl>
 
+</div>
+<div class="section" id="ipv6-addresses">
+<h3><a class="toc-backref" href="#contents">IPv6 addresses</a><a class="headerlink" href="#ipv6-addresses" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="cycapture.libtins.IPv6Address">
 <em class="property">class </em><code class="descname">IPv6Address</code><span class="sig-paren">(</span><em>self</em>, <em>object addr=None</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins.IPv6Address" title="Permalink to this definition">¶</a></dt>
@@ -204,6 +245,9 @@ True if the address is a multicast address.</td>
 
 </dd></dl>
 
+</div>
+<div class="section" id="hardware-addresses">
+<h3><a class="toc-backref" href="#contents">Hardware addresses</a><a class="headerlink" href="#hardware-addresses" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="cycapture.libtins.HWAddress">
 <em class="property">class </em><code class="descname">HWAddress</code><span class="sig-paren">(</span><em>self</em>, <em>object addr=None</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins.HWAddress" title="Permalink to this definition">¶</a></dt>
@@ -276,120 +320,23 @@ True if the address is a unicast address.</td>
 
 </dd></dl>
 
-<dl class="class">
-<dt id="cycapture.libtins.NetworkInterface">
-<em class="property">class </em><code class="descname">NetworkInterface</code><span class="sig-paren">(</span><em>name=None</em>, <em>address=None</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins.NetworkInterface" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
-<p>Represent a network interface</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>name</strong> (<em>bytes, optional</em>) --
-if <cite>name</cite> is present (ex: <code class="docutils literal"><span class="pre">'eth0'</span></code>), returns this network interface</li>
-<li><strong>address</strong> (bytes or <a class="reference internal" href="#cycapture.libtins.IPv4Address" title="cycapture.libtins.IPv4Address"><code class="xref py py-class docutils literal"><span class="pre">IPv4Address</span></code></a>, optional) --
-if <cite>address</cite> is present, returns the interface that would be used to send packets to this address</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-<div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">Give only one parameter, <cite>name</cite> OR <cite>address</cite>.</p>
 </div>
-<dl class="method">
-<dt id="cycapture.libtins.NetworkInterface.addresses">
-<code class="descname">addresses</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins.NetworkInterface.addresses" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><em>dict</em> --
-the IPv4 address, netmask, broadcast address and hardware addresss associated with this interface.</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="cycapture.libtins.NetworkInterface.all">
-<code class="descname">all</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins.NetworkInterface.all" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>all</strong> (list of <a class="reference internal" href="#cycapture.libtins.NetworkInterface" title="cycapture.libtins.NetworkInterface"><code class="xref py py-class docutils literal"><span class="pre">NetworkInterface</span></code></a>) --
-a list of all network interfaces</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="cycapture.libtins.NetworkInterface.default">
-<code class="descname">default</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins.NetworkInterface.default" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>default</strong> (<a class="reference internal" href="#cycapture.libtins.NetworkInterface" title="cycapture.libtins.NetworkInterface"><code class="xref py py-class docutils literal"><span class="pre">NetworkInterface</span></code></a>) --
-the default interface.</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="cycapture.libtins.NetworkInterface.ident">
-<code class="descname">ident</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins.NetworkInterface.ident" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><em>int</em> --
-interface id</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="cycapture.libtins.NetworkInterface.is_loopback">
-<code class="descname">is_loopback</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins.NetworkInterface.is_loopback" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><em>bool</em> --
-True if the interface is a loopback interface.</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="cycapture.libtins.NetworkInterface.name">
-<code class="descname">name</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins.NetworkInterface.name" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><em>bytes</em> --
-interface name</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-</dd></dl>
-
+</div>
+<div class="section" id="ranges">
+<h2><a class="toc-backref" href="#contents">Ranges</a><a class="headerlink" href="#ranges" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="ipv4-address-ranges">
+<h3><a class="toc-backref" href="#contents">IPv4 address ranges</a><a class="headerlink" href="#ipv4-address-ranges" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="cycapture.libtins.IPv4Range">
 <em class="property">class </em><code class="descname">IPv4Range</code><span class="sig-paren">(</span><em>first=None</em>, <em>last=None</em>, <em>only_hosts=False</em>, <em>mask=None</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins.IPv4Range" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
 <p>Represents a range of IPv4 addresses.</p>
+<p>To build a range from an address and a mask:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nb">range</span> <span class="o">=</span> <span class="n">IPv4Address</span><span class="p">(</span><span class="s">&quot;192.168.0.0&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="mi">16</span>
+<span class="nb">range</span> <span class="o">=</span> <span class="n">IPv4Range</span><span class="p">(</span><span class="n">first</span><span class="o">=</span><span class="s">&quot;192.168.0.0&quot;</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="s">&quot;255.255.0.0&quot;</span><span class="p">)</span>
+<span class="nb">range</span> <span class="o">=</span> <span class="n">IPv4Range</span><span class="o">.</span><span class="n">from_mask</span><span class="p">(</span><span class="s">&quot;192.168.0.0&quot;</span><span class="p">,</span> <span class="mi">24</span><span class="p">)</span>
+</pre></div>
+</div>
 <p>You can test if an address belongs to a range:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="k">if</span> <span class="n">address</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">:</span>
     <span class="k">print</span><span class="p">(</span><span class="s">&quot;OK&quot;</span><span class="p">)</span>
@@ -492,6 +439,9 @@ the range's size (how many addresses in the range)</td>
 
 </dd></dl>
 
+</div>
+<div class="section" id="ipv6-address-ranges">
+<h3><a class="toc-backref" href="#contents">IPv6 address ranges</a><a class="headerlink" href="#ipv6-address-ranges" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="cycapture.libtins.IPv6Range">
 <em class="property">class </em><code class="descname">IPv6Range</code><a class="headerlink" href="#cycapture.libtins.IPv6Range" title="Permalink to this definition">¶</a></dt>
@@ -573,6 +523,9 @@ the range's size (how many addresses in the range)</td>
 
 </dd></dl>
 
+</div>
+<div class="section" id="harware-address-ranges">
+<h3><a class="toc-backref" href="#contents">Harware address ranges</a><a class="headerlink" href="#harware-address-ranges" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="cycapture.libtins.HWRange">
 <em class="property">class </em><code class="descname">HWRange</code><a class="headerlink" href="#cycapture.libtins.HWRange" title="Permalink to this definition">¶</a></dt>
@@ -655,42 +608,184 @@ the range's size (how many addresses in the range)</td>
 </dd></dl>
 
 </div>
+</div>
+<div class="section" id="network-interfaces">
+<h2><a class="toc-backref" href="#contents">Network interfaces</a><a class="headerlink" href="#network-interfaces" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="cycapture.libtins.NetworkInterface">
+<em class="property">class </em><code class="descname">NetworkInterface</code><span class="sig-paren">(</span><em>name=None</em>, <em>address=None</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins.NetworkInterface" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Represent a network interface</p>
+<p>NetworkInterface objects support equality:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">if</span> <span class="ow">not</span> <span class="n">NetworkInterface</span><span class="p">()</span> <span class="o">!=</span> <span class="n">NetworkInterface</span><span class="o">.</span><span class="n">default</span><span class="p">():</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&#39;boo&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>NetworkInterface objects can be hashed:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">print</span><span class="p">(</span><span class="nb">hash</span><span class="p">(</span><span class="n">NetworkInterface</span><span class="o">.</span><span class="n">default</span><span class="p">()))</span>
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<em>bytes, optional</em>) --
+if <cite>name</cite> is present (ex: <code class="docutils literal"><span class="pre">'eth0'</span></code>), returns this network interface</li>
+<li><strong>address</strong> (bytes or <a class="reference internal" href="#cycapture.libtins.IPv4Address" title="cycapture.libtins.IPv4Address"><code class="xref py py-class docutils literal"><span class="pre">IPv4Address</span></code></a>, optional) --
+if <cite>address</cite> is present, returns the interface that would be used to send packets to this address</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Give only one parameter, <cite>name</cite> OR <cite>address</cite>.</p>
+</div>
+<dl class="method">
+<dt id="cycapture.libtins.NetworkInterface.addresses">
+<code class="descname">addresses</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins.NetworkInterface.addresses" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><em>dict</em> --
+the IPv4 address, netmask, broadcast address and hardware addresss associated with this interface.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins.NetworkInterface.all">
+<code class="descname">all</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins.NetworkInterface.all" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>all</strong> (list of <a class="reference internal" href="#cycapture.libtins.NetworkInterface" title="cycapture.libtins.NetworkInterface"><code class="xref py py-class docutils literal"><span class="pre">NetworkInterface</span></code></a>) --
+a list of all network interfaces</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">class method</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins.NetworkInterface.default">
+<code class="descname">default</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins.NetworkInterface.default" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>default</strong> (<a class="reference internal" href="#cycapture.libtins.NetworkInterface" title="cycapture.libtins.NetworkInterface"><code class="xref py py-class docutils literal"><span class="pre">NetworkInterface</span></code></a>) --
+the default interface.</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">class method</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins.NetworkInterface.equals">
+<code class="descname">equals</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins.NetworkInterface.equals" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>other</strong> (<em>object</em>) --
+any python object</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><em>bool</em> --
+Returns True if self equals other</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins.NetworkInterface.is_loopback">
+<code class="descname">is_loopback</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins.NetworkInterface.is_loopback" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><em>bool</em> --
+True if the interface is a loopback interface.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins.NetworkInterface.id">
+<code class="descname">id</code><a class="headerlink" href="#cycapture.libtins.NetworkInterface.id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the interface id (read-only property)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins.NetworkInterface.name">
+<code class="descname">name</code><a class="headerlink" href="#cycapture.libtins.NetworkInterface.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the interface name (read-only property)</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
 
 
           </div>
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-<h3><a href="../index.html">Table Of Contents</a></h3>
-<ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../authors.html">Credits</a></li>
+        <div class="sphinxsidebarwrapper"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#prerequisites">Prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#install-from-sources">Install from sources</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#install-with-pip">Install with pip</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../authors.html">Credits</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../authors.html#cycapture">cycapture</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../authors.html#libtins">libtins</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../authors.html#contributors">Contributors</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="../history.html">History</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../api.html">API documentation</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="libpcap.html">libpcap bindings</a></li>
+<li class="toctree-l2"><a class="reference internal" href="libpcap.html">libpcap bindings</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="libpcap.html#sniffers">Sniffers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="libpcap.html#packet-writers">Packet writers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="libpcap.html#offline-filter">Offline filter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="libpcap.html#datalink-types">Datalink types</a></li>
+<li class="toctree-l3"><a class="reference internal" href="libpcap.html#utils">Utils</a></li>
+</ul>
+</li>
 <li class="toctree-l2 current"><a class="reference internal" href="libtins.html">libtins bindings</a><ul class="current">
-<li class="toctree-l3 current"><a class="current reference internal" href="">Addresses and ranges</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="">Addresses, ranges and interfaces</a></li>
 <li class="toctree-l3"><a class="reference internal" href="exceptions.html">Exceptions</a></li>
-<li class="toctree-l3"><a class="reference internal" href="generic_pdu.html">Generic PDU</a></li>
-<li class="toctree-l3"><a class="reference internal" href="pdus.html">Concrete PDUs</a></li>
-<li class="toctree-l3"><a class="reference internal" href="dns_pdu.html">DNS PDU</a></li>
+<li class="toctree-l3"><a class="reference internal" href="abstract_pdu.html">Abstract PDU</a></li>
+<li class="toctree-l3"><a class="reference internal" href="concrete_pdus.html">Concrete PDUs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="radiotap.html">RadioTap and stuff</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dot11.html">IEEE 802.11 and stuff</a></li>
+<li class="toctree-l3"><a class="reference internal" href="derived_pdus.html">Derived PDUs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tcpstream.html">TCP streams</a></li>
+<li class="toctree-l3"><a class="reference internal" href="packetsender.html">Sending packets</a></li>
+<li class="toctree-l3"><a class="reference internal" href="utils.html">Various utils</a></li>
 </ul>
 </li>
 </ul>
 </li>
 </ul>
-<h3>Related Topics</h3>
-<ul>
-  <li><a href="../index.html">Documentation index</a><ul>
-  <li><a href="../api.html">API documentation</a><ul>
-  <li><a href="libtins.html">libtins bindings</a><ul>
-      <li>Previous: <a href="libtins.html" title="previous chapter">libtins bindings</a></li>
-      <li>Next: <a href="exceptions.html" title="next chapter">Exceptions</a></li>
-  </ul></li>
-  </ul></li>
-  </ul></li>
-</ul>
+
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">

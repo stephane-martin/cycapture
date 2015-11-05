@@ -1,39 +1,40 @@
 /*
- * readable.css_t
- * ~~~~~~~~~~~~~~
+ * readable.css
+ * ~~~~~~~~~~~~
  *
  * Sphinx stylesheet -- readable theme.
  *
  * :copyright: Copyright 2013 by Ignacy Sokolowski.
  * :license: MIT, see LICENSE for details.
+ * modified by Stephane Martin
  *
  */
 
 
 
 @import url('basic.css');
- 
+
 /* -- page layout --------------------------------------------------------- */
- 
+
 body {
-    font-family: 'Georgia', serif;
+    font-family: 'Charter', serif;
     font-size: 17px;
     margin: 0;
     padding: 0;
 }
- 
+
 div.document {
-    margin: 10px auto 0 auto;
-    max-width: 940px;
+    margin: 1em 30px 0 300px;
 }
 
 div.documentwrapper {
     float: left;
     width: 100%;
+    border-left: 1px dotted grey;
 }
 
 div.bodywrapper {
-    margin: 0 0 0 230px;
+    /*margin: 0 0 0 230px;*/
 }
 
 div.body {
@@ -41,7 +42,7 @@ div.body {
     color: #3e4349;
     padding: 0 30px 30px 30px;
 }
- 
+
 div.footer {
     color: #555;
     font-size: 14px;
@@ -49,24 +50,75 @@ div.footer {
     text-align: right;
     max-width: 880px;
 }
- 
+
 div.footer a {
     color: #444;
     text-decoration: underline;
 }
- 
+
 div.related {
     padding: 10px 10px;
     width: auto;
 }
- 
+
 div.sphinxsidebar {
-    float: left;
+    top: 1em;
+    left: 3em;
+    position: fixed;
     font-size: 14px;
     line-height: 1.5em;
-    margin-left: -100%;
     width: 230px;
+    margin-left: 0;
+    z-index: 20;
+    float: none;
 }
+
+div.sphinxsidebar li.toctree-l1.current a {
+    background-color: lightgoldenrodyellow;
+}
+
+div.sphinxsidebar li.toctree-l1.current li.toctree-l2 a {
+    background-color: transparent;
+}
+
+div.sphinxsidebar li.toctree-l1.current li.toctree-l2.current a {
+    background-color: lightgoldenrodyellow;
+}
+
+div.sphinxsidebar li.toctree-l1.current li.toctree-l2.current li.toctree-l3 a {
+    background-color: transparent;
+}
+
+div.sphinxsidebar li.toctree-l1.current li.toctree-l2.current li.toctree-l3.current a {
+    background-color: yellow;
+}
+
+
+div.related[role=navigation] {
+    position: fixed;
+    bottom: 0;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    z-index: 40;
+}
+
+div.related[role=navigation] > ul {
+    background-color: #F1FFFF;
+    padding: 0.75em;
+    border-top: 1px dashed grey;
+    font-size: 100%;
+}
+
+div.related[role=navigation] > ul a, div.related[role=navigation] > ul a:visited {
+    color: #770000;
+}
+
+div.related[role=navigation] > ul a:hover {
+    color: #770000;
+    background-color: greenyellow;
+}
+
 
 div.sphinxsidebarwrapper {
     font-size: 14px;
@@ -86,11 +138,11 @@ div.sphinxsidebar h4 {
 div.sphinxsidebar h4 {
     font-size: 1.1em;
 }
- 
+
 div.sphinxsidebar h3 a {
     color: #333;
 }
- 
+
 div.sphinxsidebar p {
     color: #888;
 }
@@ -98,21 +150,21 @@ div.sphinxsidebar p {
 div.sphinxsidebar p.searchtip {
     line-height: 1.4em;
 }
- 
+
 div.sphinxsidebar ul {
     color: #000;
     margin: 10px 0 20px;
     padding: 0;
 }
- 
+
 div.sphinxsidebar a {
     color: #444;
 }
 
 div.sphinxsidebar a:hover {
-    color: #d00;
+    color: #f00;
 }
- 
+
 div.sphinxsidebar input {
     border: 1px solid #ccc;
     font-family: sans-serif;
@@ -120,19 +172,28 @@ div.sphinxsidebar input {
 }
 
 /* -- body styles --------------------------------------------------------- */
- 
+
 a {
-    color: #900;
+    color: #0000DD;
     text-decoration: none;
 }
 
 a:visited {
-    color: #700;
+    color: #0000DD;
 }
- 
+
 a:hover {
-    color: #d00;
-    text-decoration: underline;
+    color: #EE0000;
+    text-decoration: none;
+}
+
+div.section > h2 > a, div.section > h3 > a, div.section > h4 > a {
+    color: #770000;
+}
+
+div.section > h2 > a:hover, div.section > h3 > a:hover, div.section > h4 > a:hover {
+    color: #770000;
+    background-color: #FFF0F5;
 }
 
 hr {
@@ -152,7 +213,7 @@ div.body h3,
 div.body h4 { color: #212224; }
 div.body h5 { color: #000; }
 div.body h6 { color: #777; }
- 
+
 div.body h1 { margin: 0 0 10px 0; }
 div.body h2,
 div.body h3 { margin: 30px 0px 10px 0px; }
@@ -166,26 +227,26 @@ div.body h3 { padding: 10px 0 10px 0; }
 div.body h4 { padding: 10px 0 10px 0; }
 div.body h5,
 div.body h6 { padding: 10px 0 0 0; }
- 
+
 div.body h1,
 div.body h2,
 div.body h3 { border-bottom: 1px solid #ddd; }
 div.body h4 { border-bottom: 1px solid #e5e5e5; }
- 
+
 div.body h1 { font-size: 230%; }
 div.body h2 { font-size: 180%; }
 div.body h3 { font-size: 130%; }
 div.body h4 { font-size: 110%; }
 div.body h5 { font-size: 105%; }
 div.body h6 { font-size: 100%; }
- 
+
 a.headerlink {
     color: #c60f0f;
     font-size: 0.8em;
     padding: 0 4px 0 4px;
     text-decoration: none;
 }
- 
+
 a.headerlink:hover {
     background-color: #c60f0f;
     color: #fff;
@@ -243,7 +304,7 @@ div.body dd,
 div.body li {
     line-height: 1.4em;
 }
- 
+
 div.admonition p.admonition-title + p {
     display: inline;
 }
@@ -256,29 +317,46 @@ div.important, div.note {
     background-color: #eee;
     border: 1px solid #ccc;
 }
- 
+
 div.attention, div.caution, div.hint, div.seealso, div.tip {
     background-color: #fef9e9;
     border: 1px solid #fbe091;
 }
- 
+
 div.topic {
     background-color: #eee;
 }
- 
+
+div.topic.local {
+    background-color: #FFF1FF;
+    border-radius: 4px;
+
+}
+
+div.topic.local a {
+    color: #770000;
+    text-decoration: none;
+}
+
+div.topic.local a:hover {
+    color: #770000;
+    background-color: #FEFEA5;
+    text-decoration: none;
+}
+
 div.danger, div.error, div.warning {
     background-color: #ffe4e4;
     border: 1px solid #f66;
 }
- 
+
 p.admonition-title {
     display: inline;
 }
- 
+
 p.admonition-title:after {
     content: ':';
 }
- 
+
 pre {
     background-color: #f5f5f5;
     border: 1px solid #C6C9CB;
@@ -293,9 +371,10 @@ pre {
 }
 
 pre, tt, code {
-    font-family: 'Consolas', 'Menlo', 'Deja Vu Sans Mono', 'Bitstream Vera Sans Mono', monospace;
+    font-family: 'Fira Mono', 'Consolas', 'Menlo', 'Deja Vu Sans Mono', 'Bitstream Vera Sans Mono', monospace;
+    font-size: 90%;
 }
- 
+
 tt, code {
     background-color: #ecf0f3;
     font-size: 0.85em;
@@ -393,69 +472,62 @@ div.viewcode-block:target {
     border-bottom: 1px solid #fbe091;
 }
 
-@media screen and (max-width: 870px) {
+div > dl.class > dt > em.property {
+    color:red;
+}
 
-    div.document {
-        width: auto;
-        margin: 0;
-    }
+div > dl.class > dt {
+    border: 1px solid black;
+    padding: 0.5em;
+    border-radius: 0.5em;
+    background-color: #FFFEEA;
+}
 
-    div.documentwrapper {
-        float: none;
-    }
+div > dl.class > dd > dl.class > dt > em.property {
+    color: darkred;
+}
 
-    div.bodywrapper {
-        margin: 0;
-    }
+@font-face {
+  font-family: Charter;
+  src: url(fonts/charter_regular.woff);
+}
+@font-face {
+  font-family: Charter;
+  font-style: italic;
+  src: url(fonts/charter_italic.woff);
+}
 
-    div.body {
-        min-height: 0;
-        padding: 0 20px 30px 20px;
-    }
+@font-face {
+	font-family: Charter;
+	font-weight: bold;
+	src: url(fonts/charter_bold.woff);
+}
 
-    div.footer {
-        background-color: #333;
-        color: #888;
-        margin: 0;
-        padding: 10px 20px 20px;
-        text-align: left;
-        width: auto;
-    }
+@font-face {
+	font-family: Charter;
+	font-weight: bold;
+	font-style: italic;
+	src: url(fonts/charter_bold_italic.woff);
+}
 
-    div.footer a {
-        color: #bbb;
-    }
+@font-face{
+    font-family: 'Fira Mono';
+    src: url('fonts/FiraMono-Regular.woff');
+    font-weight: 400;
+    font-style: normal;
+}
 
-    div.footer a:hover {
-        color: #fff;
-    }
+@font-face{
+    font-family: 'Fira Mono';
+    src: url('fonts/FiraMono-Medium.woff');
+    font-weight: 500;
+    font-style: normal;
+}
 
-    div.sphinxsidebar {
-        background-color: #333;
-        color: #fff;
-        float: none;
-        margin: 0;
-        padding: 10px 20px;
-        width: auto;
-    }
 
-    div.sphinxsidebar h3,
-    div.sphinxsidebar h4,
-    div.sphinxsidebar p,
-    div.sphinxsidebar h3 a {
-        color: #fff;
-    }
-
-    div.sphinxsidebar ul {
-        color: #999;
-    }
-
-    div.sphinxsidebar a {
-        color: #aaa;
-    }
-
-    div.sphinxsidebar a:hover {
-        color: #fff;
-    }
-
+@font-face{
+    font-family: 'Fira Mono';
+    src: url('fonts/FiraMono-Bold.woff');
+    font-weight: 600;
+    font-style: normal;
 }

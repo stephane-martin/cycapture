@@ -59,6 +59,191 @@
             
   <div class="section" id="libpcap-bindings">
 <h1>libpcap bindings<a class="headerlink" href="#libpcap-bindings" title="Permalink to this headline">¶</a></h1>
+<div class="contents local topic" id="contents">
+<ul class="simple">
+<li><a class="reference internal" href="#sniffers" id="id1">Sniffers</a></li>
+<li><a class="reference internal" href="#packet-writers" id="id2">Packet writers</a></li>
+<li><a class="reference internal" href="#offline-filter" id="id3">Offline filter</a></li>
+<li><a class="reference internal" href="#datalink-types" id="id4">Datalink types</a></li>
+<li><a class="reference internal" href="#utils" id="id5">Utils</a></li>
+</ul>
+</div>
+<div class="section" id="sniffers">
+<h2><a class="toc-backref" href="#contents">Sniffers</a><a class="headerlink" href="#sniffers" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="cycapture.libpcap._pcap.Sniffer">
+<em class="property">class </em><code class="descname">Sniffer</code><span class="sig-paren">(</span><em>interface=None</em>, <em>filename=None</em>, <em>int read_timeout=5000</em>, <em>int buffer_size=0</em>, <em>int snapshot_length=2000</em>, <em>promisc_mode=False</em>, <em>monitor_mode=False</em>, <em>direction=PCAP_D_INOUT</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libpcap._pcap.Sniffer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Sniffer base class</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>interface</strong></li>
+<li><strong>filename</strong></li>
+<li><strong>read_timeout</strong></li>
+<li><strong>buffer_size</strong></li>
+<li><strong>snapshot_length</strong></li>
+<li><strong>promisc_mode</strong></li>
+<li><strong>monitor_mode</strong></li>
+<li><strong>direction</strong></li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="class">
+<dt id="cycapture.libpcap._pcap.BlockingSniffer">
+<em class="property">class </em><code class="descname">BlockingSniffer</code><span class="sig-paren">(</span><em>interface=None</em>, <em>filename=None</em>, <em>int read_timeout=5000</em>, <em>int buffer_size=0</em>, <em>int snapshot_length=2000</em>, <em>promisc_mode=False</em>, <em>monitor_mode=False</em>, <em>direction=PCAP_D_INOUT</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libpcap._pcap.BlockingSniffer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#cycapture.libpcap._pcap.Sniffer" title="cycapture.libpcap._pcap.Sniffer"><code class="xref py py-class docutils literal"><span class="pre">cycapture.libpcap._pcap.Sniffer</span></code></a></p>
+<p>Blocking sniffer</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>interface</strong></li>
+<li><strong>filename</strong></li>
+<li><strong>read_timeout</strong></li>
+<li><strong>buffer_size</strong></li>
+<li><strong>snapshot_length</strong></li>
+<li><strong>promisc_mode</strong></li>
+<li><strong>monitor_mode</strong></li>
+<li><strong>direction</strong></li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="class">
+<dt id="cycapture.libpcap._pcap.NonBlockingSniffer">
+<em class="property">class </em><code class="descname">NonBlockingSniffer</code><span class="sig-paren">(</span><em>interface=None</em>, <em>filename=None</em>, <em>int read_timeout=5000</em>, <em>int buffer_size=0</em>, <em>int snapshot_length=2000</em>, <em>promisc_mode=False</em>, <em>monitor_mode=False</em>, <em>direction=PCAP_D_INOUT</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libpcap._pcap.NonBlockingSniffer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#cycapture.libpcap._pcap.Sniffer" title="cycapture.libpcap._pcap.Sniffer"><code class="xref py py-class docutils literal"><span class="pre">cycapture.libpcap._pcap.Sniffer</span></code></a></p>
+<p>Non-blocking sniffer</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>interface</strong></li>
+<li><strong>filename</strong></li>
+<li><strong>read_timeout</strong></li>
+<li><strong>buffer_size</strong></li>
+<li><strong>snapshot_length</strong></li>
+<li><strong>promisc_mode</strong></li>
+<li><strong>monitor_mode</strong></li>
+<li><strong>direction</strong></li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="packet-writers">
+<h2><a class="toc-backref" href="#contents">Packet writers</a><a class="headerlink" href="#packet-writers" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="cycapture.libpcap._pcap.PacketWriter">
+<em class="property">class </em><code class="descname">PacketWriter</code><span class="sig-paren">(</span><em>linktype</em>, <em>output</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libpcap._pcap.PacketWriter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Packet writer</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>linktype</strong></li>
+<li><strong>output</strong></li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="class">
+<dt id="cycapture.libpcap._pcap.NonBlockingPacketWriter">
+<em class="property">class </em><code class="descname">NonBlockingPacketWriter</code><span class="sig-paren">(</span><em>linktype</em>, <em>output</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libpcap._pcap.NonBlockingPacketWriter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#cycapture.libpcap._pcap.PacketWriter" title="cycapture.libpcap._pcap.PacketWriter"><code class="xref py py-class docutils literal"><span class="pre">cycapture.libpcap._pcap.PacketWriter</span></code></a></p>
+<p>Non-blocking packet writer.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>linktype</strong></li>
+<li><strong>output</strong></li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="offline-filter">
+<h2><a class="toc-backref" href="#contents">Offline filter</a><a class="headerlink" href="#offline-filter" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="cycapture.libpcap._pcap.OfflineFilter">
+<em class="property">class </em><code class="descname">OfflineFilter</code><span class="sig-paren">(</span><em>filter_string</em>, <em>linktype</em>, <em>snaplen=65535</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libpcap._pcap.OfflineFilter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Offline packet filter</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>filter_string</strong></li>
+<li><strong>linktype</strong></li>
+<li><strong>snaplen</strong></li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="datalink-types">
+<h2><a class="toc-backref" href="#contents">Datalink types</a><a class="headerlink" href="#datalink-types" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="cycapture.libpcap.DLT">
+<em class="property">class </em><code class="descname">DLT</code><a class="headerlink" href="#cycapture.libpcap.DLT" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">enum.IntEnum</span></code></p>
+<p>Datalink types</p>
+<p>Attributes: <code class="docutils literal"><span class="pre">DLT_NULL</span></code>, <code class="docutils literal"><span class="pre">DLT_EN10MB</span></code>, <code class="docutils literal"><span class="pre">DLT_EN3MB</span></code>, <code class="docutils literal"><span class="pre">DLT_AX25</span></code>, <code class="docutils literal"><span class="pre">DLT_PRONET</span></code>, <code class="docutils literal"><span class="pre">DLT_CHAOS</span></code>, <code class="docutils literal"><span class="pre">DLT_IEEE802</span></code>, <code class="docutils literal"><span class="pre">DLT_ARCNET</span></code>, <code class="docutils literal"><span class="pre">DLT_SLIP</span></code>, <code class="docutils literal"><span class="pre">DLT_PPP</span></code>, <code class="docutils literal"><span class="pre">DLT_FDDI</span></code>, <code class="docutils literal"><span class="pre">DLT_RAW</span></code>, <code class="docutils literal"><span class="pre">DLT_IEEE802_11</span></code>, <code class="docutils literal"><span class="pre">DLT_LOOP</span></code>, <code class="docutils literal"><span class="pre">DLT_ENC</span></code>, <code class="docutils literal"><span class="pre">DLT_PRISM_HEADER</span></code>, <code class="docutils literal"><span class="pre">DLT_AIRONET_HEADER</span></code>, <code class="docutils literal"><span class="pre">DLT_IEEE802_11_RADIO</span></code>, <code class="docutils literal"><span class="pre">DLT_IEEE802_11_RADIO_AVS</span></code>, <code class="docutils literal"><span class="pre">DLT_IPV4</span></code>, <code class="docutils literal"><span class="pre">DLT_IPV6</span></code></p>
+</dd></dl>
+
+</div>
+<div class="section" id="utils">
+<h2><a class="toc-backref" href="#contents">Utils</a><a class="headerlink" href="#utils" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="cycapture.libpcap.lookupdev">
+<code class="descname">lookupdev</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libpcap.lookupdev" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="cycapture.libpcap.findalldevs">
+<code class="descname">findalldevs</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libpcap.findalldevs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="cycapture.libpcap.lookupnet">
+<code class="descname">lookupnet</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libpcap.lookupnet" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libpcap.libpcap_version">
+<code class="descclassname">libpcap.</code><code class="descname">libpcap_version</code><em class="property"> = 'libpcap version 1.7.4'</em><a class="headerlink" href="#cycapture.libpcap.libpcap_version" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
 </div>
 
 
@@ -66,27 +251,46 @@
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-<h3><a href="../index.html">Table Of Contents</a></h3>
-<ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../authors.html">Credits</a></li>
+        <div class="sphinxsidebarwrapper"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#prerequisites">Prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#install-from-sources">Install from sources</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#install-with-pip">Install with pip</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../authors.html">Credits</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../authors.html#cycapture">cycapture</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../authors.html#libtins">libtins</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../authors.html#contributors">Contributors</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="../history.html">History</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../api.html">API documentation</a><ul class="current">
-<li class="toctree-l2 current"><a class="current reference internal" href="">libpcap bindings</a></li>
-<li class="toctree-l2"><a class="reference internal" href="libtins.html">libtins bindings</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="">libpcap bindings</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#sniffers">Sniffers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#packet-writers">Packet writers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#offline-filter">Offline filter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#datalink-types">Datalink types</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#utils">Utils</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="libtins.html">libtins bindings</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="addresses.html">Addresses, ranges and interfaces</a></li>
+<li class="toctree-l3"><a class="reference internal" href="exceptions.html">Exceptions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="abstract_pdu.html">Abstract PDU</a></li>
+<li class="toctree-l3"><a class="reference internal" href="concrete_pdus.html">Concrete PDUs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="radiotap.html">RadioTap and stuff</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dot11.html">IEEE 802.11 and stuff</a></li>
+<li class="toctree-l3"><a class="reference internal" href="derived_pdus.html">Derived PDUs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tcpstream.html">TCP streams</a></li>
+<li class="toctree-l3"><a class="reference internal" href="packetsender.html">Sending packets</a></li>
+<li class="toctree-l3"><a class="reference internal" href="utils.html">Various utils</a></li>
 </ul>
 </li>
 </ul>
-<h3>Related Topics</h3>
-<ul>
-  <li><a href="../index.html">Documentation index</a><ul>
-  <li><a href="../api.html">API documentation</a><ul>
-      <li>Previous: <a href="../api.html" title="previous chapter">API documentation</a></li>
-      <li>Next: <a href="libtins.html" title="next chapter">libtins bindings</a></li>
-  </ul></li>
-  </ul></li>
+</li>
 </ul>
+
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">

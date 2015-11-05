@@ -25,8 +25,8 @@
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="top" title="cycapture documentation" href="../index.html" />
     <link rel="up" title="libtins bindings" href="libtins.html" />
-    <link rel="next" title="Generic PDU" href="generic_pdu.html" />
-    <link rel="prev" title="Addresses and ranges" href="addresses.html" />
+    <link rel="next" title="Abstract PDU" href="abstract_pdu.html" />
+    <link rel="prev" title="Addresses, ranges and interfaces" href="addresses.html" />
    
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
 
@@ -42,10 +42,10 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="generic_pdu.html" title="Generic PDU"
+          <a href="abstract_pdu.html" title="Abstract PDU"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="addresses.html" title="Addresses and ranges"
+          <a href="addresses.html" title="Addresses, ranges and interfaces"
              accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="../index.html">cycapture</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../api.html" >API documentation</a> &raquo;</li>
@@ -63,111 +63,111 @@
 <dl class="class">
 <dt id="cycapture.libtins.LibtinsException">
 <em class="property">class </em><code class="descname">LibtinsException</code><a class="headerlink" href="#cycapture.libtins.LibtinsException" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">exceptions.StandardError</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">exceptions.Exception</span></code></p>
 <p>Base exception class used by the cycapture.libtins bindings.</p>
 </dd></dl>
 
 <dl class="class">
 <dt id="cycapture.libtins.MalformedAddress">
 <em class="property">class </em><code class="descname">MalformedAddress</code><a class="headerlink" href="#cycapture.libtins.MalformedAddress" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">cycapture.libtins._tins.LibtinsException</span></code>, <code class="xref py py-class docutils literal"><span class="pre">exceptions.ValueError</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">cycapture.libtins._py_exceptions.LibtinsException</span></code>, <code class="xref py py-class docutils literal"><span class="pre">exceptions.ValueError</span></code></p>
 </dd></dl>
 
 <dl class="class">
 <dt id="cycapture.libtins.MalformedPacket">
 <em class="property">class </em><code class="descname">MalformedPacket</code><a class="headerlink" href="#cycapture.libtins.MalformedPacket" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">cycapture.libtins._tins.LibtinsException</span></code>, <code class="xref py py-class docutils literal"><span class="pre">exceptions.ValueError</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">cycapture.libtins._py_exceptions.LibtinsException</span></code>, <code class="xref py py-class docutils literal"><span class="pre">exceptions.ValueError</span></code></p>
 <p>Exception thrown when a malformed packet is parsed.</p>
 </dd></dl>
 
 <dl class="class">
 <dt id="cycapture.libtins.MalformedOption">
 <em class="property">class </em><code class="descname">MalformedOption</code><a class="headerlink" href="#cycapture.libtins.MalformedOption" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">cycapture.libtins._tins.LibtinsException</span></code>, <code class="xref py py-class docutils literal"><span class="pre">exceptions.ValueError</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">cycapture.libtins._py_exceptions.LibtinsException</span></code>, <code class="xref py py-class docutils literal"><span class="pre">exceptions.ValueError</span></code></p>
 <p>Exception thrown when a malformed option is found.</p>
 </dd></dl>
 
 <dl class="class">
 <dt id="cycapture.libtins.OptionNotFound">
 <em class="property">class </em><code class="descname">OptionNotFound</code><a class="headerlink" href="#cycapture.libtins.OptionNotFound" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">cycapture.libtins._tins.LibtinsException</span></code>, <code class="xref py py-class docutils literal"><span class="pre">exceptions.ValueError</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">cycapture.libtins._py_exceptions.LibtinsException</span></code>, <code class="xref py py-class docutils literal"><span class="pre">exceptions.ValueError</span></code></p>
 <p>Exception thrown when an option is not found.</p>
 </dd></dl>
 
 <dl class="class">
 <dt id="cycapture.libtins.OptionPayloadTooLarge">
 <em class="property">class </em><code class="descname">OptionPayloadTooLarge</code><a class="headerlink" href="#cycapture.libtins.OptionPayloadTooLarge" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">cycapture.libtins._tins.LibtinsException</span></code>, <code class="xref py py-class docutils literal"><span class="pre">exceptions.ValueError</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">cycapture.libtins._py_exceptions.LibtinsException</span></code>, <code class="xref py py-class docutils literal"><span class="pre">exceptions.ValueError</span></code></p>
 <p>Exception thrown when a payload is too large to fit into a PDU option</p>
 </dd></dl>
 
 <dl class="class">
 <dt id="cycapture.libtins.FieldNotPresent">
 <em class="property">class </em><code class="descname">FieldNotPresent</code><a class="headerlink" href="#cycapture.libtins.FieldNotPresent" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">cycapture.libtins._tins.LibtinsException</span></code>, <code class="xref py py-class docutils literal"><span class="pre">exceptions.ValueError</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">cycapture.libtins._py_exceptions.LibtinsException</span></code>, <code class="xref py py-class docutils literal"><span class="pre">exceptions.ValueError</span></code></p>
 <p>Exception thrown when a field is not present in frame.</p>
 </dd></dl>
 
 <dl class="class">
 <dt id="cycapture.libtins.PDUNotFound">
 <em class="property">class </em><code class="descname">PDUNotFound</code><a class="headerlink" href="#cycapture.libtins.PDUNotFound" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">cycapture.libtins._tins.LibtinsException</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">cycapture.libtins._py_exceptions.LibtinsException</span></code></p>
 <p>Exception thrown when a PDU is not found.</p>
 </dd></dl>
 
 <dl class="class">
 <dt id="cycapture.libtins.InvalidInterface">
 <em class="property">class </em><code class="descname">InvalidInterface</code><a class="headerlink" href="#cycapture.libtins.InvalidInterface" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">cycapture.libtins._tins.LibtinsException</span></code>, <code class="xref py py-class docutils literal"><span class="pre">exceptions.IOError</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">cycapture.libtins._py_exceptions.LibtinsException</span></code>, <code class="xref py py-class docutils literal"><span class="pre">exceptions.IOError</span></code></p>
 <p>Exception thrown when <cite>send</cite> requires a valid interface, but an invalid is used.</p>
 </dd></dl>
 
 <dl class="class">
 <dt id="cycapture.libtins.UnknownLinkType">
 <em class="property">class </em><code class="descname">UnknownLinkType</code><a class="headerlink" href="#cycapture.libtins.UnknownLinkType" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">cycapture.libtins._tins.LibtinsException</span></code>, <code class="xref py py-class docutils literal"><span class="pre">exceptions.IOError</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">cycapture.libtins._py_exceptions.LibtinsException</span></code>, <code class="xref py py-class docutils literal"><span class="pre">exceptions.IOError</span></code></p>
 <p>Exception thrown when an unkown link layer PDU type is found while sniffing.</p>
 </dd></dl>
 
 <dl class="class">
 <dt id="cycapture.libtins.SocketOpenError">
 <em class="property">class </em><code class="descname">SocketOpenError</code><a class="headerlink" href="#cycapture.libtins.SocketOpenError" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">cycapture.libtins._tins.LibtinsException</span></code>, <code class="xref py py-class docutils literal"><span class="pre">socket.error</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">cycapture.libtins._py_exceptions.LibtinsException</span></code>, <code class="xref py py-class docutils literal"><span class="pre">socket.error</span></code></p>
 <p>Exception thrown when PacketSender fails to open a socket.</p>
 </dd></dl>
 
 <dl class="class">
 <dt id="cycapture.libtins.SocketCloseError">
 <em class="property">class </em><code class="descname">SocketCloseError</code><a class="headerlink" href="#cycapture.libtins.SocketCloseError" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">cycapture.libtins._tins.LibtinsException</span></code>, <code class="xref py py-class docutils literal"><span class="pre">socket.error</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">cycapture.libtins._py_exceptions.LibtinsException</span></code>, <code class="xref py py-class docutils literal"><span class="pre">socket.error</span></code></p>
 <p>Exception thrown when PacketSender fails to close a socket.</p>
 </dd></dl>
 
 <dl class="class">
 <dt id="cycapture.libtins.SocketWriteError">
 <em class="property">class </em><code class="descname">SocketWriteError</code><a class="headerlink" href="#cycapture.libtins.SocketWriteError" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">cycapture.libtins._tins.LibtinsException</span></code>, <code class="xref py py-class docutils literal"><span class="pre">socket.error</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">cycapture.libtins._py_exceptions.LibtinsException</span></code>, <code class="xref py py-class docutils literal"><span class="pre">socket.error</span></code></p>
 <p>Exception thrown when PacketSender fails to write on a socket</p>
 </dd></dl>
 
 <dl class="class">
 <dt id="cycapture.libtins.InvalidSocketType">
 <em class="property">class </em><code class="descname">InvalidSocketType</code><a class="headerlink" href="#cycapture.libtins.InvalidSocketType" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">cycapture.libtins._tins.LibtinsException</span></code>, <code class="xref py py-class docutils literal"><span class="pre">socket.error</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">cycapture.libtins._py_exceptions.LibtinsException</span></code>, <code class="xref py py-class docutils literal"><span class="pre">socket.error</span></code></p>
 <p>Exception thrown when an invalid socket type is provided to PacketSender.</p>
 </dd></dl>
 
 <dl class="class">
 <dt id="cycapture.libtins.BadTinsCast">
 <em class="property">class </em><code class="descname">BadTinsCast</code><a class="headerlink" href="#cycapture.libtins.BadTinsCast" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">cycapture.libtins._tins.LibtinsException</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">cycapture.libtins._py_exceptions.LibtinsException</span></code></p>
 <p>Exception thrown when a call to tins_cast fails.</p>
 </dd></dl>
 
 <dl class="class">
 <dt id="cycapture.libtins.ProtocolDisabled">
 <em class="property">class </em><code class="descname">ProtocolDisabled</code><a class="headerlink" href="#cycapture.libtins.ProtocolDisabled" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">cycapture.libtins._tins.LibtinsException</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">cycapture.libtins._py_exceptions.LibtinsException</span></code></p>
 <p>Exception thrown when sniffing a protocol that has been disabled at libtins compile time.</p>
 </dd></dl>
 
@@ -178,36 +178,46 @@
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-<h3><a href="../index.html">Table Of Contents</a></h3>
-<ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../authors.html">Credits</a></li>
+        <div class="sphinxsidebarwrapper"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#prerequisites">Prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#install-from-sources">Install from sources</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#install-with-pip">Install with pip</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../authors.html">Credits</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../authors.html#cycapture">cycapture</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../authors.html#libtins">libtins</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../authors.html#contributors">Contributors</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="../history.html">History</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../api.html">API documentation</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="libpcap.html">libpcap bindings</a></li>
+<li class="toctree-l2"><a class="reference internal" href="libpcap.html">libpcap bindings</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="libpcap.html#sniffers">Sniffers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="libpcap.html#packet-writers">Packet writers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="libpcap.html#offline-filter">Offline filter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="libpcap.html#datalink-types">Datalink types</a></li>
+<li class="toctree-l3"><a class="reference internal" href="libpcap.html#utils">Utils</a></li>
+</ul>
+</li>
 <li class="toctree-l2 current"><a class="reference internal" href="libtins.html">libtins bindings</a><ul class="current">
-<li class="toctree-l3"><a class="reference internal" href="addresses.html">Addresses and ranges</a></li>
+<li class="toctree-l3"><a class="reference internal" href="addresses.html">Addresses, ranges and interfaces</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="">Exceptions</a></li>
-<li class="toctree-l3"><a class="reference internal" href="generic_pdu.html">Generic PDU</a></li>
-<li class="toctree-l3"><a class="reference internal" href="pdus.html">Concrete PDUs</a></li>
-<li class="toctree-l3"><a class="reference internal" href="dns_pdu.html">DNS PDU</a></li>
+<li class="toctree-l3"><a class="reference internal" href="abstract_pdu.html">Abstract PDU</a></li>
+<li class="toctree-l3"><a class="reference internal" href="concrete_pdus.html">Concrete PDUs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="radiotap.html">RadioTap and stuff</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dot11.html">IEEE 802.11 and stuff</a></li>
+<li class="toctree-l3"><a class="reference internal" href="derived_pdus.html">Derived PDUs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tcpstream.html">TCP streams</a></li>
+<li class="toctree-l3"><a class="reference internal" href="packetsender.html">Sending packets</a></li>
+<li class="toctree-l3"><a class="reference internal" href="utils.html">Various utils</a></li>
 </ul>
 </li>
 </ul>
 </li>
 </ul>
-<h3>Related Topics</h3>
-<ul>
-  <li><a href="../index.html">Documentation index</a><ul>
-  <li><a href="../api.html">API documentation</a><ul>
-  <li><a href="libtins.html">libtins bindings</a><ul>
-      <li>Previous: <a href="addresses.html" title="previous chapter">Addresses and ranges</a></li>
-      <li>Next: <a href="generic_pdu.html" title="next chapter">Generic PDU</a></li>
-  </ul></li>
-  </ul></li>
-  </ul></li>
-</ul>
+
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
