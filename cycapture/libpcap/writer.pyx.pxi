@@ -56,6 +56,9 @@ cdef _normalize_buf(object buf, int linktype):
     return buf
 
 cdef class PacketWriter(object):
+    """
+    Packet writer
+    """
 
     def __cinit__(self, linktype, output):
         self.linktype = _normalize_linktype(linktype)
@@ -66,6 +69,14 @@ cdef class PacketWriter(object):
         self.output_lock = create_error_check_lock()
 
     def __init__(self, linktype, output):
+        """
+        __init__(linktype, output)
+
+        Parameters
+        ----------
+        linktype
+        output
+        """
         pass
 
     cdef _clean(self):
@@ -113,6 +124,9 @@ cdef class PacketWriter(object):
 
 
 cdef class NonBlockingPacketWriter(PacketWriter):
+    """
+    Non-blocking packet writer.
+    """
     def __cinit__(self, linktype, output):
         self.linktype = _normalize_linktype(linktype)
         self.handle = pcap_open_dead(self.linktype, 65535)
@@ -122,6 +136,14 @@ cdef class NonBlockingPacketWriter(PacketWriter):
         self.output_lock = create_error_check_lock()
 
     def __init__(self, linktype, output):
+        """
+        __init__(linktype, output)
+
+        Parameters
+        ----------
+        linktype
+        output
+        """
         PacketWriter.__init__(self, linktype, output)
         self.stopping = 0
         self.q = deque()

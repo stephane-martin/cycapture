@@ -5,7 +5,7 @@ DIRECTION = None
 
 cdef _make_enums():
     global DLT, DIRECTION
-    DLT = Enum('DLT', {
+    DLT = make_enum('DLT', 'DLT', 'Datalink types', {
         'DLT_NULL': DLT_NULL,
         'DLT_EN10MB': DLT_EN10MB,
         'DLT_EN3MB': DLT_EN3MB,
@@ -29,7 +29,7 @@ cdef _make_enums():
         'DLT_IPV6': DLT_IPV6
     })
 
-    DIRECTION = Enum('DIRECTION', {
+    DIRECTION = make_enum('DIRECTION', 'DIRECTION', 'Sniffing direction', {
         'PCAP_D_INOUT': PCAP_D_INOUT,
         'PCAP_D_IN': PCAP_D_IN,
         'PCAP_D_OUT': PCAP_D_OUT

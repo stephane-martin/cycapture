@@ -2,6 +2,9 @@
 
 
 cdef class OfflineFilter(object):
+    """
+    Offline packet filter
+    """
 
     def __cinit__(self, bytes filter_string, object linktype, int snaplen=65535):
         if isinstance(linktype, DLT):
@@ -30,7 +33,15 @@ cdef class OfflineFilter(object):
             pcap_close(self.handle)
 
     def __init__(self, bytes filter_string, object linktype, int snaplen=65535):
-        pass
+        """
+        __init__(filter_string, linktype, snaplen=65535)
+
+        Parameters
+        ----------
+        filter_string
+        linktype
+        snaplen
+        """
 
     cdef bint match(self, const uint8_t *pkt, int size) except -1:
         cdef timeval tv

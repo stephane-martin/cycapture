@@ -2,16 +2,7 @@
 
 cdef class Sniffer(object):
     """
-    Sniffer
-
-    :param interface: network interface to use
-    :param filename: file to read packets from
-    :param read_timeout: reading timeout (default = 5000ms)
-    :param buffer_size: buffer size (default = 0, default buffer size)
-    :param snapshot_length: reading size for each packet (default: 2000 bytes)
-    :param promisc_mode: if True, try to put the interface in promiscuous mode (default: False)
-    :param monitor_mode: if True, try to put the interface in monitoring mode (default: False)
-    :param direction: PCAP_D_INOUT, PCAP_D_OUT or PCAP_D_IN
+    Sniffer base class
     """
 
     def __cinit__(self, interface=None, filename=None, int read_timeout=5000, int buffer_size=0, int snapshot_length=2000,
@@ -51,6 +42,20 @@ cdef class Sniffer(object):
 
     def __init__(self, interface=None, filename=None, int read_timeout=5000, int buffer_size=0, int snapshot_length=2000,
                   promisc_mode=False, monitor_mode=False, direction=PCAP_D_INOUT):
+        """
+        __init__(interface=None, filename=None, int read_timeout=5000, int buffer_size=0, int snapshot_length=2000, promisc_mode=False, monitor_mode=False, direction=PCAP_D_INOUT)
+
+        Parameters
+        ----------
+        interface
+        filename
+        read_timeout
+        buffer_size
+        snapshot_length
+        promisc_mode
+        monitor_mode
+        direction
+        """
 
         self.read_timeout = read_timeout
         self.buffer_size = buffer_size

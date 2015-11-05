@@ -12,7 +12,7 @@ from time import sleep
 from collections import deque
 from os.path import exists
 
-from enum import Enum
+from enum import IntEnum
 
 from ..libtins import LibtinsException as TinEx
 from ..libtins import PDU
@@ -23,13 +23,18 @@ from .exceptions import ActivationError, NotActivatedError, SniffingError, Permi
 from .exceptions import PcapExceptionFactory
 
 
+def make_enum(typename, label, docstring, values):
+    cls = IntEnum(typename, values)
+    cls.__name__ = label
+    cls.__doc__ = docstring + "\n\nAttributes: " + ", ".join(['``{}``'.format(attr) for attr in cls.__members__.keys()])
+    return cls
+
 include "definitions.pyx.pxi"
 include "utils_func.pyx.pxi"
 include "sniffer.pyx.pxi"
 include "writer.pyx.pxi"
 include "iterator.pyx.pxi"
 include "offline_filter.pyx.pxi"
-
 
 lock = create_error_check_lock()
 INIT_LIST_HEAD(&thread_pcap_global_list)

@@ -9,15 +9,31 @@ cdef void sig_handler(int signum) nogil:
 
 # noinspection PyAttributeOutsideInit,PyGlobalUndefined
 cdef class BlockingSniffer(Sniffer):
+    """
+    Blocking sniffer
+    """
     active_sniffers = {}
 
     def __cinit__(self, interface=None, filename=None, int read_timeout=5000, int buffer_size=0, int snapshot_length=2000,
                   promisc_mode=False, monitor_mode=False, direction=PCAP_D_INOUT):
-        self._do_cinit(interface, filename, read_timeout, buffer_size, snapshot_length, promisc_mode, monitor_mode,direction)
         self.parent_thread = NULL
 
     def __init__(self, interface=None, filename=None, int read_timeout=5000, int buffer_size=0, int snapshot_length=2000,
-                  promisc_mode=False, monitor_mode=False, direction=PCAP_D_INOUT):
+                 promisc_mode=False, monitor_mode=False, direction=PCAP_D_INOUT):
+        """
+        __init__(interface=None, filename=None, int read_timeout=5000, int buffer_size=0, int snapshot_length=2000, promisc_mode=False, monitor_mode=False, direction=PCAP_D_INOUT)
+
+        Parameters
+        ----------
+        interface
+        filename
+        read_timeout
+        buffer_size
+        snapshot_length
+        promisc_mode
+        monitor_mode
+        direction
+        """
         Sniffer.__init__(self, interface, filename, read_timeout, buffer_size, snapshot_length, promisc_mode, monitor_mode, direction)
 
     def __dealloc__(self):
@@ -41,32 +57,7 @@ cdef class BlockingSniffer(Sniffer):
         sigaddset(&s, SIGUSR1)
         pthread_sigmask(SIG_UNBLOCK, &s, NULL)
 
-    cdef thread_pcap_node* register(self) except NULL:
-        if self in BlockingSniffer.active_sniffers.values():
-            raise RuntimeError("This BlockingSniffer is already actively listening")
-        if BlockingSniffer.thread_has_pcap(pthread_self()) == 1:
-            raise RuntimeError("only one sniffing action per thread is allowed")
-        cdef thread_pcap_node* n = BlockingSniffer.register_pcap_for_thread(self._handle)
-        if n == NULL:
-            raise RuntimeError('register_pcap_for_thread failed')
-        self.parent_thread = copy_pthread_self()
-        self.active_sniffers[pthread_self_as_bytes()] = self
-        cdef sighandler_t h = <sighandler_t> sig_handler
-        self.old_sigint = libc_signal(SIGUSR1, h)
-        siginterrupt(SIGUSR1, 1)
-        return n
 
-    cdef int unregister(self):
-        libc_signal(SIGUSR1, self.old_sigint)
-        siginterrupt(SIGUSR1, 1)
-        cdef int res = BlockingSniffer.unregister_pcap_for_thread()
-        cdef bytes ident = pthread_self_as_bytes()
-        if ident in self.active_sniffers:
-            del self.active_sniffers[ident]
-        if self.parent_thread != NULL:
-            free(self.parent_thread)
-            self.parent_thread = NULL
-        return res
 
     def sniff_and_export(self, fname_or_file_object, int max_p=-1):
         w = PacketWriter(self.datalink[0], fname_or_file_object)
@@ -200,3 +191,94 @@ cdef class BlockingSniffer(Sniffer):
         if error_message:
             raise PcapExceptionFactory(counted, bytes(error_message), default=SniffingError)
 
+
+    cdef thread_pcap_node* register(self) except NULL:
+        if self._handle is NULL:
+            raise RuntimeError("register: no valid pcap handle")
+        if self in BlockingSniffer.active_sniffers.values():
+            raise RuntimeError("register: this BlockingSniffer is already actively listening")
+        if BlockingSniffer.thread_has_pcap(pthread_self()) == 1:
+            raise RuntimeError("register: only one sniffing action per thread is allowed")
+        cdef thread_pcap_node* node = BlockingSniffer.register_pcap_for_thread(self._handle)    # can raise exc too
+        self.parent_thread = copy_pthread_self()
+        self.active_sniffers[pthread_self_as_bytes()] = self
+        cdef sighandler_t h = <sighandler_t> sig_handler
+        self.old_sigint = libc_signal(SIGUSR1, h)
+        siginterrupt(SIGUSR1, 1)
+        return node
+
+    cdef unregister(self):
+        libc_signal(SIGUSR1, self.old_sigint)
+        siginterrupt(SIGUSR1, 1)
+        BlockingSniffer.unregister_pcap_for_thread()        # can raise exc
+        cdef bytes ident = pthread_self_as_bytes()
+        if ident in self.active_sniffers:
+            del self.active_sniffers[ident]
+        if self.parent_thread != NULL:
+            free(self.parent_thread)
+            self.parent_thread = NULL
+
+
+    @staticmethod
+    cdef thread_pcap_node* register_pcap_for_thread(pcap_t* handle) except NULL:
+        global lock, thread_pcap_global_list
+
+        cdef thread_pcap_node* node
+        cdef pthread_t thread = pthread_self()
+        if BlockingSniffer.thread_has_pcap(thread) == 1:
+            raise RuntimeError("register_pcap_for_thread: this thread already has a pcap handle")
+
+        if pthread_mutex_lock(lock) != 0:
+            raise RuntimeError("register_pcap_for_thread: locking failed!!!")
+        try:
+            node = <thread_pcap_node*> malloc(sizeof(thread_pcap_node))
+            if node is NULL:
+                raise RuntimeError('register_pcap_for_thread: malloc failed!!!')
+            node.thread = thread
+            node.handle = handle
+            node.asked_to_stop = 0
+            list_add_tail(&node.link, &thread_pcap_global_list)
+        finally:
+            pthread_mutex_unlock(lock)
+        return node
+
+
+    @staticmethod
+    cdef unregister_pcap_for_thread():
+        global lock, thread_pcap_global_list
+        cdef list_head* cursor
+        cdef list_head* nextnext
+        cdef thread_pcap_node* node
+        cdef pthread_t thread = pthread_self()
+        if BlockingSniffer.thread_has_pcap(thread) == 0:
+            return "Warning: unregister_pcap_for_thread: current thread doesnt have a pcap handle"
+
+        if pthread_mutex_lock(lock) != 0:
+            raise RuntimeError("unregister_pcap_for_thread: locking failed!!!")
+
+        try:
+            cursor = thread_pcap_global_list.next
+            nextnext = cursor.next
+            while cursor != &thread_pcap_global_list:
+                node = <thread_pcap_node*>( <char *>cursor - <unsigned long> (&(<thread_pcap_node*>0).link) )
+                if pthread_equal(node.thread, thread):
+                    list_del(&node.link)
+                    free(node)
+                    break
+                cursor = nextnext
+                nextnext = cursor.next
+        finally:
+            pthread_mutex_unlock(lock)
+
+
+    @staticmethod
+    cdef thread_pcap_node* get_pcap_for_thread(pthread_t thread) nogil:
+        global thread_pcap_global_list
+        cdef list_head* cursor = thread_pcap_global_list.next
+        cdef thread_pcap_node* node
+        while cursor != &thread_pcap_global_list:
+            node = <thread_pcap_node*>( <char *>cursor - <unsigned long> (&(<thread_pcap_node*>0).link) )
+            if pthread_equal(node.thread, thread):
+                return node
+            cursor = cursor.next
+        return NULL

@@ -1,17 +1,34 @@
 # -*- coding: utf-8 -*-
 
 cdef class NonBlockingSniffer(Sniffer):
+    """
+    Non-blocking sniffer
+    """
     active_sniffers = {}
 
     def __cinit__(self, interface=None, filename=None, int read_timeout=5000, int buffer_size=0, int snapshot_length=2000,
                   promisc_mode=False, monitor_mode=False, direction=PCAP_D_INOUT):
-        self._do_cinit(interface, filename, read_timeout, buffer_size, snapshot_length, promisc_mode, monitor_mode,direction)
+        pass
 
     def __dealloc__(self):
         self.close()
 
     def __init__(self, interface=None, filename=None, int read_timeout=5000, int buffer_size=0, int snapshot_length=2000,
                   promisc_mode=False, monitor_mode=False, direction=PCAP_D_INOUT):
+        """
+        __init__(interface=None, filename=None, int read_timeout=5000, int buffer_size=0, int snapshot_length=2000, promisc_mode=False, monitor_mode=False, direction=PCAP_D_INOUT)
+
+        Parameters
+        ----------
+        interface
+        filename
+        read_timeout
+        buffer_size
+        snapshot_length
+        promisc_mode
+        monitor_mode
+        direction
+        """
         Sniffer.__init__(self, interface, filename, read_timeout, buffer_size, snapshot_length, promisc_mode, monitor_mode, direction)
         self.loop = None
         self.loop_type = None
