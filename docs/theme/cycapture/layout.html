@@ -10,6 +10,7 @@
   <div class="indexwrapper">
   {% endif %}
 {% endblock %}
+{%- block relbar1 %}{{ relbar() }}{% include "basic/searchbox.html" %}{% endblock %}
 {%- block footer %}
   <div class="footer">
     &copy; Copyright {{ copyright }}.
