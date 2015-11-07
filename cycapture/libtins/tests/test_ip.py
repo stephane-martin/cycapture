@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import unittest
+from nose.tools import ok_
 # noinspection PyUnresolvedReferences
 from .._tins import EthernetII, HWAddress, PDU, IP, TCP, RAW, PDUNotFound, UDP, ICMP, OptionNotFound
 
@@ -574,7 +575,7 @@ class IPTest(unittest.TestCase):
         self.assertEquals(returned_data, data)
 
         ident = IP.OptionIdentifier(IP.OptionNumber.SSRR, IP.OptionClass.CONTROL, 1)
-        self.assertRaises(OptionNotFound, ip.search_option, ident)
+        ok_(ip.search_option(ident) is None)
 
     def test_constructor_from_buffer(self):
         ip = IP.from_buffer(expected_packet)

@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import unittest
-import collections
 from nose.tools import ok_, eq_, assert_equal, assert_false, assert_true, assert_raises
 from .. import fh_pattern, HWAddress, PDU, Dot11, channel_switch_t, Dot11Ack, Dot11BlockAckRequest, country_params, Dot11Data
 from .. import Dot11Authentication, Dot11Deauthentication, Dot11RTS, Dot11PSPoll, Dot11Beacon, cf_params, dfs_params, quiet_t, tim_t

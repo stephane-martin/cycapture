@@ -83,7 +83,7 @@ class EthernetIITest(unittest.TestCase):
         self.assertEquals(eth.payload_type, p_type)
 
     def test_complete_constructor(self):
-        eth = EthernetII(dest=dst_addr, src=src_addr) / EthernetII()
+        eth = EthernetII(dst_addr, src_addr) / EthernetII()
         self.assertEquals(eth.dst_addr, dst_addr)
         self.assertEquals(eth.src_addr, src_addr)
         self.assertEquals(eth.payload_type, 0)

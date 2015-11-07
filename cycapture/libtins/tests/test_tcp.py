@@ -111,9 +111,9 @@ class TCPTest(unittest.TestCase):
         tcp = TCP()
 
         tcp.syn_flag = 1
-        tcp.set_flag(TCP.TcpFlags.FIN, 1)
+        tcp.set_flag(TCP.Flags.FIN, 1)
 
-        self.assertTrue(tcp.get_flag(TCP.TcpFlags.SYN))
+        self.assertTrue(tcp.get_flag(TCP.Flags.SYN))
         self.assertTrue(tcp.fin_flag)
         self.assertTrue(not tcp.rst_flag)
         self.assertTrue(not tcp.psh_flag)
@@ -126,10 +126,10 @@ class TCPTest(unittest.TestCase):
         tcp = TCP()
         tcp.syn_flag = True
         tcp.fin_flag = 1
-        self.assertEquals(tcp.flags, TCP.TcpFlags.SYN | TCP.TcpFlags.FIN)
+        self.assertEquals(tcp.flags, TCP.Flags.SYN | TCP.Flags.FIN)
 
-        tcp.flags = TCP.TcpFlags.PSH | TCP.TcpFlags.RST
-        self.assertEquals(tcp.flags, TCP.TcpFlags.PSH | TCP.TcpFlags.RST)
+        tcp.flags = TCP.Flags.PSH | TCP.Flags.RST
+        self.assertEquals(tcp.flags, TCP.Flags.PSH | TCP.Flags.RST)
 
     def test_mss(self):
         tcp = TCP()
@@ -153,8 +153,8 @@ class TCPTest(unittest.TestCase):
 
     def test_alternate_checksum(self):
         tcp = TCP()
-        tcp.altchecksum = TCP.TcpAltChecksums.CHK_16FLETCHER
-        self.assertEquals(tcp.altchecksum, TCP.TcpAltChecksums.CHK_16FLETCHER)
+        tcp.altchecksum = TCP.AltChecksums.CHK_16FLETCHER
+        self.assertEquals(tcp.altchecksum, TCP.AltChecksums.CHK_16FLETCHER)
 
     def test_timestamp(self):
         tcp = TCP()
