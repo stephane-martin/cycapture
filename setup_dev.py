@@ -15,8 +15,10 @@ from os.path import dirname, abspath, join, commonprefix, exists
 import distutils.sysconfig
 import platform
 
+
 def info(s):
     sys.stderr.write(s + "\n")
+
 
 on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
 here = abspath(dirname(__file__))
@@ -94,9 +96,29 @@ class LibpcapDep(Dependency):
         super(LibpcapDep, self).__init__()
         self.name = "pcap"
         self.src_dir = join(self.external_dir, "libpcap")
-        self.name = ''
-        self.download()
-        self.build()
+
+        if os.getenv("USE_SHARED_PCAP"):
+            self.static = False
+            # find an existing shared libpcap
+            include_dirs, library_dirs = self.find_shared_libpcap(os.getenv("LIBPCAP_PREFIX"))
+            if include_dirs is None or library_dirs is None:
+                raise RuntimeError("an existing shared libpcap library was not found")
+            info("Using shared libpcap: %s, %s" % (include_dirs, library_dirs))
+            self._install_dir = dirname(library_dirs[0])            # hum...
+            self._include_dirs = include_dirs
+            self._library_dirs = library_dirs
+
+        elif os.getenv("COMPILE_SHARED_PCAP"):
+            # compile a shared libpcap, then install the .so directly in cython sources
+            self.static = False
+            self.download()
+            self.build()
+
+        else:
+            self.name = ''
+            # compile a static libpcap
+            self.download()
+            self.build()
 
 
     def download(self):
@@ -284,7 +306,7 @@ if __name__ == "__main__":
         python_config_vars = sysconfig.get_config_vars()
         # use the same SDK as python executable
         if not exists(python_config_vars['UNIVERSALSDK']):
-            info("'{}' SDK does not exist. Aborting.".format(python_config_vars['UNIVERSALSDK']))
+            info("'{}' SDK does not exist. Aborting.\n".format(python_config_vars['UNIVERSALSDK']))
             sys.exit(-1)
         info("Building for MacOSX SDK: {}".format(python_config_vars["MACOSX_DEPLOYMENT_TARGET"]))
         os.environ["MACOSX_DEPLOYMENT_TARGET"] = python_config_vars["MACOSX_DEPLOYMENT_TARGET"]
@@ -309,26 +331,26 @@ if __name__ == "__main__":
         # utility module to make python memoryviews from char* buffers
         make_mview_extension = Extension(
             name="cycapture._make_mview",
-            sources=["cycapture/_make_mview.c"]
+            sources=["cycapture/_make_mview.pyx"]
         )
         extensions.append(make_mview_extension)
 
         pthread_extension = Extension(
             name="cycapture._pthreadwrap",
-            sources=["cycapture/_pthreadwrap.c", "cycapture/murmur.c"]
+            sources=["cycapture/_pthreadwrap.pyx", "cycapture/murmur.c"]
         )
         extensions.append(pthread_extension)
 
         signal_extension = Extension(
             name="cycapture._signal",
-            sources=["cycapture/_signal.c"]
+            sources=["cycapture/_signal.pyx"]
         )
         extensions.append(signal_extension)
 
         # build libpcap and the cycapture.libpcap python extension
         pcap_extension = Extension(
             name="cycapture.libpcap._pcap",
-            sources=["cycapture/libpcap/_pcap.c"]
+            sources=["cycapture/libpcap/_pcap.pyx"]
         )
         libpcap_dep = LibpcapDep()
         # noinspection PyTypeChecker
@@ -340,7 +362,7 @@ if __name__ == "__main__":
         tins_exceptions_extension = Extension(
             name="cycapture.libtins._py_exceptions",
             sources=[
-                "cycapture/libtins/_py_exceptions.cpp",
+                "cycapture/libtins/_py_exceptions.pyx",
                 "cycapture/libtins/custom_exception_handler.cpp"
             ],
             language="c++"
@@ -354,7 +376,7 @@ if __name__ == "__main__":
         tins_extension = Extension(
             name="cycapture.libtins._tins",
             sources=[
-                "cycapture/libtins/_tins.cpp",
+                "cycapture/libtins/_tins.pyx",
                 "cycapture/libtins/wrap.cpp",
                 "cycapture/libtins/py_tcp_stream_functor.cpp",
                 "cycapture/libtins/py_pdu_iterator.cpp"
