@@ -3,6 +3,7 @@
 cdef extern from "wrap.h" namespace "Tins" nogil:
     cppclass dot11_pdu_option:
         dot11_pdu_option()
+        dot11_pdu_option(uint8_t opt)
         dot11_pdu_option(uint8_t opt, size_t length, const uint8_t *data)
         uint8_t option() const
         void option(uint8_t opt)
@@ -13,11 +14,16 @@ cdef extern from "wrap.h" namespace "Tins" nogil:
 cdef extern from "tins/dot11/dot11_base.h" namespace "Tins" nogil:
     PDUType dot11_pdu_flag "Tins::Dot11::pdu_flag"
 
-    # typedef HWAddress<6> address_type; -> cppHWAddress6
-    # typedef PDUOption<uint8_t, Dot11> option; -> dot11_pdu_option
-    # typedef std::list<option> options_type;
+    # typedef HWAddress<6> address_type         -> cppHWAddress6
+    # typedef PDUOption<uint8_t, Dot11> option  -> dot11_pdu_option
+    # typedef std::list<option> options_type
 
     cppHWAddress6 dot11_BROADCAST "Tins::Dot11::BROADCAST"
+
+    enum D11_Types          "Tins::Dot11::Types":
+        D11_T_MANAGEMENT    "Tins::Dot11::MANAGEMENT",
+        D11_T_CONTROL       "Tins::Dot11::CONTROL",
+        D11_T_DATA          "Tins::Dot11::DATA"
 
     enum D11_OptionTypes "Tins::Dot11::OptionTypes":
         D11_SSID "Tins::Dot11::SSID",
@@ -134,10 +140,10 @@ cdef extern from "tins/dot11/dot11_base.h" namespace "Tins" nogil:
         cppHWAddress6 addr1() const
         void addr1(const cppHWAddress6 &new_addr1)
 
-        void send(cppPacketSender &sender, const cppNetworkInterface &iface)
+        void send(cppPacketSender &sender, const cppNetworkInterface &iface) except +custom_exception_handler
 
         void add_option(const dot11_pdu_option &opt)
-        const dot11_pdu_option *search_option(D11_OptionTypes opt) const
+        const dot11_pdu_option* search_option(D11_OptionTypes opt) const
         const cpp_list[dot11_pdu_option]& options() const
 
     # Note: allocate a cppDot11 with 'new' -> careful with memory management
@@ -147,21 +153,14 @@ cdef extern from "tins/dot11/dot11_base.h" namespace "Tins" nogil:
 cdef class Dot11(PDU):
     cdef cppDot11* ptr
 
-    @staticmethod
-    cdef inline factory(cppPDU* ptr, uint8_t* buf, int size, object parent):
-        if ptr is NULL and buf is NULL:
-            return Dot11()
-        obj = Dot11(_raw=True)
-        obj.ptr = new cppDot11(<uint8_t*> buf, <uint32_t> size) if ptr is NULL else <cppDot11*> ptr
-        obj.base_ptr = <cppPDU*> obj.ptr
-        obj.parent = parent
-        return obj
-
     cpdef send(self, PacketSender sender, NetworkInterface iface)
+
+    cpdef add_option(self, identifier, data=?)
+    cpdef search_option(self, identifier)
+    cpdef options(self)
 
     @staticmethod
     cdef c_from_bytes(uint8_t* buf_addr, uint32_t size)
-
 
 cdef extern from "tins/dot11/dot11_data.h" namespace "Tins" nogil:
     PDUType dot11_data_pdu_flag "Tins::Dot11Data::pdu_flag"
@@ -194,35 +193,16 @@ cdef extern from "tins/dot11/dot11_data.h" namespace "Tins" nogil:
         cppDot11QoSData()
         cppDot11QoSData(const cppHWAddress6 &dst_hw_addr)
         cppDot11QoSData(const cppHWAddress6 &dst_hw_addr, const cppHWAddress6 &src_hw_addr)
-        cppDot11QoSData(const uint8_t *buf, uint32_t total_sz)
+        cppDot11QoSData(const uint8_t *buf, uint32_t total_sz) except +custom_exception_handler
 
         uint16_t qos_control() const
         void qos_control(uint16_t new_qos_control)
 
 cdef class Dot11Data(Dot11):
-
-    @staticmethod
-    cdef inline factory_dot11data(cppPDU* ptr, uint8_t* buf, int size, object parent):
-        if ptr is NULL and buf is NULL:
-            return Dot11Data()
-        obj = Dot11Data(_raw=True)
-        obj.ptr = new cppDot11Data(<uint8_t*> buf, <uint32_t> size) if ptr is NULL else <cppDot11Data*> ptr
-        obj.base_ptr = <cppPDU*> obj.ptr
-        obj.parent = parent
-        return obj
-
+    pass
 
 cdef class Dot11QoSData(Dot11Data):
-
-    @staticmethod
-    cdef inline factory_dot11qosdata(cppPDU* ptr, uint8_t* buf, int size, object parent):
-        if ptr is NULL and buf is NULL:
-            return Dot11QoSData()
-        obj = Dot11QoSData(_raw=True)
-        obj.ptr = new cppDot11QoSData(<uint8_t*> buf, <uint32_t> size) if ptr is NULL else <cppDot11QoSData*> ptr
-        obj.base_ptr = <cppPDU*> obj.ptr
-        obj.parent = parent
-        return obj
+    pass
 
 cdef extern from "tins/dot11/dot11_mgmt.h" namespace "Tins" nogil:
     # typedef std::vector<float> rates_type;
@@ -292,7 +272,7 @@ cdef extern from "tins/dot11/dot11_mgmt.h" namespace "Tins" nogil:
             vector[uint8_t] number_channels
             vector[uint8_t] max_transmit_power
             country_params()
-            country_params(const string &country, const vector[uint8_t] &first, const vector[uint8_t] &number, const vector[uint8_t] &m)
+            country_params(const string &country, const vector[uint8_t] &first, const vector[uint8_t] &number, const vector[uint8_t] &m) except +custom_exception_handler
 
         cppclass fh_pattern_type:
             uint8_t flag, number_of_sets, modulus, offset
@@ -361,7 +341,7 @@ cdef extern from "tins/dot11/dot11_mgmt.h" namespace "Tins" nogil:
         void cf_parameter_set(const cppDot11ManagementFrame.cf_params_set &params)
         void ibss_parameter_set(uint16_t atim_window)
         void ibss_dfs(const cppDot11ManagementFrame.ibss_dfs_params &params)
-        void country(const cppDot11ManagementFrame.country_params &params)
+        void country(const cppDot11ManagementFrame.country_params &params) except +custom_exception_handler
         void fh_parameters(uint8_t prime_radix, uint8_t number_channels)
         void fh_pattern_table(const cppDot11ManagementFrame.fh_pattern_type &params)
         void power_constraint(uint8_t local_power_constraint)
@@ -453,26 +433,23 @@ cdef extern from "tins/dot11/dot11_mgmt.h" namespace "Tins" nogil:
             cpp_bool immediate_block_ack() const
             void immediate_block_ack(cpp_bool new_value)
 
-    cppDot11ManagementFrame.fh_params_set fh_params_set_from_option "Tins::Dot11ManagementFrame::fh_params_set::from_option" (const dot11_pdu_option& option)
-    cppDot11ManagementFrame.cf_params_set cf_params_set_from_option "Tins::Dot11ManagementFrame::cf_params_set::from_option" (const dot11_pdu_option &opt)
-    cppDot11ManagementFrame.ibss_dfs_params ibss_dfs_params_from_option "Tins::Dot11ManagementFrame::ibss_dfs_params::from_option" (const dot11_pdu_option &opt)
-    cppDot11ManagementFrame.country_params country_params_from_option "Tins::Dot11ManagementFrame::country_params::from_option" (const dot11_pdu_option &opt)
-    cppDot11ManagementFrame.fh_pattern_type fh_pattern_type_from_option "Tins::Dot11ManagementFrame::fh_pattern_type::from_option" (const dot11_pdu_option &opt)
-    cppDot11ManagementFrame.channel_switch_type channel_switch_type_from_option "Tins::Dot11ManagementFrame::channel_switch_type::from_option" (const dot11_pdu_option &opt)
-    cppDot11ManagementFrame.quiet_type quiet_type_from_option "Tins::Dot11ManagementFrame::quiet_type::from_option" (const dot11_pdu_option &opt)
-    cppDot11ManagementFrame.bss_load_type bss_load_type_from_option "Tins::Dot11ManagementFrame::bss_load_type::from_option" (const dot11_pdu_option &opt)
-    cppDot11ManagementFrame.tim_type tim_type_from_option "Tins::Dot11ManagementFrame::tim_type::from_option" (const dot11_pdu_option &opt)
-    cppDot11ManagementFrame.vendor_specific_type vendor_specific_type_from_option "Tins::Dot11ManagementFrame::vendor_specific_type::from_option" (const dot11_pdu_option &opt)
+    cppDot11ManagementFrame.fh_params_set fh_params_set_from_option "Tins::Dot11ManagementFrame::fh_params_set::from_option" (const dot11_pdu_option& option) except +custom_exception_handler
+    cppDot11ManagementFrame.cf_params_set cf_params_set_from_option "Tins::Dot11ManagementFrame::cf_params_set::from_option" (const dot11_pdu_option &opt) except +custom_exception_handler
+    cppDot11ManagementFrame.ibss_dfs_params ibss_dfs_params_from_option "Tins::Dot11ManagementFrame::ibss_dfs_params::from_option" (const dot11_pdu_option &opt) except +custom_exception_handler
+    cppDot11ManagementFrame.country_params country_params_from_option "Tins::Dot11ManagementFrame::country_params::from_option" (const dot11_pdu_option &opt) except +custom_exception_handler
+    cppDot11ManagementFrame.fh_pattern_type fh_pattern_type_from_option "Tins::Dot11ManagementFrame::fh_pattern_type::from_option" (const dot11_pdu_option &opt) except +custom_exception_handler
+    cppDot11ManagementFrame.channel_switch_type channel_switch_type_from_option "Tins::Dot11ManagementFrame::channel_switch_type::from_option" (const dot11_pdu_option &opt) except +custom_exception_handler
+    cppDot11ManagementFrame.quiet_type quiet_type_from_option "Tins::Dot11ManagementFrame::quiet_type::from_option" (const dot11_pdu_option &opt) except +custom_exception_handler
+    cppDot11ManagementFrame.bss_load_type bss_load_type_from_option "Tins::Dot11ManagementFrame::bss_load_type::from_option" (const dot11_pdu_option &opt) except +custom_exception_handler
+    cppDot11ManagementFrame.tim_type tim_type_from_option "Tins::Dot11ManagementFrame::tim_type::from_option" (const dot11_pdu_option &opt) except +custom_exception_handler
+    cppDot11ManagementFrame.vendor_specific_type vendor_specific_type_from_option "Tins::Dot11ManagementFrame::vendor_specific_type::from_option" (const dot11_pdu_option &opt) except +custom_exception_handler
 
 
 cdef class Capabilities(object):
     cdef cppDot11ManagementFrame.capability_information cap_info
 
     @staticmethod
-    cdef inline factory(cppDot11ManagementFrame.capability_information& info):
-        obj = Capabilities()
-        obj.cap_info = info
-        return obj
+    cdef factory(cppDot11ManagementFrame.capability_information& info)
 
 
 cdef class Dot11ManagementFrame(Dot11):
@@ -490,7 +467,7 @@ cdef extern from "tins/dot11/dot11_assoc.h" namespace "Tins" nogil:
         cppDot11Disassoc()
         cppDot11Disassoc(const cppHWAddress6 &dst_hw_addr)
         cppDot11Disassoc(const cppHWAddress6 &dst_hw_addr, const cppHWAddress6 &src_hw_addr)
-        cppDot11Disassoc(const uint8_t *buf, uint32_t total_sz)
+        cppDot11Disassoc(const uint8_t *buf, uint32_t total_sz) except +custom_exception_handler
         uint16_t reason_code() const
         void reason_code(uint16_t new_reason_code)
 
@@ -498,7 +475,7 @@ cdef extern from "tins/dot11/dot11_assoc.h" namespace "Tins" nogil:
         cppDot11AssocRequest()
         cppDot11AssocRequest(const cppHWAddress6 &dst_hw_addr)
         cppDot11AssocRequest(const cppHWAddress6 &dst_hw_addr, const cppHWAddress6 &src_hw_addr)
-        cppDot11AssocRequest(const uint8_t *buf, uint32_t total_sz)
+        cppDot11AssocRequest(const uint8_t *buf, uint32_t total_sz) except +custom_exception_handler
         # const cppDot11ManagementFrame.capability_information& capabilities() const
         cppDot11ManagementFrame.capability_information& capabilities()
         uint16_t listen_interval() const
@@ -508,7 +485,7 @@ cdef extern from "tins/dot11/dot11_assoc.h" namespace "Tins" nogil:
         cppDot11AssocResponse()
         cppDot11AssocResponse(const cppHWAddress6 &dst_hw_addr)
         cppDot11AssocResponse(const cppHWAddress6 &dst_hw_addr, const cppHWAddress6 &src_hw_addr)
-        cppDot11AssocResponse(const uint8_t *buf, uint32_t total_sz)
+        cppDot11AssocResponse(const uint8_t *buf, uint32_t total_sz) except +custom_exception_handler
         # const cppDot11ManagementFrame.capability_information& capabilities() const
         cppDot11ManagementFrame.capability_information& capabilities()
         uint16_t status_code() const
@@ -520,7 +497,7 @@ cdef extern from "tins/dot11/dot11_assoc.h" namespace "Tins" nogil:
         cppDot11ReAssocRequest()
         cppDot11ReAssocRequest(const cppHWAddress6 &dst_hw_addr)
         cppDot11ReAssocRequest(const cppHWAddress6 &dst_hw_addr, const cppHWAddress6 &src_hw_addr)
-        cppDot11ReAssocRequest(const uint8_t *buf, uint32_t total_sz)
+        cppDot11ReAssocRequest(const uint8_t *buf, uint32_t total_sz) except +custom_exception_handler
         # const cppDot11ManagementFrame.capability_information& capabilities() const
         cppDot11ManagementFrame.capability_information& capabilities()
         uint16_t listen_interval() const
@@ -532,7 +509,7 @@ cdef extern from "tins/dot11/dot11_assoc.h" namespace "Tins" nogil:
         cppDot11ReAssocResponse()
         cppDot11ReAssocResponse(const cppHWAddress6 &dst_hw_addr)
         cppDot11ReAssocResponse(const cppHWAddress6 &dst_hw_addr, const cppHWAddress6 &src_hw_addr)
-        cppDot11ReAssocResponse(const uint8_t *buf, uint32_t total_sz)
+        cppDot11ReAssocResponse(const uint8_t *buf, uint32_t total_sz) except +custom_exception_handler
         # const cppDot11ManagementFrame.capability_information& capabilities() const
         cppDot11ManagementFrame.capability_information& capabilities()
         uint16_t status_code() const
@@ -542,65 +519,19 @@ cdef extern from "tins/dot11/dot11_assoc.h" namespace "Tins" nogil:
 
 
 cdef class Dot11Disassoc(Dot11ManagementFrame):
-
-    @staticmethod
-    cdef inline factory_dot11disassoc(cppPDU* ptr, uint8_t* buf, int size, object parent):
-        if ptr is NULL and buf is NULL:
-            return Dot11Disassoc()
-        obj = Dot11Disassoc(_raw=True)
-        obj.ptr = new cppDot11Disassoc(<uint8_t*> buf, <uint32_t> size) if ptr is NULL else <cppDot11Disassoc*> ptr
-        obj.base_ptr = <cppPDU*> obj.ptr
-        obj.parent = parent
-        return obj
+    pass
 
 cdef class Dot11AssocRequest(Dot11ManagementFrame):
-
-    @staticmethod
-    cdef inline factory_dot11assocrequest(cppPDU* ptr, uint8_t* buf, int size, object parent):
-        if ptr is NULL and buf is NULL:
-            return Dot11AssocRequest()
-        obj = Dot11AssocRequest(_raw=True)
-        obj.ptr = new cppDot11AssocRequest(<uint8_t*> buf, <uint32_t> size) if ptr is NULL else <cppDot11AssocRequest*> ptr
-        obj.base_ptr = <cppPDU*> obj.ptr
-        obj.parent = parent
-        return obj
+    pass
 
 cdef class Dot11AssocResponse(Dot11ManagementFrame):
-
-    @staticmethod
-    cdef inline factory_dot11assocresponse(cppPDU* ptr, uint8_t* buf, int size, object parent):
-        if ptr is NULL and buf is NULL:
-            return Dot11AssocResponse()
-        obj = Dot11AssocResponse(_raw=True)
-        obj.ptr = new cppDot11AssocResponse(<uint8_t*> buf, <uint32_t> size) if ptr is NULL else <cppDot11AssocResponse*> ptr
-        obj.base_ptr = <cppPDU*> obj.ptr
-        obj.parent = parent
-        return obj
+    pass
 
 cdef class Dot11ReAssocRequest(Dot11ManagementFrame):
-
-    @staticmethod
-    cdef inline factory_dot11reassocrequest(cppPDU* ptr, uint8_t* buf, int size, object parent):
-        if ptr is NULL and buf is NULL:
-            return Dot11ReAssocRequest()
-        obj = Dot11ReAssocRequest(_raw=True)
-        obj.ptr = new cppDot11ReAssocRequest(<uint8_t*> buf, <uint32_t> size) if ptr is NULL else <cppDot11ReAssocRequest*> ptr
-        obj.base_ptr = <cppPDU*> obj.ptr
-        obj.parent = parent
-        return obj
+    pass
 
 cdef class Dot11ReAssocResponse(Dot11ManagementFrame):
-
-    @staticmethod
-    cdef inline factory_dot11reassocresponse(cppPDU* ptr, uint8_t* buf, int size, object parent):
-        if ptr is NULL and buf is NULL:
-            return Dot11ReAssocResponse()
-        obj = Dot11ReAssocResponse(_raw=True)
-        obj.ptr = new cppDot11ReAssocResponse(<uint8_t*> buf, <uint32_t> size) if ptr is NULL else <cppDot11ReAssocResponse*> ptr
-        obj.base_ptr = <cppPDU*> obj.ptr
-        obj.parent = parent
-        return obj
-
+    pass
 
 cdef extern from "tins/dot11/dot11_auth.h" namespace "Tins" nogil:
     PDUType dot11_auth_pdu_flag "Tins::Dot11Authentication::pdu_flag"
@@ -610,7 +541,7 @@ cdef extern from "tins/dot11/dot11_auth.h" namespace "Tins" nogil:
         cppDot11Authentication()
         cppDot11Authentication(const cppHWAddress6 &dst_hw_addr)
         cppDot11Authentication(const cppHWAddress6 &dst_hw_addr, const cppHWAddress6 &src_hw_addr)
-        cppDot11Authentication(const uint8_t *buf, uint32_t total_sz)
+        cppDot11Authentication(const uint8_t *buf, uint32_t total_sz) except +custom_exception_handler
         uint16_t auth_algorithm() const
         void auth_algorithm(uint16_t new_auth_algorithm)
         uint16_t auth_seq_number() const
@@ -622,34 +553,15 @@ cdef extern from "tins/dot11/dot11_auth.h" namespace "Tins" nogil:
         cppDot11Deauthentication()
         cppDot11Deauthentication(const cppHWAddress6 &dst_hw_addr)
         cppDot11Deauthentication(const cppHWAddress6 &dst_hw_addr, const cppHWAddress6 &src_hw_addr)
-        cppDot11Deauthentication(const uint8_t *buf, uint32_t total_sz)
+        cppDot11Deauthentication(const uint8_t *buf, uint32_t total_sz) except +custom_exception_handler
         uint16_t reason_code() const
         void reason_code(uint16_t new_reason_code)
 
 cdef class Dot11Authentication(Dot11ManagementFrame):
-
-    @staticmethod
-    cdef inline factory_dot11auth(cppPDU* ptr, uint8_t* buf, int size, object parent):
-        if ptr is NULL and buf is NULL:
-            return Dot11Authentication()
-        obj = Dot11Authentication(_raw=True)
-        obj.ptr = new cppDot11Authentication(<uint8_t*> buf, <uint32_t> size) if ptr is NULL else <cppDot11Authentication*> ptr
-        obj.base_ptr = <cppPDU*> obj.ptr
-        obj.parent = parent
-        return obj
+    pass
 
 cdef class Dot11Deauthentication(Dot11ManagementFrame):
-
-    @staticmethod
-    cdef inline factory_dot11deauth(cppPDU* ptr, uint8_t* buf, int size, object parent):
-        if ptr is NULL and buf is NULL:
-            return Dot11Deauthentication()
-        obj = Dot11Deauthentication(_raw=True)
-        obj.ptr = new cppDot11Deauthentication(<uint8_t*> buf, <uint32_t> size) if ptr is NULL else <cppDot11Deauthentication*> ptr
-        obj.base_ptr = <cppPDU*> obj.ptr
-        obj.parent = parent
-        return obj
-
+    pass
 
 cdef extern from "tins/dot11/dot11_beacon.h" namespace "Tins" nogil:
     PDUType dot11_beacon_pdu_flag "Tins::Dot11Beacon::pdu_flag"
@@ -658,7 +570,7 @@ cdef extern from "tins/dot11/dot11_beacon.h" namespace "Tins" nogil:
         cppDot11Beacon()
         cppDot11Beacon(const cppHWAddress6 &dst_hw_addr)
         cppDot11Beacon(const cppHWAddress6 &dst_hw_addr, const cppHWAddress6 &src_hw_addr)
-        cppDot11Beacon(const uint8_t *buf, uint32_t total_sz)
+        cppDot11Beacon(const uint8_t *buf, uint32_t total_sz) except +custom_exception_handler
 
         uint64_t timestamp() const
         void timestamp(uint64_t new_timestamp)
@@ -667,16 +579,7 @@ cdef extern from "tins/dot11/dot11_beacon.h" namespace "Tins" nogil:
         cppDot11ManagementFrame.capability_information& capabilities()
 
 cdef class Dot11Beacon(Dot11ManagementFrame):
-
-    @staticmethod
-    cdef inline factory_dot11beacon(cppPDU* ptr, uint8_t* buf, int size, object parent):
-        if ptr is NULL and buf is NULL:
-            return Dot11Beacon()
-        obj = Dot11Beacon(_raw=True)
-        obj.ptr = new cppDot11Beacon(<uint8_t*> buf, <uint32_t> size) if ptr is NULL else <cppDot11Beacon*> ptr
-        obj.base_ptr = <cppPDU*> obj.ptr
-        obj.parent = parent
-        return obj
+    pass
 
 cdef extern from "tins/dot11/dot11_probe.h" namespace "Tins" nogil:
     PDUType dot11_probe_request_pdu_flag "Tins::Dot11ProbeRequest::pdu_flag"
@@ -686,13 +589,13 @@ cdef extern from "tins/dot11/dot11_probe.h" namespace "Tins" nogil:
         cppDot11ProbeRequest()
         cppDot11ProbeRequest(const cppHWAddress6 &dst_hw_addr)
         cppDot11ProbeRequest(const cppHWAddress6 &dst_hw_addr, const cppHWAddress6 &src_hw_addr)
-        cppDot11ProbeRequest(const uint8_t *buf, uint32_t total_sz)
+        cppDot11ProbeRequest(const uint8_t *buf, uint32_t total_sz) except +custom_exception_handler
 
     cppclass cppDot11ProbeResponse "Tins::Dot11ProbeResponse" (cppDot11ManagementFrame):
         cppDot11ProbeResponse()
         cppDot11ProbeResponse(const cppHWAddress6 &dst_hw_addr)
         cppDot11ProbeResponse(const cppHWAddress6 &dst_hw_addr, const cppHWAddress6 &src_hw_addr)
-        cppDot11ProbeResponse(const uint8_t *buf, uint32_t total_sz)
+        cppDot11ProbeResponse(const uint8_t *buf, uint32_t total_sz) except +custom_exception_handler
 
         uint64_t timestamp() const
         void timestamp(uint64_t new_timestamp)
@@ -700,30 +603,11 @@ cdef extern from "tins/dot11/dot11_probe.h" namespace "Tins" nogil:
         void interval(uint16_t new_interval)
         cppDot11ManagementFrame.capability_information& capabilities()
 
-
 cdef class Dot11ProbeRequest(Dot11ManagementFrame):
-
-    @staticmethod
-    cdef inline factory_dot11proberequest(cppPDU* ptr, uint8_t* buf, int size, object parent):
-        if ptr is NULL and buf is NULL:
-            return Dot11ProbeRequest()
-        obj = Dot11ProbeRequest(_raw=True)
-        obj.ptr = new cppDot11ProbeRequest(<uint8_t*> buf, <uint32_t> size) if ptr is NULL else <cppDot11ProbeRequest*> ptr
-        obj.base_ptr = <cppPDU*> obj.ptr
-        obj.parent = parent
-        return obj
+    pass
 
 cdef class Dot11ProbeResponse(Dot11ManagementFrame):
-
-    @staticmethod
-    cdef inline factory_dot11proberesponse(cppPDU* ptr, uint8_t* buf, int size, object parent):
-        if ptr is NULL and buf is NULL:
-            return Dot11ProbeResponse()
-        obj = Dot11ProbeResponse(_raw=True)
-        obj.ptr = new cppDot11ProbeResponse(<uint8_t*> buf, <uint32_t> size) if ptr is NULL else <cppDot11ProbeResponse*> ptr
-        obj.base_ptr = <cppPDU*> obj.ptr
-        obj.parent = parent
-        return obj
+    pass
 
 cdef extern from "tins/dot11/dot11_control.h" namespace "Tins" nogil:
     PDUType dot11_probe_request_pdu_flag "Tins::Dot11Control::pdu_flag"
@@ -739,7 +623,7 @@ cdef extern from "tins/dot11/dot11_control.h" namespace "Tins" nogil:
     cppclass cppDot11Control "Tins::Dot11Control" (cppDot11):
         cppDot11Control()
         cppDot11Control(const cppHWAddress6 &dst_addr)
-        cppDot11Control(const uint8_t *buf, uint32_t total_sz)
+        cppDot11Control(const uint8_t *buf, uint32_t total_sz) except +custom_exception_handler
 
     cppclass cppDot11ControlTA "Tins::Dot11ControlTA" (cppDot11Control):
         cppHWAddress6 target_addr() const
@@ -749,36 +633,36 @@ cdef extern from "tins/dot11/dot11_control.h" namespace "Tins" nogil:
         cppDot11RTS()
         cppDot11RTS(const cppHWAddress6 &dst_addr)
         cppDot11RTS(const cppHWAddress6 &dst_addr, const cppHWAddress6 &target_addr)
-        cppDot11RTS(const uint8_t *buf, uint32_t total_sz)
+        cppDot11RTS(const uint8_t *buf, uint32_t total_sz) except +custom_exception_handler
 
     cppclass cppDot11PSPoll "Tins::Dot11PSPoll" (cppDot11ControlTA):
         cppDot11PSPoll()
         cppDot11PSPoll(const cppHWAddress6 &dst_addr)
         cppDot11PSPoll(const cppHWAddress6 &dst_addr, const cppHWAddress6 &target_addr)
-        cppDot11PSPoll(const uint8_t *buf, uint32_t total_sz)
+        cppDot11PSPoll(const uint8_t *buf, uint32_t total_sz) except +custom_exception_handler
 
     cppclass cppDot11CFEnd "Tins::Dot11CFEnd" (cppDot11ControlTA):
         cppDot11CFEnd()
         cppDot11CFEnd(const cppHWAddress6 &dst_addr)
         cppDot11CFEnd(const cppHWAddress6 &dst_addr, const cppHWAddress6 &target_addr)
-        cppDot11CFEnd(const uint8_t *buf, uint32_t total_sz)
+        cppDot11CFEnd(const uint8_t *buf, uint32_t total_sz) except +custom_exception_handler
 
     cppclass cppDot11EndCFAck "Tins::Dot11EndCFAck" (cppDot11ControlTA):
         cppDot11EndCFAck()
         cppDot11EndCFAck(const cppHWAddress6 &dst_addr)
         cppDot11EndCFAck(const cppHWAddress6 &dst_addr, const cppHWAddress6 &target_addr)
-        cppDot11EndCFAck(const uint8_t *buf, uint32_t total_sz)
+        cppDot11EndCFAck(const uint8_t *buf, uint32_t total_sz) except +custom_exception_handler
 
     cppclass cppDot11Ack "Tins::Dot11Ack" (cppDot11Control):
         cppDot11Ack()
         cppDot11Ack(const cppHWAddress6 &dst_addr)
-        cppDot11Ack(const uint8_t *buf, uint32_t total_sz)
+        cppDot11Ack(const uint8_t *buf, uint32_t total_sz) except +custom_exception_handler
 
     cppclass cppDot11BlockAckRequest "Tins::Dot11BlockAckRequest" (cppDot11ControlTA):
         cppDot11BlockAckRequest()
         cppDot11BlockAckRequest(const cppHWAddress6 &dst_addr)
         cppDot11BlockAckRequest(const cppHWAddress6 &dst_addr, const cppHWAddress6 &target_addr)
-        cppDot11BlockAckRequest(const uint8_t *buf, uint32_t total_sz)
+        cppDot11BlockAckRequest(const uint8_t *buf, uint32_t total_sz) except +custom_exception_handler
 
         small_uint4 bar_control() const
         void bar_control(small_uint4 bar)
@@ -791,7 +675,7 @@ cdef extern from "tins/dot11/dot11_control.h" namespace "Tins" nogil:
         cppDot11BlockAck()
         cppDot11BlockAck(const cppHWAddress6 &dst_addr)
         cppDot11BlockAck(const cppHWAddress6 &dst_addr, const cppHWAddress6 &target_addr)
-        cppDot11BlockAck(const uint8_t *buf, uint32_t total_sz)
+        cppDot11BlockAck(const uint8_t *buf, uint32_t total_sz) except +custom_exception_handler
 
         small_uint4 bar_control() const
         void bar_control(small_uint4 bar)
@@ -806,99 +690,27 @@ cdef extern from "tins/dot11/dot11_control.h" namespace "Tins" nogil:
     size_t dot11_block_ack_bitmap_size "Tins::Dot11BlockAck::bitmap_size"
 
 cdef class Dot11Control(Dot11):
-
-    @staticmethod
-    cdef inline factory_dot11control(cppPDU* ptr, uint8_t* buf, int size, object parent):
-        if ptr is NULL and buf is NULL:
-            return Dot11Control()
-        obj = Dot11Control(_raw=True)
-        obj.ptr = new cppDot11Control(<uint8_t*> buf, <uint32_t> size) if ptr is NULL else <cppDot11Control*> ptr
-        obj.base_ptr = <cppPDU*> obj.ptr
-        obj.parent = parent
-        return obj
+    pass
 
 cdef class Dot11RTS(Dot11Control):
-
-    @staticmethod
-    cdef inline factory_dot11rts(cppPDU* ptr, uint8_t* buf, int size, object parent):
-        if ptr is NULL and buf is NULL:
-            return Dot11RTS()
-        obj = Dot11RTS(_raw=True)
-        obj.ptr = new cppDot11RTS(<uint8_t*> buf, <uint32_t> size) if ptr is NULL else <cppDot11RTS*> ptr
-        obj.base_ptr = <cppPDU*> obj.ptr
-        obj.parent = parent
-        return obj
+    pass
 
 cdef class Dot11PSPoll(Dot11Control):
-
-    @staticmethod
-    cdef inline factory_dot11pspoll(cppPDU* ptr, uint8_t* buf, int size, object parent):
-        if ptr is NULL and buf is NULL:
-            return Dot11PSPoll()
-        obj = Dot11PSPoll(_raw=True)
-        obj.ptr = new cppDot11PSPoll(<uint8_t*> buf, <uint32_t> size) if ptr is NULL else <cppDot11PSPoll*> ptr
-        obj.base_ptr = <cppPDU*> obj.ptr
-        obj.parent = parent
-        return obj
+    pass
 
 cdef class Dot11CFEnd(Dot11Control):
-
-    @staticmethod
-    cdef inline factory_dot11cfend(cppPDU* ptr, uint8_t* buf, int size, object parent):
-        if ptr is NULL and buf is NULL:
-            return Dot11CFEnd()
-        obj = Dot11CFEnd(_raw=True)
-        obj.ptr = new cppDot11CFEnd(<uint8_t*> buf, <uint32_t> size) if ptr is NULL else <cppDot11CFEnd*> ptr
-        obj.base_ptr = <cppPDU*> obj.ptr
-        obj.parent = parent
-        return obj
+    pass
 
 cdef class Dot11EndCFAck(Dot11Control):
-
-    @staticmethod
-    cdef inline factory_dot11endcfack(cppPDU* ptr, uint8_t* buf, int size, object parent):
-        if ptr is NULL and buf is NULL:
-            return Dot11EndCFAck()
-        obj = Dot11EndCFAck(_raw=True)
-        obj.ptr = new cppDot11EndCFAck(<uint8_t*> buf, <uint32_t> size) if ptr is NULL else <cppDot11EndCFAck*> ptr
-        obj.base_ptr = <cppPDU*> obj.ptr
-        obj.parent = parent
-        return obj
+    pass
 
 cdef class Dot11Ack(Dot11Control):
-
-    @staticmethod
-    cdef inline factory_dot11ack(cppPDU* ptr, uint8_t* buf, int size, object parent):
-        if ptr is NULL and buf is NULL:
-            return Dot11Ack()
-        obj = Dot11Ack(_raw=True)
-        obj.ptr = new cppDot11Ack(<uint8_t*> buf, <uint32_t> size) if ptr is NULL else <cppDot11Ack*> ptr
-        obj.base_ptr = <cppPDU*> obj.ptr
-        obj.parent = parent
-        return obj
+    pass
 
 cdef class Dot11BlockAckRequest(Dot11Control):
-
-    @staticmethod
-    cdef inline factory_dot11blockackrequest(cppPDU* ptr, uint8_t* buf, int size, object parent):
-        if ptr is NULL and buf is NULL:
-            return Dot11BlockAckRequest()
-        obj = Dot11BlockAckRequest(_raw=True)
-        obj.ptr = new cppDot11BlockAckRequest(<uint8_t*> buf, <uint32_t> size) if ptr is NULL else <cppDot11BlockAckRequest*> ptr
-        obj.base_ptr = <cppPDU*> obj.ptr
-        obj.parent = parent
-        return obj
+    pass
 
 cdef class Dot11BlockAck(Dot11Control):
-
-    @staticmethod
-    cdef inline factory_dot11blockack(cppPDU* ptr, uint8_t* buf, int size, object parent):
-        if ptr is NULL and buf is NULL:
-            return Dot11BlockAck()
-        obj = Dot11BlockAck(_raw=True)
-        obj.ptr = new cppDot11BlockAck(<uint8_t*> buf, <uint32_t> size) if ptr is NULL else <cppDot11BlockAck*> ptr
-        obj.base_ptr = <cppPDU*> obj.ptr
-        obj.parent = parent
-        return obj
+    pass
 
 

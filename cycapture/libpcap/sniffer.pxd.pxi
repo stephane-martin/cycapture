@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
 
 cdef class ActivationHelper(object):
-    cdef Sniffer sniffer_obj
+    cdef BaseSniffer sniffer_obj
     cdef object old_status
 
-cdef class Sniffer(object):
+cdef class BaseSniffer(object):
     cdef pcap_t* _handle
     cdef readonly bool activated
     cdef readonly bytes filename
     cdef readonly bytes interface
-    cdef readonly int total
-    cdef readonly int max_p
+    cdef public int total
+    cdef public int max_p
 
     cdef int _read_timeout
     cdef int _buffer_size
@@ -40,10 +40,10 @@ cdef class Sniffer(object):
     cdef _apply_direction(self)
     cdef _apply_filter(self)
     cdef _apply_datalink(self)
-    cdef _activate_if_needed(self)
+    cdef activate_if_needed(self)
     cdef _pre_activate(self)
     cdef _post_activate(self)
-    cdef _activate(self)
+    cdef activate(self)
 
 include "blocking_sniffer.pxd.pxi"
 include "nonblocking_sniffer.pxd.pxi"

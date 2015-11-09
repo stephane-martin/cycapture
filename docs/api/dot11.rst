@@ -58,6 +58,11 @@ Capabilities
 ------------
 .. autoclass:: cycapture.libtins._tins.Capabilities
 
+RSN information
+---------------
+.. autoclass:: cycapture.libtins._tins.RSNInformation
+
+
 Named tuples
 ------------
 .. autoclass:: cycapture.libtins._tins.fh_params

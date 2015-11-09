@@ -1,8 +1,17 @@
 # -*- coding: utf-8 -*-
 
 cdef class EAPOL(PDU):
+    """
+    EAPOL abstract class
+    """
     pdu_flag = PDU.EAPOL
     pdu_type = PDU.EAPOL
+
+    Types = IntEnum("Types", {
+        'RC4': EAPOL_RC4,
+        'RSN': EAPOL_RSN,
+        'EAPOL_WPA': EAPOL_EAPOL_WPA
+    })
 
     def __cinit__(self):
         pass
@@ -27,12 +36,9 @@ cdef class EAPOL(PDU):
         if buf_addr is NULL or size == 0:
             raise ValueError("buffer can't be empty")
         cdef cppEAPOL* p = eapol_from_bytes(buf_addr, size)         # equivalent to new
-        cdef string classname
-        if p is not NULL:
-            classname = map_pdutype_to_classname[p.pdu_type()]
-            return (map_classname_to_factory[classname])(p, NULL, 0, None)
-        else:
+        if p is NULL:
             raise MalformedPacket
+        return PDU.from_ptr(p, parent=None)
 
     property version:
         def __get__(self):
@@ -58,6 +64,7 @@ cdef class EAPOL(PDU):
         def __set__(self, value):
             (<cppEAPOL*> self.ptr).type(<uint8_t> int(value))
 
+
 cdef class RC4EAPOL(EAPOL):
     pdu_flag = PDU.RC4EAPOL
     pdu_type = PDU.RC4EAPOL
@@ -65,21 +72,11 @@ cdef class RC4EAPOL(EAPOL):
     key_iv_size = rc4eapol_key_iv_size
     key_sign_size = rc4eapol_key_sign_size
 
-    def __cinit__(self, buf=None, _raw=False):
-        if _raw:
-            return
-        if type(self) != RC4EAPOL:
+    def __cinit__(self, _raw=False):
+        if _raw is True or type(self) != RC4EAPOL:
             return
 
-        cdef uint8_t* buf_addr
-        cdef uint32_t size
-
-        if buf is None:
-            self.ptr = new cppRC4EAPOL()
-        else:
-            PDU.prepare_buf_arg(buf, &buf_addr, &size)
-            self.ptr = new cppRC4EAPOL(buf_addr, size)
-
+        self.ptr = new cppRC4EAPOL()
         self.base_ptr = <cppPDU*> self.ptr
         self.parent = None
 
@@ -89,8 +86,11 @@ cdef class RC4EAPOL(EAPOL):
             del p
         self.ptr = NULL
 
-    def __init__(self, buf=None, _raw=False):
-        pass
+    # noinspection PyMissingConstructor
+    def __init__(self):
+        """
+        __init__()
+        """
 
     property key_length:
         def __get__(self):
@@ -147,6 +147,17 @@ cdef class RC4EAPOL(EAPOL):
             value = bytes(value)[:RC4EAPOL.key_sign_size].ljust(RC4EAPOL.key_sign_size, '\x00')
             (<cppRC4EAPOL*> self.ptr).key_sign(<uint8_t*> (<bytes> value))
 
+    cdef cppPDU* replace_ptr_with_buf(self, uint8_t* buf, int size) except NULL:
+        if self.ptr is not NULL and self.parent is None:
+            del self.ptr
+        self.ptr = new cppRC4EAPOL(<uint8_t*> buf, <uint32_t> size)
+        return self.ptr
+
+    cdef replace_ptr(self, cppPDU* ptr):
+        if self.ptr is not NULL and self.parent is None:
+            del self.ptr
+        self.ptr = <cppRC4EAPOL*> ptr
+
 
 cdef class RSNEAPOL(EAPOL):
     pdu_flag = PDU.RSNEAPOL
@@ -158,21 +169,11 @@ cdef class RSNEAPOL(EAPOL):
     rsc_size = rsneapol_rsc_size
     id_size = rsneapol_id_size
 
-    def __cinit__(self, buf=None, _raw=False):
-        if _raw:
-            return
-        if type(self) != RSNEAPOL:
+    def __cinit__(self, _raw=False):
+        if _raw is True or type(self) != RSNEAPOL:
             return
 
-        cdef uint8_t* buf_addr
-        cdef uint32_t size
-
-        if buf is None:
-            self.ptr = new cppRSNEAPOL()
-        else:
-            PDU.prepare_buf_arg(buf, &buf_addr, &size)
-            self.ptr = new cppRSNEAPOL(buf_addr, size)
-
+        self.ptr = new cppRSNEAPOL()
         self.base_ptr = <cppPDU*> self.ptr
         self.parent = None
 
@@ -182,9 +183,11 @@ cdef class RSNEAPOL(EAPOL):
             del p
         self.ptr = NULL
 
-    def __init__(self, buf=None, _raw=False):
-        pass
-
+    # noinspection PyMissingConstructor
+    def __init__(self):
+        """
+        __init__()
+        """
 
     property key_length:
         def __get__(self):
@@ -264,3 +267,73 @@ cdef class RSNEAPOL(EAPOL):
         def __set__(self, value):
             (<cppRSNEAPOL*> self.ptr).key_index(small_uint2(<uint8_t> int(value)))
 
+    property key:
+        def __get__(self):
+            cdef vector[uint8_t] k = (<cppRSNEAPOL*> self.ptr).key()
+            return <bytes>((&(k[0]))[:k.size()])
+
+        def __set__(self, value):
+            value = bytes(value)
+            cdef uint8_t* p = <uint8_t*> (<bytes> value)
+            cdef vector[uint8_t] v
+            v.assign(p, p + len(value))
+            (<cppRSNEAPOL*> self.ptr).key(v)
+
+    property key_iv:
+        def __get__(self):
+            cdef uint8_t* p = <uint8_t*> ((<cppRSNEAPOL*> self.ptr).key_iv())
+            return <bytes> p[:RSNEAPOL.key_iv_size]
+
+        def __set__(self, value):
+            value = bytes(value)[:RSNEAPOL.key_iv_size].ljust(RSNEAPOL.key_iv_size, '\x00')
+            (<cppRSNEAPOL*> self.ptr).key_iv(<uint8_t*> (<bytes> value))
+
+    property nonce:
+        def __get__(self):
+            cdef uint8_t* p = <uint8_t*> ((<cppRSNEAPOL*> self.ptr).nonce())
+            return <bytes> p[:RSNEAPOL.nonce_size]
+
+        def __set__(self, value):
+            value = bytes(value)[:RSNEAPOL.nonce_size].ljust(RSNEAPOL.nonce_size, '\x00')
+            (<cppRSNEAPOL*> self.ptr).nonce(<uint8_t*> (<bytes> value))
+
+    property rsc:
+        def __get__(self):
+            cdef uint8_t* p = <uint8_t*> ((<cppRSNEAPOL*> self.ptr).rsc())
+            return <bytes> p[:RSNEAPOL.rsc_size]
+
+        def __set__(self, value):
+            value = bytes(value)[:RSNEAPOL.rsc_size].ljust(RSNEAPOL.rsc_size, '\x00')
+            (<cppRSNEAPOL*> self.ptr).rsc(<uint8_t*> (<bytes> value))
+
+    property id:
+        def __get__(self):
+            cdef uint8_t* p = <uint8_t*> ((<cppRSNEAPOL*> self.ptr).id())
+            return <bytes> p[:RSNEAPOL.id_size]
+
+        def __set__(self, value):
+            value = bytes(value)[:RSNEAPOL.id_size].ljust(RSNEAPOL.id_size, '\x00')
+            (<cppRSNEAPOL*> self.ptr).id(<uint8_t*> (<bytes> value))
+
+    property mic:
+        def __get__(self):
+            cdef uint8_t* p = <uint8_t*> ((<cppRSNEAPOL*> self.ptr).mic())
+            return <bytes> p[:RSNEAPOL.mic_size]
+
+        def __set__(self, value):
+            value = bytes(value)[:RSNEAPOL.mic_size].ljust(RSNEAPOL.mic_size, '\x00')
+            (<cppRSNEAPOL*> self.ptr).mic(<uint8_t*> (<bytes> value))
+
+    cdef cppPDU* replace_ptr_with_buf(self, uint8_t* buf, int size) except NULL:
+        if self.ptr is not NULL and self.parent is None:
+            del self.ptr
+        self.ptr = new cppRSNEAPOL(<uint8_t*> buf, <uint32_t> size)
+        return self.ptr
+
+    cdef replace_ptr(self, cppPDU* ptr):
+        if self.ptr is not NULL and self.parent is None:
+            del self.ptr
+        self.ptr = <cppRSNEAPOL*> ptr
+
+RC4_EAPOL = RC4EAPOL
+RSN_EAPOL = RSNEAPOL

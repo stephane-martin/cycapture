@@ -10,7 +10,8 @@ import threading
 from io import UnsupportedOperation
 from time import sleep
 from collections import deque
-from os.path import exists
+from os.path import exists, dirname, abspath
+import os
 
 from enum import IntEnum
 
@@ -30,14 +31,14 @@ def make_enum(typename, label, docstring, values):
     return cls
 
 include "definitions.pyx.pxi"
+include "pcap_registry.pyx.pxi"
 include "utils_func.pyx.pxi"
 include "sniffer.pyx.pxi"
 include "writer.pyx.pxi"
 include "iterator.pyx.pxi"
 include "offline_filter.pyx.pxi"
 
-lock = create_error_check_lock()
-INIT_LIST_HEAD(&thread_pcap_global_list)
+
 logger = logging.getLogger('cycapture')
 libpcap_version = <bytes> pcap_lib_version()
 LibtinsException = TinEx

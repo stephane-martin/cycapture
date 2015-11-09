@@ -2,14 +2,14 @@
 
 cdef class RadioTap(PDU):
     """
-    Ethernet packet
+    RadioTap packet
     """
     pdu_flag = PDU.RADIOTAP
     pdu_type = PDU.RADIOTAP
     broadcast = HWAddress.broadcast
     datalink_type = DLT_IEEE802_11_RADIO
 
-    ChannelType = IntEnum('ChannelType', {
+    ChannelType = make_enum('RT_ChannelType', 'ChannelType', 'Enumeration of the different channel types. See `RadioTap.channel`.', {
         'TURBO': RT_TURBO,
         'CCK': RT_CCK,
         'OFDM': RT_OFDM,
@@ -20,7 +20,7 @@ cdef class RadioTap(PDU):
         'GFSK': RT_GFSK
     })
 
-    PresentFlags = IntEnum('PresentFlags', {
+    PresentFlags = make_enum('RT_PresentFlags', 'PresentFlags', 'Flags used in the `RadioTap.present` property', {
         'TSTF': RT_TSTF,
         'FLAGS': RT_FLAGS,
         'RATE': RT_RATE,
@@ -42,7 +42,7 @@ cdef class RadioTap(PDU):
         'MCS': RT_MCS
     })
 
-    FrameFlags = IntEnum('FrameFlags', {
+    FrameFlags = make_enum('RT_FrameFlags', 'FrameFlags', 'Flags used in the `RadioTap.flags` property', {
         'CFP': RT_CFP,
         'PREAMBLE': RT_PREAMBLE,
         'WEP': RT_WEP,
@@ -53,18 +53,10 @@ cdef class RadioTap(PDU):
         'SHORT_GI': RT_SHORT_GI
     })
 
-    def __cinit__(self, buf=None, _raw=False):
+    def __cinit__(self, _raw=False):
         if _raw:
             return
-        cdef uint8_t* buf_addr
-        cdef uint32_t size
-
-        if buf is None:
-            self.ptr = new cppRadioTap()
-        else:
-            PDU.prepare_buf_arg(buf, &buf_addr, &size)
-            self.ptr = new cppRadioTap(buf_addr, size)
-
+        self.ptr = new cppRadioTap()
         self.base_ptr = <cppPDU*> self.ptr
         self.parent = None
 
@@ -74,15 +66,17 @@ cdef class RadioTap(PDU):
         self.ptr = NULL
         self.parent = None
 
-    def __init__(self, buf=None, _raw=False):
-        pass
+    def __init__(self):
+        """
+        __init__()
+        """
 
     cpdef send(self, PacketSender sender, NetworkInterface iface):
         if sender is None:
             raise ValueError("sender can't be None")
         if iface is None:
             raise ValueError("iface can't be None")
-        self.ptr.send((<PacketSender> sender).ptr[0], (<NetworkInterface> iface).ptr[0])
+        self.ptr.send((<PacketSender> sender).ptr[0], (<NetworkInterface> iface).interface)
 
     property version:
         def __get__(self):
@@ -107,113 +101,175 @@ cdef class RadioTap(PDU):
 
     property tsft:
         def __get__(self):
-            return self.ptr.tsft()
+            try:
+                return self.ptr.tsft()
+            except FieldNotPresent:
+                return None
 
         def __set__(self, value):
             self.ptr.tsft(<uint64_t> int(value))
 
     property rate:
         def __get__(self):
-            return self.ptr.rate()
+            try:
+                return self.ptr.rate()
+            except FieldNotPresent:
+                return None
 
         def __set__(self, value):
             self.ptr.rate(<uint8_t> int(value))
 
     property dbm_signal:
         def __get__(self):
-            return self.ptr.dbm_signal()
+            try:
+                return self.ptr.dbm_signal()
+            except FieldNotPresent:
+                return None
 
         def __set__(self, value):
             self.ptr.dbm_signal(<uint8_t> int(value))
 
     property dbm_noise:
         def __get__(self):
-            return self.ptr.dbm_noise()
+            try:
+                return self.ptr.dbm_noise()
+            except FieldNotPresent:
+                return None
 
         def __set__(self, value):
             self.ptr.dbm_noise(<uint8_t> int(value))
 
     property signal_quality:
         def __get__(self):
-            return self.ptr.signal_quality()
+            try:
+                return self.ptr.signal_quality()
+            except FieldNotPresent:
+                return None
 
         def __set__(self, value):
             self.ptr.signal_quality(<uint8_t> int(value))
 
     property antenna:
         def __get__(self):
-            return self.ptr.antenna()
+            try:
+                return self.ptr.antenna()
+            except FieldNotPresent:
+                return None
 
         def __set__(self, value):
             self.ptr.antenna(<uint8_t> int(value))
 
     property db_signal:
         def __get__(self):
-            return self.ptr.db_signal()
+            try:
+                return self.ptr.db_signal()
+            except FieldNotPresent:
+                return None
 
         def __set__(self, value):
             self.ptr.db_signal(<uint8_t> int(value))
 
     property rx_flags:
         def __get__(self):
-            return self.ptr.rx_flags()
+            try:
+                return self.ptr.rx_flags()
+            except FieldNotPresent:
+                return None
 
         def __set__(self, value):
             self.ptr.rx_flags(<uint16_t> int(value))
 
     property tx_flags:
         def __get__(self):
-            return self.ptr.tx_flags()
+            try:
+                return self.ptr.tx_flags()
+            except FieldNotPresent:
+                return None
 
         def __set__(self, value):
             self.ptr.tx_flags(<uint16_t> int(value))
 
     property data_retries:
         def __get__(self):
-            return self.ptr.data_retries()
+            try:
+                return self.ptr.data_retries()
+            except FieldNotPresent:
+                return None
 
         def __set__(self, value):
             self.ptr.data_retries(<uint8_t> int(value))
 
     property flags:
         def __get__(self):
-            return int(self.ptr.flags())
+            try:
+                return int(self.ptr.flags())
+            except FieldNotPresent:
+                return None
 
         def __set__(self, value):
-            if isinstance(value, RadioTap.FrameFlags):
-                value = value.value
             value = int(value)
             self.ptr.flags(<RTFrameFlags> value)
 
     property channel_freq:
         def __get__(self):
-            return self.ptr.channel_freq()
+            try:
+                return self.ptr.channel_freq()
+            except FieldNotPresent:
+                return None
 
     property channel_type:
         def __get__(self):
-            return self.ptr.channel_type()
+            try:
+                return self.ptr.channel_type()
+            except FieldNotPresent:
+                return None
 
     property channel_plus:
         def __get__(self):
-            return self.ptr.channel_plus()
+            try:
+                return self.ptr.channel_plus()
+            except FieldNotPresent:
+                return None
 
     cpdef channel(self, new_freq, new_type):
+        """
+        channel(self, new_freq, new_type)
+        Setter for the channel frequency and type field
+
+        Parameters
+        ----------
+        new_freq: uint16_t
+            The new channel frequency
+        new_type: uint16_t
+            The new channel type (you can OR the `ChannelType` values)
+        Returns
+        -------
+
+        """
         if new_freq is None:
             raise ValueError("new_freq can't be None")
         if new_type is None:
             raise ValueError("new_type can't be None")
-        if isinstance(new_type, RadioTap.ChannelType):
-            new_type = new_type.value
         self.ptr.channel(<uint16_t> int(new_freq), <uint16_t> int(new_type))
 
     property present:
+        """
+        Return which fields are set. You can mask this value using the PresentFlags enum. (read-only property)
+        """
         def __get__(self):
             return int(self.ptr.present())
 
     property mcs:
+        """
+        the MCS field (read-write, ``uint8_t``)
+        """
         def __get__(self):
-            cdef mcs_type t = self.ptr.mcs()
-            return t.known, t.flags, t.mcs
+            cdef mcs_type t
+            try:
+                t = self.ptr.mcs()
+                return t.known, t.flags, t.mcs
+            except FieldNotPresent:
+                return None
 
         def __set__(self, tuple_value):
             _known, _flags, _mcs = tuple_value
@@ -223,5 +279,15 @@ cdef class RadioTap(PDU):
             t.mcs = <uint8_t> _mcs
             self.ptr.mcs(t)
 
+    cdef cppPDU* replace_ptr_with_buf(self, uint8_t* buf, int size) except NULL:
+        if self.ptr is not NULL and self.parent is None:
+            del self.ptr
+        self.ptr = new cppRadioTap(<uint8_t*> buf, <uint32_t> size)
+        return self.ptr
 
+    cdef replace_ptr(self, cppPDU* ptr):
+        if self.ptr is not NULL and self.parent is None:
+            del self.ptr
+        self.ptr = <cppRadioTap*> ptr
 
+Radiotap = RadioTap

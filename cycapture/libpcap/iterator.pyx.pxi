@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 
 cdef class SniffingIterator(object):
+    """
+    Helper iterator to get packets from a BlockingSniffer.
+    """
 
     def __init__(self, BlockingSniffer sniffer, f=None, int max_p=-1, int cache_size=10000):
         if sniffer is None:
@@ -11,34 +14,50 @@ cdef class SniffingIterator(object):
         self.cache_size = int(cache_size)
         self.f = f
         self.queue = deque() if self.cache_size <= 0 else deque([], self.cache_size)
+        self.total_returned = 0
         self.thread = threading.Thread(target=self._background_sniff)
 
     def __enter__(self):
+        """
+        __enter__()
+        """
         self.start()
         return self
 
     def __exit__(self, t, value, traceback):
+        """
+        __exit__(t, value, traceback)
+        """
         self.stop()
 
     cpdef start(self):
+        """
+        start()
+        """
         if not self.thread.is_alive():
             if self.sniffer in BlockingSniffer.active_sniffers.values():
                 raise RuntimeError('sniffer is already actively listening')
             self.thread.start()
 
     cpdef stop(self):
+        """
+        stop()
+        """
         if self.thread.is_alive():
             if self.sniffer in BlockingSniffer.active_sniffers.values():
                 self.sniffer.ask_stop()
-            self.thread.join()
-            self.queue = deque() if self.cache_size <= 0 else deque([], self.cache_size)
-            self.total_returned = 0
+            self.thread.join()      # wait that the background thread actually stops
+
 
     def _background_sniff(self):
         # let's start to sniff and store the results in queue
-        self.sniffer.sniff_and_store(self.queue, f=self.f, max_p=self.max_p)
+        # (we ask the sniffer to return just as many packets as we need)
+        self.sniffer.sniff_and_store(self.queue, f=self.f, max_p=self.max_p-len(self.queue))
 
     def __iter__(self):
+        """
+        __iter__()
+        """
         return self
 
     def __next__(self):

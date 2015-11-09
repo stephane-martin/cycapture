@@ -4,12 +4,12 @@ cdef extern from "tins/bootp.h" namespace "Tins" nogil:
     PDUType bootp_pdu_flag "Tins::BootP::pdu_flag"
 
     enum BootP_OpCodes "Tins::BootP::OpCodes":
-        BOOTP_BOOTREQUEST "Tins::BootP::BOOTP_BOOTREQUEST",
-        BOOTP_BOOTREPLY "Tins::BootP::BOOTP_BOOTREPLY"
+        BOOTP_BOOTREQUEST "Tins::BootP::BOOTREQUEST",
+        BOOTP_BOOTREPLY "Tins::BootP::BOOTREPLY"
 
     cppclass cppBootP "Tins::BootP" (cppPDU):
         cppBootP()
-        cppBootP(const uint8_t *buf, uint32_t total_sz)
+        cppBootP(const uint8_t *buf, uint32_t total_sz) except +custom_exception_handler
 
         uint8_t opcode() const
         void opcode(uint8_t new_opcode)
@@ -45,7 +45,7 @@ cdef extern from "tins/bootp.h" namespace "Tins" nogil:
         void giaddr(cppIPv4Address new_giaddr)
 
         cppHWAddress16 chaddr() const
-        # todo: template<size_t n> void chaddr(const HWAddress<n> &new_chaddr)
+        # template<size_t n> void chaddr(const HWAddress<n> &new_chaddr)
 
         const uint8_t *sname() const
         void sname(const uint8_t *new_sname)
@@ -56,15 +56,9 @@ cdef extern from "tins/bootp.h" namespace "Tins" nogil:
         const vector[uint8_t] &vend() const
         void vend(const vector[uint8_t] &new_vend)
 
+cdef extern from "wrap.h" namespace "Tins" nogil:
+    void bootp_set_chaddr(cppBootP& bootp_obj, const cppHWAddress16 &new_chaddr)
+
 cdef class BootP(PDU):
     cdef cppBootP* ptr
 
-    @staticmethod
-    cdef inline factory(cppPDU* ptr, uint8_t* buf, int size, object parent):
-        if ptr is NULL and buf is NULL:
-            return BootP()
-        obj = BootP(_raw=True)
-        obj.ptr = new cppBootP(<uint8_t*> buf, <uint32_t> size) if ptr is NULL else <cppBootP*> ptr
-        obj.base_ptr = <cppPDU*> obj.ptr
-        obj.parent = parent
-        return obj

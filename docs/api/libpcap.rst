@@ -25,7 +25,6 @@ Offline filter
 ==============
 .. autoclass:: cycapture.libpcap._pcap.OfflineFilter
 
-
 Utils
 =====
 .. autoclass:: cycapture.libpcap._pcap.DLT
@@ -33,6 +32,7 @@ Utils
 .. autoclass:: cycapture.libpcap._pcap.SniffingIterator
 .. autoclass:: cycapture.libpcap._pcap.BaseSniffer
 .. autofunction:: cycapture.libpcap._pcap.lookupdev
-.. autofunction:: cycapture.libpcap._pcap.findalldevs
+.. autofunction:: cycapture.libpcap._pcap.datalink_to_description
 .. autofunction:: cycapture.libpcap._pcap.lookupnet
 .. autoattribute:: cycapture.libpcap._pcap.libpcap_version
+   :annotation: = "version of the wrapped libpcap library"

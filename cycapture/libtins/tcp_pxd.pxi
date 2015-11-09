@@ -76,9 +76,11 @@ cdef extern from "tins/tcp.h" namespace "Tins" nogil:
 cdef extern from "wrap.h" namespace "Tins" nogil:
     cdef cppclass tcp_pdu_option:
         tcp_pdu_option()
+        tcp_pdu_option(uint8_t opt)
         tcp_pdu_option(uint8_t opt, size_t length, const uint8_t *data)
+        tcp_pdu_option(const tcp_pdu_option& rhs)
+        tcp_pdu_option& operator=(const tcp_pdu_option& rhs)
         uint8_t option() const
-        void option(uint8_t opt)
         const uint8_t *data_ptr() const
         size_t data_size() const
         size_t length_field() const
@@ -90,7 +92,7 @@ cdef class TCP(PDU):
     cpdef options(self)
     cpdef set_sack_permitted(self)
     cpdef get_flag(self, flag)
-    cpdef set_flag(self, flag, cpp_bool value)
+    cpdef set_flag(self, flag, value)
 
     @staticmethod
     cdef inline factory(cppPDU* ptr, uint8_t* buf, int size, object parent):
@@ -101,3 +103,5 @@ cdef class TCP(PDU):
         obj.base_ptr = <cppPDU*> obj.ptr
         obj.parent = parent
         return obj
+
+

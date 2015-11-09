@@ -6,9 +6,11 @@ cdef class HWAddress(object):
     """
     broadcast = HWAddress("ff:ff:ff:ff:ff:ff")
 
-    def __cinit__(self, object addr=None):
+    def __cinit__(self, addr=None):
         if addr is None:
             self.ptr = new cppHWAddress6()
+        elif isinstance(addr, unicode):
+            self.ptr = new cppHWAddress6(<string> (<bytes> (addr.encode('ascii'))))
         elif isinstance(addr, bytes):
             self.ptr = new cppHWAddress6(<string> (<bytes> addr))
         elif isinstance(addr, HWAddress):
@@ -20,7 +22,7 @@ cdef class HWAddress(object):
         if self.ptr != NULL:
             del self.ptr
 
-    def __init__(self, object addr=None):
+    def __init__(self, addr=None):
         """
         __init__(self, object addr=None)
 
@@ -30,51 +32,50 @@ cdef class HWAddress(object):
             make a hardware address from this object
         """
 
+    def __hash__(self):
+        return hash(str(self))
+
     def __str__(self):
         return bytes(self.ptr.to_string())
 
     def __repr__(self):
         return "HWAddress('{}')".format(bytes(self.ptr.to_string()))
 
-    cpdef cpp_bool is_broadcast(self):
+    cpdef is_broadcast(self):
         """
         Returns
         -------
         bool
             True if the address is a broadcast address.
         """
-        return self.ptr.is_broadcast()
+        return bool(self.ptr.is_broadcast())
 
-    cpdef cpp_bool is_unicast(self):
+    cpdef is_unicast(self):
         """
         Returns
         -------
         bool
             True if the address is a unicast address.
         """
-        return self.ptr.is_unicast()
+        return bool(self.ptr.is_unicast())
 
-    cpdef cpp_bool is_multicast(self):
+    cpdef is_multicast(self):
         """
         Returns
         -------
         bool
             True if the address is a muticast address.
         """
-        return self.ptr.is_multicast()
+        return bool(self.ptr.is_multicast())
 
     def __getitem__(self, item):
-        return (self.ptr[0])[int(item)]
+        return int((self.ptr[0])[int(item)])
 
     def __richcmp__(self, other, op):
-        if isinstance(other, bytes):
-            other = HWAddress(other)
         if op == 2:   # equals ==
             return self.equals(other)
         if op == 3:   # different !=
             return self.different(other)
-        if not isinstance(other, HWAddress):
-            raise ValueError("can't compare HWAddress with %s" % type(other))
         if op == 0:     # less <
             return self.less(other)
         if op == 1:   # <=
@@ -85,29 +86,26 @@ cdef class HWAddress(object):
             return not self.less(other)
         raise ValueError("this comparison is not implemented")
 
-    cpdef equals(self, object other):
-        if isinstance(other, bytes):
-            other = HWAddress(other)
-        if isinstance(other, HWAddress):
-            return self.ptr.equals((<HWAddress> other).ptr[0])
-        else:
-            return False
+    cpdef equals(self, other):
+        if not isinstance(other, HWAddress):
+            try:
+                other = HWAddress(other)
+            except ValueError:
+                return False
+        return self.ptr.equals((<HWAddress> other).ptr[0])
 
-    cpdef different(self, object other):
-        if isinstance(other, bytes):
-            other = HWAddress(other)
-        if isinstance(other, HWAddress):
-            return self.ptr.different((<HWAddress> other).ptr[0])
-        else:
-            return True
+    cpdef different(self, other):
+        if not isinstance(other, HWAddress):
+            try:
+                other = HWAddress(other)
+            except ValueError:
+                return True
+        return self.ptr.different((<HWAddress> other).ptr[0])
 
-    cpdef less(self, object other):
-        if isinstance(other, bytes):
+    cpdef less(self, other):
+        if not isinstance(other, HWAddress):
             other = HWAddress(other)
-        if isinstance(other, HWAddress):
-            return self.ptr.less((<HWAddress> other).ptr[0])
-        else:
-            raise ValueError("don't know how to compare")
+        return self.ptr.less((<HWAddress> other).ptr[0])
 
     def __div__(self, mask):
         """
@@ -125,10 +123,7 @@ cdef class HWAddress(object):
         """
         if not isinstance(self, HWAddress):
             raise TypeError("operation not supported")
-        r = HWRange()
-        cdef cppHWRange cpp_r = hw_slashrange((<HWAddress>self).ptr[0], <int>int(mask))
-        r.clone_from_cpp(cpp_r)
-        return r
+        return HWRange(first=self, mask=mask)
 
     def __truediv__(self, mask):
         return self.__div__(mask)
@@ -143,3 +138,12 @@ cdef class HWAddress(object):
         cdef vector[uint8_t] v
         v.assign(self.ptr.begin(), self.ptr.end())
         return <list> v
+
+    def __copy__(self):
+        return HWAddress(str(self))
+
+    def __reduce__(self):
+        return HWAddress, (str(self), )
+
+    cpdef to_bytes(self):
+        return <bytes> (self.ptr.begin()[:6])

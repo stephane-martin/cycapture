@@ -4,9 +4,9 @@ cdef extern from "tins/hw_address.h" namespace "Tins" nogil:
 
     cdef cppclass cppHWAddress6 "Tins::HWAddress<6, uint8_t>":
         cppHWAddress6()
-        cppHWAddress6(const unsigned char* ptr) except +custom_exception_handler
-        cppHWAddress6(const string &) except +custom_exception_handler
-        cppHWAddress6(const cppHWAddress6 &) except +custom_exception_handler
+        cppHWAddress6(const unsigned char* ptr) except +ValueError
+        cppHWAddress6(const string &) except +ValueError
+        cppHWAddress6(const cppHWAddress6 &) except +ValueError
         const size_t size() const
         string to_string() const
         uint8_t* begin()
@@ -23,9 +23,9 @@ cdef extern from "tins/hw_address.h" namespace "Tins" nogil:
 
     cdef cppclass cppHWAddress3 "Tins::HWAddress<3, uint8_t>":
         cppHWAddress3()
-        cppHWAddress3(const unsigned char* ptr) except +custom_exception_handler
-        cppHWAddress3(const string &) except +custom_exception_handler
-        cppHWAddress3(const cppHWAddress3 &) except +custom_exception_handler
+        cppHWAddress3(const unsigned char* ptr) except +ValueError
+        cppHWAddress3(const string &) except +ValueError
+        cppHWAddress3(const cppHWAddress3 &) except +ValueError
         const size_t size() const
         string to_string() const
         uint8_t* begin()
@@ -42,9 +42,9 @@ cdef extern from "tins/hw_address.h" namespace "Tins" nogil:
 
     cdef cppclass cppHWAddress8 "Tins::HWAddress<8, uint8_t>":
         cppHWAddress8()
-        cppHWAddress8(const unsigned char* ptr) except +custom_exception_handler
-        cppHWAddress8(const string &) except +custom_exception_handler
-        cppHWAddress8(const cppHWAddress8 &) except +custom_exception_handler
+        cppHWAddress8(const unsigned char* ptr) except +ValueError
+        cppHWAddress8(const string &) except +ValueError
+        cppHWAddress8(const cppHWAddress8 &) except +ValueError
         const size_t size() const
         string to_string() const
         uint8_t* begin()
@@ -61,9 +61,9 @@ cdef extern from "tins/hw_address.h" namespace "Tins" nogil:
 
     cdef cppclass cppHWAddress16 "Tins::HWAddress<16, uint8_t>":
         cppHWAddress16()
-        cppHWAddress16(const unsigned char* ptr) except +custom_exception_handler
-        cppHWAddress16(const string &) except +custom_exception_handler
-        cppHWAddress16(const cppHWAddress16 &) except +custom_exception_handler
+        cppHWAddress16(const unsigned char* ptr) except +ValueError
+        cppHWAddress16(const string &) except +ValueError
+        cppHWAddress16(const cppHWAddress16 &) except +ValueError
         const size_t size() const
         string to_string() const
         uint8_t* begin()
@@ -81,11 +81,12 @@ cdef extern from "tins/hw_address.h" namespace "Tins" nogil:
 
 cdef class HWAddress(object):
     cdef cppHWAddress6* ptr
-    cpdef cpp_bool is_broadcast(self)
-    cpdef cpp_bool is_unicast(self)
-    cpdef cpp_bool is_multicast(self)
-    cpdef equals(self, object other)
-    cpdef different(self, object other)
-    cpdef less(self, object other)
+    cpdef is_broadcast(self)
+    cpdef is_unicast(self)
+    cpdef is_multicast(self)
+    cpdef equals(self, other)
+    cpdef different(self, other)
+    cpdef less(self, other)
     cpdef full_repr(self)
+    cpdef to_bytes(self)
 

@@ -17,30 +17,40 @@ cdef extern from "pcap/bpf.h":
         DLT_FDDI, DLT_RAW, DLT_IEEE802_11, DLT_LOOP, DLT_ENC, DLT_PRISM_HEADER, DLT_AIRONET_HEADER, DLT_IEEE802_11_RADIO,
         DLT_IEEE802_11_RADIO_AVS, DLT_IPV4, DLT_IPV6
 
-cdef extern from "pcap/pcap.h":
-    ctypedef struct pcap_t
-    ctypedef struct pcap_dumper_t
 
-    struct pcap_addr:
-        pcap_addr* next
-        sockaddr* addr
-        sockaddr* netmask
-        sockaddr* broadaddr
-        sockaddr* dstaddr
-    ctypedef pcap_addr pcap_addr_t
+
+cdef extern from "pcap/pcap.h":
+    ctypedef struct pcap_t:
+        pass
+    ctypedef struct pcap_dumper_t:
+        pass
+    ctypedef struct FILE:
+        pass
+
+    struct timeval:
+        long tv_sec
+        int tv_usec
+
+    # struct pcap_addr:
+    #     pcap_addr* next
+    #     sockaddr* addr
+    #     sockaddr* netmask
+    #     sockaddr* broadaddr
+    #     sockaddr* dstaddr
+    # ctypedef pcap_addr pcap_addr_t
 
     struct pcap_pkthdr:
         timeval ts
         unsigned int caplen
         unsigned int len
 
-    struct pcap_if:
-        pcap_if* next
-        char* name
-        char* description
-        pcap_addr* addresses
-        unsigned int flags
-    ctypedef pcap_if pcap_if_t
+    # struct pcap_if:
+    #     pcap_if* next
+    #     char* name
+    #     char* description
+    #     pcap_addr* addresses
+    #     unsigned int flags
+    # ctypedef pcap_if pcap_if_t
 
     enum: PCAP_NETMASK_UNKNOWN
 
@@ -110,8 +120,8 @@ cdef extern from "pcap/pcap.h" nogil:
     int pcap_get_selectable_fd(pcap_t*)
     const char* pcap_lib_version()
     char* pcap_lookupdev(char *errbuf)
-    int pcap_findalldevs(pcap_if_t** alldevsp, char* errbuf)
-    void pcap_freealldevs(pcap_if_t* alldevs)
+    # int pcap_findalldevs(pcap_if_t** alldevsp, char* errbuf)
+    # void pcap_freealldevs(pcap_if_t* alldevs)
     int pcap_lookupnet(const char *device, unsigned int *netp, unsigned int *maskp, char *errbuf)
     int pcap_list_tstamp_types(pcap_t *p, int **tstamp_typesp)
     void pcap_free_tstamp_types(int *tstamp_types)

@@ -4,21 +4,11 @@ cdef class IPSecAH(PDU):
     pdu_flag = PDU.IPSEC_AH
     pdu_type = PDU.IPSEC_AH
 
-    def __cinit__(self, buf=None, _raw=False):
-        if _raw:
-            return
-        if type(self) != IPSecAH:
+    def __cinit__(self, _raw=False):
+        if _raw or type(self) != IPSecAH:
             return
 
-        cdef uint8_t* buf_addr
-        cdef uint32_t size
-
-        if buf is None:
-            self.ptr = new cppIPSecAH()
-        else:
-            PDU.prepare_buf_arg(buf, &buf_addr, &size)
-            self.ptr = new cppIPSecAH(buf_addr, size)
-
+        self.ptr = new cppIPSecAH()
         self.base_ptr = <cppPDU*> self.ptr
         self.parent = None
 
@@ -28,8 +18,10 @@ cdef class IPSecAH(PDU):
             del p
         self.ptr = NULL
 
-    def __init__(self, buf=None, _raw=False):
-        pass
+    def __init__(self):
+        """
+        __init__()
+        """
 
     property next_header:
         def __get__(self):
@@ -67,25 +59,26 @@ cdef class IPSecAH(PDU):
             v.assign(p, p + len(value))
             self.ptr.icv(v)
 
+    cdef cppPDU* replace_ptr_with_buf(self, uint8_t* buf, int size) except NULL:
+        if self.ptr is not NULL and self.parent is None:
+            del self.ptr
+        self.ptr = new cppIPSecAH(<uint8_t*> buf, <uint32_t> size)
+        return self.ptr
+
+    cdef replace_ptr(self, cppPDU* ptr):
+        if self.ptr is not NULL and self.parent is None:
+            del self.ptr
+        self.ptr = <cppIPSecAH*> ptr
+
 cdef class IPSecESP(PDU):
     pdu_flag = PDU.IPSEC_ESP
     pdu_type = PDU.IPSEC_ESP
 
-    def __cinit__(self, buf=None, _raw=False):
-        if _raw:
-            return
-        if type(self) != IPSecESP:
+    def __cinit__(self, _raw=False):
+        if _raw or type(self) != IPSecESP:
             return
 
-        cdef uint8_t* buf_addr
-        cdef uint32_t size
-
-        if buf is None:
-            self.ptr = new cppIPSecESP()
-        else:
-            PDU.prepare_buf_arg(buf, &buf_addr, &size)
-            self.ptr = new cppIPSecESP(buf_addr, size)
-
+        self.ptr = new cppIPSecESP()
         self.base_ptr = <cppPDU*> self.ptr
         self.parent = None
 
@@ -95,8 +88,10 @@ cdef class IPSecESP(PDU):
             del p
         self.ptr = NULL
 
-    def __init__(self, buf=None, _raw=False):
-        pass
+    def __init__(self):
+        """
+        __init__()
+        """
 
     property spi:
         def __get__(self):
@@ -109,3 +104,19 @@ cdef class IPSecESP(PDU):
             return int(self.ptr.seq_number())
         def __set__(self, value):
             self.ptr.seq_number(<uint32_t> int(value))
+
+    cdef cppPDU* replace_ptr_with_buf(self, uint8_t* buf, int size) except NULL:
+        if self.ptr is not NULL and self.parent is None:
+            del self.ptr
+        self.ptr = new cppIPSecESP(<uint8_t*> buf, <uint32_t> size)
+        return self.ptr
+
+    cdef replace_ptr(self, cppPDU* ptr):
+        if self.ptr is not NULL and self.parent is None:
+            del self.ptr
+        self.ptr = <cppIPSecESP*> ptr
+
+IPSECAH = IPSecAH
+IPSEC_AH = IPSecAH
+IPSECESP = IPSecESP
+IPSEC_ESP = IPSecESP

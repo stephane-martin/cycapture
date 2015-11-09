@@ -14,7 +14,7 @@ cdef extern from "tins/arp.h" namespace "Tins" nogil:
         cppARP(cppIPv4Address target_ip, cppIPv4Address sender_ip)
         cppARP(cppIPv4Address target_ip, cppIPv4Address sender_ip, const cppHWAddress6 &target_hw)
         cppARP(cppIPv4Address target_ip, cppIPv4Address sender_ip, const cppHWAddress6 &target_hw, const cppHWAddress6 &sender_hw)
-        cppARP(const uint8_t *buf, uint32_t total_sz)
+        cppARP(const uint8_t *buf, uint32_t total_sz) except +custom_exception_handler
 
         cppHWAddress6 sender_hw_addr() const
         void sender_hw_addr(const cppHWAddress6 &new_snd_hw_addr)
@@ -55,15 +55,6 @@ cdef extern from "tins/arp.h" namespace "Tins" nogil:
 cdef class ARP(PDU):
     cdef cppARP* ptr
 
-    @staticmethod
-    cdef inline factory(cppPDU* ptr, uint8_t* buf, int size, object parent):
-        if ptr is NULL and buf is NULL:
-            return ARP()
-        obj = ARP(_raw=True)
-        obj.ptr = new cppARP(<uint8_t*> buf, <uint32_t> size) if ptr is NULL else <cppARP*> ptr
-        obj.base_ptr = <cppPDU*> obj.ptr
-        obj.parent = parent
-        return obj
 
 
 

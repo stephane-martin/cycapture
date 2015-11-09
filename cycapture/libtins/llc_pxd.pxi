@@ -30,7 +30,7 @@ cdef extern from "tins/llc.h" namespace "Tins" nogil:
 
         cppLLC()
         cppLLC(uint8_t dsap, uint8_t ssap)
-        cppLLC(const uint8_t *buf, uint32_t total_sz)
+        cppLLC(const uint8_t *buf, uint32_t total_sz) except +custom_exception_handler
 
         void group(cpp_bool value)
         void dsap(uint8_t new_dsap)
@@ -61,15 +61,5 @@ cdef extern from "tins/llc.h" namespace "Tins" nogil:
 
 cdef class LLC(PDU):
     cdef cppLLC* ptr
-
-    @staticmethod
-    cdef inline factory(cppPDU* ptr, uint8_t* buf, int size, object parent):
-        if ptr is NULL and buf is NULL:
-            return LLC()
-        obj = LLC(_raw=True)
-        obj.ptr = new cppLLC(<uint8_t*> buf, <uint32_t> size) if ptr is NULL else <cppLLC*> ptr
-        obj.base_ptr = <cppPDU*> obj.ptr
-        obj.parent = parent
-        return obj
 
     cpdef clear_information_fields(self)

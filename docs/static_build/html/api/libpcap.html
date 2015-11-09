@@ -50,7 +50,20 @@
         <li class="nav-item nav-item-0"><a href="../index.html">cycapture</a> &raquo;</li>
           <li class="nav-item nav-item-1"><a href="../api.html" accesskey="U">API documentation</a> &raquo;</li> 
       </ul>
-    </div>  
+    </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>  
 
     <div class="document">
       <div class="documentwrapper">
@@ -61,18 +74,644 @@
 <h1>libpcap bindings<a class="headerlink" href="#libpcap-bindings" title="Permalink to this headline">¶</a></h1>
 <div class="contents local topic" id="contents">
 <ul class="simple">
-<li><a class="reference internal" href="#sniffers" id="id1">Sniffers</a></li>
-<li><a class="reference internal" href="#packet-writers" id="id2">Packet writers</a></li>
-<li><a class="reference internal" href="#offline-filter" id="id3">Offline filter</a></li>
-<li><a class="reference internal" href="#datalink-types" id="id4">Datalink types</a></li>
-<li><a class="reference internal" href="#utils" id="id5">Utils</a></li>
+<li><a class="reference internal" href="#sniffers" id="id1">Sniffers</a><ul>
+<li><a class="reference internal" href="#blocking-sniffer" id="id2">Blocking Sniffer</a></li>
+<li><a class="reference internal" href="#non-blocking-sniffer" id="id3">Non-blocking sniffer</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#packet-writers" id="id4">Packet writers</a></li>
+<li><a class="reference internal" href="#offline-filter" id="id5">Offline filter</a></li>
+<li><a class="reference internal" href="#utils" id="id6">Utils</a></li>
 </ul>
 </div>
 <div class="section" id="sniffers">
 <h2><a class="toc-backref" href="#contents">Sniffers</a><a class="headerlink" href="#sniffers" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="blocking-sniffer">
+<h3><a class="toc-backref" href="#contents">Blocking Sniffer</a><a class="headerlink" href="#blocking-sniffer" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
-<dt id="cycapture.libpcap._pcap.Sniffer">
-<em class="property">class </em><code class="descname">Sniffer</code><span class="sig-paren">(</span><em>interface=None</em>, <em>filename=None</em>, <em>int read_timeout=5000</em>, <em>int buffer_size=0</em>, <em>int snapshot_length=2000</em>, <em>promisc_mode=False</em>, <em>monitor_mode=False</em>, <em>direction=PCAP_D_INOUT</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libpcap._pcap.Sniffer" title="Permalink to this definition">¶</a></dt>
+<dt id="cycapture.libpcap._pcap.BlockingSniffer">
+<em class="property">class </em><code class="descname">BlockingSniffer</code><span class="sig-paren">(</span><em>interface=None</em>, <em>filename=None</em>, <em>int read_timeout=5000</em>, <em>int buffer_size=0</em>, <em>int snapshot_length=2000</em>, <em>promisc_mode=False</em>, <em>monitor_mode=False</em>, <em>direction=PCAP_D_INOUT</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libpcap._pcap.BlockingSniffer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#cycapture.libpcap._pcap.BaseSniffer" title="cycapture.libpcap._pcap.BaseSniffer"><code class="xref py py-class docutils literal"><span class="pre">cycapture.libpcap._pcap.BaseSniffer</span></code></a></p>
+<p>The blocking sniffer captures packets from an interface, in a blocking way: its <cite>sniff_something</cite> methods do not
+return and block the current thread.</p>
+<p>So <cite>BlockingSniffer</cite> is typically used in a multi-threaded application. In fact, each <cite>BlockingSniffer</cite> instance must
+listen in a different thread.</p>
+<p>The <code class="docutils literal"><span class="pre">ask_stop</span></code> method is thread safe and can be called from any thread.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>interface</strong> (<em>bytes</em>) --
+which interface to sniff on</li>
+<li><strong>filename</strong> (<em>file or bytes</em>) --
+which file to get the packets from</li>
+<li><strong>read_timeout</strong> (<em>int</em>) --
+if read_timeout &gt; 0, wait at most read_timeout mseconds to (batch-) deliver the captured packets</li>
+<li><strong>buffer_size</strong> (<em>int</em>) --
+platform buffer size for captured packets. 0 means 'use system default'.</li>
+<li><strong>snapshot_length</strong> (<em>int</em>) --
+only the first snaplen_length bytes of each packet will be captured and provided as packet data</li>
+<li><strong>promisc_mode</strong> (<em>bool</em>) --
+a mode in which all packets, even if they are not sent to an address that the adapter recognizes, are provided</li>
+<li><strong>monitor_mode</strong> (<em>bool</em>) --
+in monitor mode (&quot;Radio Frequency MONitor&quot;), the interface will supply all frames that it receives, with
+802.11 headers.</li>
+<li><strong>direction</strong> (<a class="reference internal" href="#cycapture.libpcap._pcap.DIRECTION" title="cycapture.libpcap._pcap.DIRECTION"><code class="xref py py-class docutils literal"><span class="pre">DIRECTION</span></code></a>) --
+set direction to capture only  packets received by the machine or only packets sent by the machine</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="cycapture.libpcap._pcap.BlockingSniffer.ask_stop">
+<code class="descname">ask_stop</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libpcap._pcap.BlockingSniffer.ask_stop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Ask the current running sniffer to stop. Can be called from any thread.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libpcap._pcap.BlockingSniffer.iterator">
+<code class="descname">iterator</code><span class="sig-paren">(</span><em>f=None</em>, <em>int max_p=-1</em>, <em>int cache_size=10000</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libpcap._pcap.BlockingSniffer.iterator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provides an iterator that returns captured packets.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>f</strong> (<em>function</em>) --
+optional transformation for the captured packets</li>
+<li><strong>max_p</strong> (<em>int</em>) --
+minimum number of packets that should be captured</li>
+<li><strong>cache_size</strong> (<em>int</em>) --
+size of the internal queue</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>iterator</strong> (<a class="reference internal" href="#cycapture.libpcap._pcap.SniffingIterator" title="cycapture.libpcap._pcap.SniffingIterator"><code class="xref py py-class docutils literal"><span class="pre">SniffingIterator</span></code></a>)</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>The iterator starts a background thread to capture the packets (using the sniff methods). So the iterator
+should be used with a context manager to ensure proper initialization and garbage of the thread.</p>
+<p>The background thread stores the packets in an internal queue. When <code class="docutils literal"><span class="pre">next()</span></code> is called on the iterator,
+a packet is poped from the internal queue. The max queue size can be specified with the cache_size parameter
+(cache_size = 0 means an infinite queue). The queue has deque semantics when full.</p>
+<p>The iterator gives packets in format:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">(</span><span class="n">timestamp</span><span class="p">,</span> <span class="n">timestamp_ms_part</span><span class="p">,</span> <span class="n">packet_length</span><span class="p">,</span> <span class="n">packet_as_bytes</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Optionally, the captured packet may be transformed by a function f, before being stored in the internal queue.
+The f function should accept one argument: the captured packet as a memoryview. If a function f is given, the
+iterator gives packets in format:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">(</span><span class="n">timestamp</span><span class="p">,</span> <span class="n">timestamp_ms_part</span><span class="p">,</span> <span class="n">packet_length</span><span class="p">,</span> <span class="n">f</span><span class="p">(</span><span class="n">memoryview</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>Any LibtinsException that may happened in f will be caught and logged at debug level. Any other exception will
+be caught and logged at exception level.</p>
+<p>Depending on the sniffer snapshot_length property, the captured packet might be smaller than packet_length.</p>
+<p class="rubric">Example</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">cycapture.libpcap</span> <span class="kn">import</span> <span class="n">BlockingSniffer</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">cycapture.libtins</span> <span class="kn">import</span> <span class="n">EthernetII</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sniffer</span> <span class="o">=</span> <span class="n">BlockingSniffer</span><span class="p">(</span><span class="n">interface</span><span class="o">=</span><span class="s">&quot;eth0&quot;</span><span class="p">,</span> <span class="n">snapshot_length</span><span class="o">=</span><span class="mi">65000</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">sniffer</span><span class="o">.</span><span class="n">iterator</span><span class="p">(</span><span class="n">max_p</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span> <span class="k">as</span> <span class="n">i</span><span class="p">:</span>     <span class="c"># capture roughly 1000 packets</span>
+<span class="gp">... </span>    <span class="k">for</span> <span class="n">ts</span><span class="p">,</span> <span class="n">ts_ms</span><span class="p">,</span> <span class="n">length</span><span class="p">,</span> <span class="n">packet</span> <span class="ow">in</span> <span class="n">i</span><span class="p">:</span>
+<span class="gp">... </span>        <span class="k">print</span><span class="p">(</span><span class="s">&#39;captured one packet&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c"># when we exit the with statement, the backgroung sniffing thread is stopped</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">f</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">mview</span><span class="p">:</span> <span class="n">EthernetII</span><span class="o">.</span><span class="n">from_buffer</span><span class="p">(</span><span class="n">mview</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">sniffer</span><span class="o">.</span><span class="n">iterator</span><span class="p">(</span><span class="n">max_p</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">f</span><span class="o">=</span><span class="n">f</span><span class="p">)</span> <span class="k">as</span> <span class="n">i</span><span class="p">:</span>        <span class="c"># parse the packets using libtins</span>
+<span class="gp">... </span>    <span class="k">for</span> <span class="n">ts</span><span class="p">,</span> <span class="n">ts_ms</span><span class="p">,</span> <span class="n">length</span><span class="p">,</span> <span class="n">ethernet_pdu</span> <span class="ow">in</span> <span class="n">i</span><span class="p">:</span>
+<span class="gp">... </span>        <span class="k">print</span><span class="p">(</span><span class="s">&quot;got one pdu&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libpcap._pcap.BlockingSniffer.sniff_and_export">
+<code class="descname">sniff_and_export</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libpcap._pcap.BlockingSniffer.sniff_and_export" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sniff and write the captured packets to a file.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>fname_or_file_object</strong> (<em>file or bytes</em>) --
+output file</li>
+<li><strong>max_p</strong> (<em>int</em>) --
+how many packets to capture (-1 for unlimited)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libpcap._pcap.BlockingSniffer.sniff_and_store">
+<code class="descname">sniff_and_store</code><span class="sig-paren">(</span><em>container</em>, <em>f=None</em>, <em>int set_signal_mask=1</em>, <em>int max_p=-1</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libpcap._pcap.BlockingSniffer.sniff_and_store" title="Permalink to this definition">¶</a></dt>
+<dd><p>Start sniffing and store the packets in a container object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>container</strong> (<em>object</em>) --
+a python container, such as a deque, that supports method <code class="docutils literal"><span class="pre">append</span></code> or <code class="docutils literal"><span class="pre">put_nowait</span></code></li>
+<li><strong>f</strong> (<em>function or None</em>) --
+if provided, the function <cite>f</cite> will be applied to each capture packet before it is stored</li>
+<li><strong>set_signal_mask</strong> (<em>bool</em>) --
+should a signal mask be applied on the listening thread to block unwanted signals</li>
+<li><strong>max_p</strong> (<em>int</em>) --
+minimum number of packets to capture. -1 for unlimited.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>The <cite>container</cite> should support an <code class="docutils literal"><span class="pre">append</span></code> or <code class="docutils literal"><span class="pre">put_nowait</span></code> method. This method should be thread-safe, so that you
+can pop elements from the container in another thread. collections.deque or queue.Queue fit well.</p>
+<p>The optional function f, if given, will be applied to each captured packet before being put in the container. f
+should accept one argument: the captured packet as a memoryview.</p>
+<p>Any LibtinsException happening in f will be caught and logged as debug. Any other exception will be caught and
+logged as exception.</p>
+<p class="rubric">Example</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">cycapture.libpcap</span> <span class="kn">import</span> <span class="n">BlockingSniffer</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">cycapture.libtins</span> <span class="kn">import</span> <span class="n">EthernetII</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">deque</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">q</span> <span class="o">=</span> <span class="n">deque</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sniffer</span> <span class="o">=</span> <span class="n">BlockingSniffer</span><span class="p">(</span><span class="n">interface</span><span class="o">=</span><span class="s">&quot;eth0&quot;</span><span class="p">,</span> <span class="n">snapshot_length</span><span class="o">=</span><span class="mi">65000</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">f</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">mview</span><span class="p">:</span> <span class="n">EthernetII</span><span class="o">.</span><span class="n">from_buffer</span><span class="p">(</span><span class="n">mview</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sniffer</span><span class="o">.</span><span class="n">sniff_and_store</span><span class="p">(</span><span class="n">container</span><span class="o">=</span><span class="n">q</span><span class="p">,</span> <span class="n">f</span><span class="o">=</span><span class="n">f</span><span class="p">,</span> <span class="n">max_p</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">q</span><span class="p">))</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libpcap._pcap.BlockingSniffer.sniff_callback">
+<code class="descname">sniff_callback</code><span class="sig-paren">(</span><em>f</em>, <em>int set_signal_mask=1</em>, <em>int max_p=-1</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libpcap._pcap.BlockingSniffer.sniff_callback" title="Permalink to this definition">¶</a></dt>
+<dd><p>Start to sniff packets and call a given callback for each packet.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>f</strong> (<em>function</em>) --
+callback function</li>
+<li><strong>set_signal_mask</strong> (<em>bool</em>) --
+should a signal mask be applied on the listening thread to block unwanted signals</li>
+<li><strong>max_p</strong> (<em>int</em>) --
+minimum number of packets to sniff. -1 for unlimited.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>The callback function must accept 4 arguments like:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">(</span><span class="n">timestamp</span><span class="p">,</span> <span class="n">ms_timestamp</span><span class="p">,</span> <span class="n">packet_length</span><span class="p">,</span> <span class="n">packet_as_memoryview</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The provided memoryview is only valid in the context of the callback call, so you should copy its content if
+you'd like to store it (eg with <code class="docutils literal"><span class="pre">memoryview.tobytes</span></code> method).</p>
+<p>Any LibtinsException happening in f will be caught and logged as debug. Any other exception will be caught and
+logged as exception.</p>
+<p class="rubric">Example</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">cycapture.libpcap</span> <span class="kn">import</span> <span class="n">BlockingSniffer</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sniffer</span> <span class="o">=</span> <span class="n">BlockingSniffer</span><span class="p">(</span><span class="n">interface</span><span class="o">=</span><span class="s">&quot;eth0&quot;</span><span class="p">,</span> <span class="n">snapshot_length</span><span class="o">=</span><span class="mi">65000</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">callback</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="n">ms_ts</span><span class="p">,</span> <span class="n">length</span><span class="p">,</span> <span class="n">mview</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">print</span><span class="p">(</span><span class="s">&#39;callback!&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sniffer</span><span class="o">.</span><span class="n">sniff_callback</span><span class="p">(</span><span class="n">f</span><span class="o">=</span><span class="n">callback</span><span class="p">,</span> <span class="n">max_p</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libpcap._pcap.BlockingSniffer.stop_all">
+<code class="descname">stop_all</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libpcap._pcap.BlockingSniffer.stop_all" title="Permalink to this definition">¶</a></dt>
+<dd><p>Ask all currently running sniffers to stop. Can be called from any thread.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="non-blocking-sniffer">
+<h3><a class="toc-backref" href="#contents">Non-blocking sniffer</a><a class="headerlink" href="#non-blocking-sniffer" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="cycapture.libpcap._pcap.NonBlockingSniffer">
+<em class="property">class </em><code class="descname">NonBlockingSniffer</code><span class="sig-paren">(</span><em>interface=None</em>, <em>filename=None</em>, <em>int read_timeout=5000</em>, <em>int buffer_size=0</em>, <em>int snapshot_length=2000</em>, <em>promisc_mode=False</em>, <em>monitor_mode=False</em>, <em>direction=PCAP_D_INOUT</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libpcap._pcap.NonBlockingSniffer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#cycapture.libpcap._pcap.BaseSniffer" title="cycapture.libpcap._pcap.BaseSniffer"><code class="xref py py-class docutils literal"><span class="pre">cycapture.libpcap._pcap.BaseSniffer</span></code></a></p>
+<p>Provide a non-blocking sniffer, that's supposed to work with an async ioloop.</p>
+<ul class="simple">
+<li>First, construct the sniffer object as usual.</li>
+<li>Then, set the ioloop you want to use with the <code class="docutils literal"><span class="pre">NonBlockingSniffer.set_loop</span></code> method.</li>
+<li>Finally, use one of the <cite>sniff_something</cite> methods to start capturing packets.</li>
+</ul>
+<p>The io loop will monitor the sniffer, and it will trigger the appropriate actions when some packets will be actually
+available.</p>
+<p>If you use the <code class="docutils literal"><span class="pre">NonBlockingSniffer.sniff_callback</span></code> method, make sure that your provided callback does not block
+the ioloop.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>interface</strong> (<em>bytes</em>) --
+which interface to sniff on</li>
+<li><strong>filename</strong> (<em>file or bytes</em>) --
+which file to get the packets from</li>
+<li><strong>read_timeout</strong> (<em>int</em>) --
+if read_timeout &gt; 0, wait at most read_timeout mseconds to (batch-) deliver the captured packets</li>
+<li><strong>buffer_size</strong> (<em>int</em>) --
+platform buffer size for captured packets. 0 means 'use system default'.</li>
+<li><strong>snapshot_length</strong> (<em>int</em>) --
+only the first snaplen_length bytes of each packet will be captured and provided as packet data</li>
+<li><strong>promisc_mode</strong> (<em>bool</em>) --
+a mode in which all packets, even if they are not sent to an address that the adapter recognizes, are provided</li>
+<li><strong>monitor_mode</strong> (<em>bool</em>) --
+in monitor mode (&quot;Radio Frequency MONitor&quot;), the interface will supply all frames that it receives, with
+802.11 headers.</li>
+<li><strong>direction</strong> (<a class="reference internal" href="#cycapture.libpcap._pcap.DIRECTION" title="cycapture.libpcap._pcap.DIRECTION"><code class="xref py py-class docutils literal"><span class="pre">DIRECTION</span></code></a>) --
+set direction to capture only  packets received by the machine or only packets sent by the machine</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="cycapture.libpcap._pcap.NonBlockingSniffer.set_loop">
+<code class="descname">set_loop</code><span class="sig-paren">(</span><em>loop</em>, <em>loop_type=&quot;tornado&quot;</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libpcap._pcap.NonBlockingSniffer.set_loop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the ioloop to use with the current sniffer.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>loop</strong> (<em>ioloop to use</em>)</li>
+<li><strong>loop_type</strong> (<em>&quot;tornado&quot; or &quot;asyncio&quot;</em>)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><em>self</em></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libpcap._pcap.NonBlockingSniffer.sniff_and_export">
+<code class="descname">sniff_and_export</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libpcap._pcap.NonBlockingSniffer.sniff_and_export" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sniff and stores the captured packets in a pcap file.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>fname_or_file_object</strong> (<em>file or bytes</em>) --
+pcap file</li>
+<li><strong>max_p</strong> (<em>int</em>) --
+minimum number of packets to store (-1 means unlimited)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>fd</strong> (<em>int</em>) --
+the file descriptor corresponding to the current sniffer</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libpcap._pcap.NonBlockingSniffer.sniff_and_store">
+<code class="descname">sniff_and_store</code><span class="sig-paren">(</span><em>container</em>, <em>f=None</em>, <em>int max_p=-1</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libpcap._pcap.NonBlockingSniffer.sniff_and_store" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sniff and store the captured packet in some container.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>container</strong> (<em>object</em>) --
+the container where to store the captured packets</li>
+<li><strong>f</strong> (<em>function</em>) --
+an optional transformation of the captured packets</li>
+<li><strong>max_p</strong> (<em>int</em>) --
+minimum number of packets to capture (-1 means unlimited)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>fd</strong> (<em>int</em>) --
+the file descriptor corresponding to the current sniffer</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>The container can be any kind of object that support <cite>append</cite> or <cite>put_nowait</cite>. Typically you can use
+<code class="docutils literal"><span class="pre">tornado.queues.Queue</span></code> objects. The container will be filled with objects like:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">(</span><span class="n">timestamp</span><span class="p">,</span> <span class="n">ms_timestamp</span><span class="p">,</span> <span class="n">packet_length</span><span class="p">,</span> <span class="n">packet_as_bytes</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The optional function f, if given, will be applied to each packet, so what's stored in the container
+becomes:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">(</span><span class="n">timestamp</span><span class="p">,</span> <span class="n">ms_timestamp</span><span class="p">,</span> <span class="n">packet_length</span><span class="p">,</span> <span class="n">f</span><span class="p">(</span><span class="n">packet_as_memoryview</span><span class="p">))</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libpcap._pcap.NonBlockingSniffer.sniff_callback">
+<code class="descname">sniff_callback</code><span class="sig-paren">(</span><em>callback</em>, <em>int max_p=-1</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libpcap._pcap.NonBlockingSniffer.sniff_callback" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sniff and call some function for each captured packet.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>callback</strong> (<em>function</em>) --
+this function will be called for each captured packet</li>
+<li><strong>max_p</strong> (<em>int</em>) --
+minimum number of packets to capture (-1 means unlimited)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>fd</strong> (<em>int</em>) --
+the file descriptor corresponding to the current sniffer</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>The callback function must accept 4 parameters like:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">(</span><span class="n">timestamp</span><span class="p">,</span> <span class="n">ms_timestamp</span><span class="p">,</span> <span class="n">packet_length</span><span class="p">,</span> <span class="n">packet_as_memoryview</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The packet_as_memoryview will only be valid in context of callback.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libpcap._pcap.NonBlockingSniffer.stop">
+<code class="descname">stop</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libpcap._pcap.NonBlockingSniffer.stop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Stop the sniffer.</p>
+<p>The stop method will:
+* remove the handlers from the ioloop (so no more callbacks will be called by the ioloop when some packets are
+available)
+* close the file writer, if one was being used
+* close the pcap handle</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libpcap._pcap.NonBlockingSniffer.stop_all">
+<code class="descname">stop_all</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libpcap._pcap.NonBlockingSniffer.stop_all" title="Permalink to this definition">¶</a></dt>
+<dd><p>Stop all the non-blocking sniffers</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="packet-writers">
+<h2><a class="toc-backref" href="#contents">Packet writers</a><a class="headerlink" href="#packet-writers" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="cycapture.libpcap._pcap.PacketWriter">
+<em class="property">class </em><code class="descname">PacketWriter</code><span class="sig-paren">(</span><em>linktype</em>, <em>output</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libpcap._pcap.PacketWriter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Write packets to a file with pcap format.</p>
+<p>Write operations can be blocking.</p>
+<p><a class="reference internal" href="#cycapture.libpcap._pcap.PacketWriter" title="cycapture.libpcap._pcap.PacketWriter"><code class="xref py py-class docutils literal"><span class="pre">PacketWriter</span></code></a> and <a class="reference internal" href="#cycapture.libpcap._pcap.NonBlockingPacketWriter" title="cycapture.libpcap._pcap.NonBlockingPacketWriter"><code class="xref py py-class docutils literal"><span class="pre">NonBlockingPacketWriter</span></code></a> support a context manager:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">cycapture.libpcap</span> <span class="kn">import</span> <span class="n">BlockingSniffer</span><span class="p">,</span> <span class="n">PacketWriter</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">cycapture.libtins</span> <span class="kn">import</span> <span class="n">EthernetII</span><span class="p">,</span> <span class="n">TCP</span><span class="p">,</span> <span class="n">LibtinsException</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">BlockingSniffer</span><span class="p">(</span><span class="n">interface</span><span class="o">=</span><span class="s">&quot;en0&quot;</span><span class="p">)</span>                                <span class="c"># sniff interface &quot;en0&quot;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">parse_fun</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">pkt</span><span class="p">:</span> <span class="n">EthernetII</span><span class="o">.</span><span class="n">from_buffer</span><span class="p">(</span><span class="n">pkt</span><span class="p">)</span>                 <span class="c"># parse to EthernetII</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">PacketWriter</span><span class="p">(</span><span class="n">linktype</span><span class="o">=</span><span class="n">EthernetII</span><span class="p">,</span> <span class="n">output</span><span class="o">=</span><span class="s">&quot;my.pcap&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">w</span><span class="p">:</span>      <span class="c"># use of context manager</span>
+<span class="gp">... </span>    <span class="k">with</span> <span class="n">s</span><span class="o">.</span><span class="n">iterator</span><span class="p">(</span><span class="n">f</span><span class="o">=</span><span class="n">parse_fun</span><span class="p">,</span> <span class="n">max_p</span><span class="o">=</span><span class="mi">10000</span><span class="p">)</span> <span class="k">as</span> <span class="n">i</span><span class="p">:</span>                 <span class="c"># sniffing iterator</span>
+<span class="gp">... </span>        <span class="k">for</span> <span class="n">tv_sec</span><span class="p">,</span> <span class="n">tv_usec</span><span class="p">,</span> <span class="n">length</span><span class="p">,</span> <span class="n">pdu</span> <span class="ow">in</span> <span class="n">i</span><span class="p">:</span>                      <span class="c"># get the captured packets -&gt; eth pdu</span>
+<span class="gp">... </span>            <span class="k">try</span><span class="p">:</span>
+<span class="gp">... </span>                <span class="n">pdu</span><span class="o">.</span><span class="n">rfind_pdu</span><span class="p">(</span><span class="n">TCP</span><span class="p">)</span>                                  <span class="c"># select the pdus that contain TCP</span>
+<span class="gp">... </span>            <span class="k">except</span> <span class="n">LibtinsException</span><span class="p">:</span>
+<span class="gp">... </span>                <span class="k">pass</span>
+<span class="gp">... </span>            <span class="k">else</span><span class="p">:</span>
+<span class="gp">... </span>                <span class="n">w</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">pdu</span><span class="p">,</span> <span class="n">tv_sec</span><span class="p">,</span> <span class="n">tv_usec</span><span class="p">)</span>                       <span class="c"># write the pdu</span>
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>linktype</strong> (<a class="reference internal" href="abstract_pdu.html#cycapture.libtins._tins.PDU" title="cycapture.libtins._tins.PDU"><code class="xref py py-class docutils literal"><span class="pre">PDU</span></code></a> or <a class="reference internal" href="#cycapture.libpcap._pcap.DLT" title="cycapture.libpcap._pcap.DLT"><code class="xref py py-class docutils literal"><span class="pre">DLT</span></code></a> or PDU classname) --
+which datalink type to use</li>
+<li><strong>output</strong> (<em>file or bytes</em>) --
+file object or filename</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="cycapture.libpcap._pcap.PacketWriter.close">
+<code class="descname">close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libpcap._pcap.PacketWriter.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>Close the writer and free ressources. Call after you finished writing to some file (or use the context manager).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libpcap._pcap.PacketWriter.open">
+<code class="descname">open</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libpcap._pcap.PacketWriter.open" title="Permalink to this definition">¶</a></dt>
+<dd><p>Open the writer. Call this method before any <cite>write</cite> call (or use the context manager).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libpcap._pcap.PacketWriter.write">
+<code class="descname">write</code><span class="sig-paren">(</span><em>object buf</em>, <em>long tv_sec=-1</em>, <em>int tv_usec=0</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libpcap._pcap.PacketWriter.write" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write a packet to the pcap file.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>buf</strong> (<a class="reference internal" href="abstract_pdu.html#cycapture.libtins._tins.PDU" title="cycapture.libtins._tins.PDU"><code class="xref py py-class docutils literal"><span class="pre">PDU</span></code></a> or bytes or bytearray or memoryview) --
+object to write</li>
+<li><strong>tv_sec</strong> (<em>long</em>) --
+timestamp</li>
+<li><strong>tv_usec</strong> (<em>int</em>) --
+microseconds of timestamp</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="cycapture.libpcap._pcap.NonBlockingPacketWriter">
+<em class="property">class </em><code class="descname">NonBlockingPacketWriter</code><span class="sig-paren">(</span><em>linktype</em>, <em>output</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libpcap._pcap.NonBlockingPacketWriter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#cycapture.libpcap._pcap.PacketWriter" title="cycapture.libpcap._pcap.PacketWriter"><code class="xref py py-class docutils literal"><span class="pre">cycapture.libpcap._pcap.PacketWriter</span></code></a></p>
+<p>Write packets to a file with pcap format.</p>
+<p>Write operations are non-blocking.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>linktype</strong> (<a class="reference internal" href="abstract_pdu.html#cycapture.libtins._tins.PDU" title="cycapture.libtins._tins.PDU"><code class="xref py py-class docutils literal"><span class="pre">PDU</span></code></a> or <a class="reference internal" href="#cycapture.libpcap._pcap.DLT" title="cycapture.libpcap._pcap.DLT"><code class="xref py py-class docutils literal"><span class="pre">DLT</span></code></a> or PDU classname) --
+which datalink type to use</li>
+<li><strong>output</strong> (<em>file or bytes</em>) --
+file object or filename</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="cycapture.libpcap._pcap.NonBlockingPacketWriter.close">
+<code class="descname">close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libpcap._pcap.NonBlockingPacketWriter.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>Close the writer and free ressources. Call after you finished writing to some file (or use the context manager).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libpcap._pcap.NonBlockingPacketWriter.open">
+<code class="descname">open</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libpcap._pcap.NonBlockingPacketWriter.open" title="Permalink to this definition">¶</a></dt>
+<dd><p>Open the writer. Call this method before any <cite>write</cite> call (or use the context manager).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libpcap._pcap.NonBlockingPacketWriter.write">
+<code class="descname">write</code><span class="sig-paren">(</span><em>object buf</em>, <em>long tv_sec=-1</em>, <em>int tv_usec=0</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libpcap._pcap.NonBlockingPacketWriter.write" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write a packet to the pcap file.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>buf</strong> (<a class="reference internal" href="abstract_pdu.html#cycapture.libtins._tins.PDU" title="cycapture.libtins._tins.PDU"><code class="xref py py-class docutils literal"><span class="pre">PDU</span></code></a> or bytes or bytearray or memoryview) --
+object to write</li>
+<li><strong>tv_sec</strong> (<em>long</em>) --
+timestamp</li>
+<li><strong>tv_usec</strong> (<em>int</em>) --
+microseconds of timestamp</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="offline-filter">
+<h2><a class="toc-backref" href="#contents">Offline filter</a><a class="headerlink" href="#offline-filter" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="cycapture.libpcap._pcap.OfflineFilter">
+<em class="property">class </em><code class="descname">OfflineFilter</code><span class="sig-paren">(</span><em>filter_string</em>, <em>linktype</em>, <em>snaplen=65535</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libpcap._pcap.OfflineFilter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Offline packet filter: filter packets after they have been captured.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>filter_string</strong> (<em>filter specification</em>)</li>
+<li><strong>linktype</strong> (<em>the datalink type of the packets to be filtered</em>)</li>
+<li><strong>snaplen</strong> (<em>the snapshot length of the packets to be filtered</em>)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="cycapture.libpcap._pcap.OfflineFilter.ifilter">
+<code class="descname">ifilter</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libpcap._pcap.OfflineFilter.ifilter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return those items of sequence for which the filter matches.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>list_of_bufs_or_pdus</strong> (sequence of <cite>PDUs or buffers</cite>)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libpcap._pcap.OfflineFilter.match_buffer">
+<code class="descname">match_buffer</code><span class="sig-paren">(</span><em>object buf</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libpcap._pcap.OfflineFilter.match_buffer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check whether the given object matches the filter.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>buf</strong> (bytes or bytearray or memoryview or <a class="reference internal" href="abstract_pdu.html#cycapture.libtins._tins.PDU" title="cycapture.libtins._tins.PDU"><code class="xref py py-class docutils literal"><span class="pre">PDU</span></code></a>)</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>match_or_not</strong> (<em>bool</em>)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libpcap._pcap.OfflineFilter.match_pdu">
+<code class="descname">match_pdu</code><span class="sig-paren">(</span><em>pdu</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libpcap._pcap.OfflineFilter.match_pdu" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check whether the given pdu matches the filter.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>pdu</strong> (<a class="reference internal" href="abstract_pdu.html#cycapture.libtins._tins.PDU" title="cycapture.libtins._tins.PDU"><code class="xref py py-class docutils literal"><span class="pre">PDU</span></code></a>)</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>match_or_not</strong> (<em>bool</em>)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="utils">
+<h2><a class="toc-backref" href="#contents">Utils</a><a class="headerlink" href="#utils" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="cycapture.libpcap._pcap.DLT">
+<em class="property">class </em><code class="descname">DLT</code><a class="headerlink" href="#cycapture.libpcap._pcap.DLT" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">enum.IntEnum</span></code></p>
+<p>Datalink types</p>
+<p>Attributes: <code class="docutils literal"><span class="pre">DLT_NULL</span></code>, <code class="docutils literal"><span class="pre">DLT_EN10MB</span></code>, <code class="docutils literal"><span class="pre">DLT_EN3MB</span></code>, <code class="docutils literal"><span class="pre">DLT_AX25</span></code>, <code class="docutils literal"><span class="pre">DLT_PRONET</span></code>, <code class="docutils literal"><span class="pre">DLT_CHAOS</span></code>, <code class="docutils literal"><span class="pre">DLT_IEEE802</span></code>, <code class="docutils literal"><span class="pre">DLT_ARCNET</span></code>, <code class="docutils literal"><span class="pre">DLT_SLIP</span></code>, <code class="docutils literal"><span class="pre">DLT_PPP</span></code>, <code class="docutils literal"><span class="pre">DLT_FDDI</span></code>, <code class="docutils literal"><span class="pre">DLT_RAW</span></code>, <code class="docutils literal"><span class="pre">DLT_IEEE802_11</span></code>, <code class="docutils literal"><span class="pre">DLT_LOOP</span></code>, <code class="docutils literal"><span class="pre">DLT_ENC</span></code>, <code class="docutils literal"><span class="pre">DLT_PRISM_HEADER</span></code>, <code class="docutils literal"><span class="pre">DLT_AIRONET_HEADER</span></code>, <code class="docutils literal"><span class="pre">DLT_IEEE802_11_RADIO</span></code>, <code class="docutils literal"><span class="pre">DLT_IEEE802_11_RADIO_AVS</span></code>, <code class="docutils literal"><span class="pre">DLT_IPV4</span></code>, <code class="docutils literal"><span class="pre">DLT_IPV6</span></code></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="cycapture.libpcap._pcap.DIRECTION">
+<em class="property">class </em><code class="descname">DIRECTION</code><a class="headerlink" href="#cycapture.libpcap._pcap.DIRECTION" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">enum.IntEnum</span></code></p>
+<p>Sniffing direction</p>
+<p>Attributes: <code class="docutils literal"><span class="pre">PCAP_D_INOUT</span></code>, <code class="docutils literal"><span class="pre">PCAP_D_IN</span></code>, <code class="docutils literal"><span class="pre">PCAP_D_OUT</span></code></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="cycapture.libpcap._pcap.SniffingIterator">
+<em class="property">class </em><code class="descname">SniffingIterator</code><a class="headerlink" href="#cycapture.libpcap._pcap.SniffingIterator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Helper iterator to get packets from a BlockingSniffer.</p>
+<dl class="method">
+<dt id="cycapture.libpcap._pcap.SniffingIterator.start">
+<code class="descname">start</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libpcap._pcap.SniffingIterator.start" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libpcap._pcap.SniffingIterator.stop">
+<code class="descname">stop</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libpcap._pcap.SniffingIterator.stop" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libpcap._pcap.SniffingIterator.next">
+<code class="descname">next</code><a class="headerlink" href="#cycapture.libpcap._pcap.SniffingIterator.next" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="cycapture.libpcap._pcap.BaseSniffer">
+<em class="property">class </em><code class="descname">BaseSniffer</code><span class="sig-paren">(</span><em>interface=None</em>, <em>filename=None</em>, <em>int read_timeout=5000</em>, <em>int buffer_size=0</em>, <em>int snapshot_length=2000</em>, <em>promisc_mode=False</em>, <em>monitor_mode=False</em>, <em>direction=PCAP_D_INOUT</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libpcap._pcap.BaseSniffer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
 <p>Sniffer base class</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -95,152 +734,57 @@
 </table>
 </dd></dl>
 
-<dl class="class">
-<dt id="cycapture.libpcap._pcap.BlockingSniffer">
-<em class="property">class </em><code class="descname">BlockingSniffer</code><span class="sig-paren">(</span><em>interface=None</em>, <em>filename=None</em>, <em>int read_timeout=5000</em>, <em>int buffer_size=0</em>, <em>int snapshot_length=2000</em>, <em>promisc_mode=False</em>, <em>monitor_mode=False</em>, <em>direction=PCAP_D_INOUT</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libpcap._pcap.BlockingSniffer" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#cycapture.libpcap._pcap.Sniffer" title="cycapture.libpcap._pcap.Sniffer"><code class="xref py py-class docutils literal"><span class="pre">cycapture.libpcap._pcap.Sniffer</span></code></a></p>
-<p>Blocking sniffer</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>interface</strong></li>
-<li><strong>filename</strong></li>
-<li><strong>read_timeout</strong></li>
-<li><strong>buffer_size</strong></li>
-<li><strong>snapshot_length</strong></li>
-<li><strong>promisc_mode</strong></li>
-<li><strong>monitor_mode</strong></li>
-<li><strong>direction</strong></li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="class">
-<dt id="cycapture.libpcap._pcap.NonBlockingSniffer">
-<em class="property">class </em><code class="descname">NonBlockingSniffer</code><span class="sig-paren">(</span><em>interface=None</em>, <em>filename=None</em>, <em>int read_timeout=5000</em>, <em>int buffer_size=0</em>, <em>int snapshot_length=2000</em>, <em>promisc_mode=False</em>, <em>monitor_mode=False</em>, <em>direction=PCAP_D_INOUT</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libpcap._pcap.NonBlockingSniffer" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#cycapture.libpcap._pcap.Sniffer" title="cycapture.libpcap._pcap.Sniffer"><code class="xref py py-class docutils literal"><span class="pre">cycapture.libpcap._pcap.Sniffer</span></code></a></p>
-<p>Non-blocking sniffer</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>interface</strong></li>
-<li><strong>filename</strong></li>
-<li><strong>read_timeout</strong></li>
-<li><strong>buffer_size</strong></li>
-<li><strong>snapshot_length</strong></li>
-<li><strong>promisc_mode</strong></li>
-<li><strong>monitor_mode</strong></li>
-<li><strong>direction</strong></li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-</div>
-<div class="section" id="packet-writers">
-<h2><a class="toc-backref" href="#contents">Packet writers</a><a class="headerlink" href="#packet-writers" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="cycapture.libpcap._pcap.PacketWriter">
-<em class="property">class </em><code class="descname">PacketWriter</code><span class="sig-paren">(</span><em>linktype</em>, <em>output</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libpcap._pcap.PacketWriter" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
-<p>Packet writer</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>linktype</strong></li>
-<li><strong>output</strong></li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="class">
-<dt id="cycapture.libpcap._pcap.NonBlockingPacketWriter">
-<em class="property">class </em><code class="descname">NonBlockingPacketWriter</code><span class="sig-paren">(</span><em>linktype</em>, <em>output</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libpcap._pcap.NonBlockingPacketWriter" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#cycapture.libpcap._pcap.PacketWriter" title="cycapture.libpcap._pcap.PacketWriter"><code class="xref py py-class docutils literal"><span class="pre">cycapture.libpcap._pcap.PacketWriter</span></code></a></p>
-<p>Non-blocking packet writer.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>linktype</strong></li>
-<li><strong>output</strong></li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-</div>
-<div class="section" id="offline-filter">
-<h2><a class="toc-backref" href="#contents">Offline filter</a><a class="headerlink" href="#offline-filter" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="cycapture.libpcap._pcap.OfflineFilter">
-<em class="property">class </em><code class="descname">OfflineFilter</code><span class="sig-paren">(</span><em>filter_string</em>, <em>linktype</em>, <em>snaplen=65535</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libpcap._pcap.OfflineFilter" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
-<p>Offline packet filter</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>filter_string</strong></li>
-<li><strong>linktype</strong></li>
-<li><strong>snaplen</strong></li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-</div>
-<div class="section" id="datalink-types">
-<h2><a class="toc-backref" href="#contents">Datalink types</a><a class="headerlink" href="#datalink-types" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="cycapture.libpcap.DLT">
-<em class="property">class </em><code class="descname">DLT</code><a class="headerlink" href="#cycapture.libpcap.DLT" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">enum.IntEnum</span></code></p>
-<p>Datalink types</p>
-<p>Attributes: <code class="docutils literal"><span class="pre">DLT_NULL</span></code>, <code class="docutils literal"><span class="pre">DLT_EN10MB</span></code>, <code class="docutils literal"><span class="pre">DLT_EN3MB</span></code>, <code class="docutils literal"><span class="pre">DLT_AX25</span></code>, <code class="docutils literal"><span class="pre">DLT_PRONET</span></code>, <code class="docutils literal"><span class="pre">DLT_CHAOS</span></code>, <code class="docutils literal"><span class="pre">DLT_IEEE802</span></code>, <code class="docutils literal"><span class="pre">DLT_ARCNET</span></code>, <code class="docutils literal"><span class="pre">DLT_SLIP</span></code>, <code class="docutils literal"><span class="pre">DLT_PPP</span></code>, <code class="docutils literal"><span class="pre">DLT_FDDI</span></code>, <code class="docutils literal"><span class="pre">DLT_RAW</span></code>, <code class="docutils literal"><span class="pre">DLT_IEEE802_11</span></code>, <code class="docutils literal"><span class="pre">DLT_LOOP</span></code>, <code class="docutils literal"><span class="pre">DLT_ENC</span></code>, <code class="docutils literal"><span class="pre">DLT_PRISM_HEADER</span></code>, <code class="docutils literal"><span class="pre">DLT_AIRONET_HEADER</span></code>, <code class="docutils literal"><span class="pre">DLT_IEEE802_11_RADIO</span></code>, <code class="docutils literal"><span class="pre">DLT_IEEE802_11_RADIO_AVS</span></code>, <code class="docutils literal"><span class="pre">DLT_IPV4</span></code>, <code class="docutils literal"><span class="pre">DLT_IPV6</span></code></p>
-</dd></dl>
-
-</div>
-<div class="section" id="utils">
-<h2><a class="toc-backref" href="#contents">Utils</a><a class="headerlink" href="#utils" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
-<dt id="cycapture.libpcap.lookupdev">
-<code class="descname">lookupdev</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libpcap.lookupdev" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dt id="cycapture.libpcap._pcap.lookupdev">
+<code class="descname">lookupdev</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libpcap._pcap.lookupdev" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the default interface.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>interface</strong> (<em>bytes</em>) --
+default interface to sniff on</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="function">
-<dt id="cycapture.libpcap.findalldevs">
-<code class="descname">findalldevs</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libpcap.findalldevs" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dt id="cycapture.libpcap._pcap.datalink_to_description">
+<code class="descname">datalink_to_description</code><span class="sig-paren">(</span><em>int dlt</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libpcap._pcap.datalink_to_description" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>dlt</strong></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>(name, description)</strong> (<em>bytes, bytes</em>) --
+the name and description corresponding to the numeric <cite>dlt</cite></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="function">
-<dt id="cycapture.libpcap.lookupnet">
-<code class="descname">lookupnet</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libpcap.lookupnet" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dt id="cycapture.libpcap._pcap.lookupnet">
+<code class="descname">lookupnet</code><span class="sig-paren">(</span><em>device</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libpcap._pcap.lookupnet" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find the IPv4 network number and netmask for a device.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>device</strong> (bytes or <a class="reference internal" href="addresses.html#cycapture.libtins.NetworkInterface" title="cycapture.libtins.NetworkInterface"><code class="xref py py-class docutils literal"><span class="pre">NetworkInterface</span></code></a>) --
+interface name</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>(netp, maskp, ipv4_netp, ipv4_maskp)</strong> (<em>int, int, bytes, bytes</em>)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="attribute">
-<dt id="cycapture.libpcap.libpcap_version">
-<code class="descclassname">libpcap.</code><code class="descname">libpcap_version</code><em class="property"> = 'libpcap version 1.7.4'</em><a class="headerlink" href="#cycapture.libpcap.libpcap_version" title="Permalink to this definition">¶</a></dt>
+<dt id="cycapture.libpcap._pcap.libpcap_version">
+<code class="descclassname">_pcap.</code><code class="descname">libpcap_version</code><em class="property"> = &quot;version of the wrapped libpcap library&quot;</em><a class="headerlink" href="#cycapture.libpcap._pcap.libpcap_version" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </div>
@@ -251,7 +795,8 @@
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper"><ul class="current">
+        <div class="sphinxsidebarwrapper"><h2><a href="../index.html">Cycapture</a></h2>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../installation.html#prerequisites">Prerequisites</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../installation.html#install-from-sources">Install from sources</a></li>
@@ -270,7 +815,6 @@
 <li class="toctree-l3"><a class="reference internal" href="#sniffers">Sniffers</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#packet-writers">Packet writers</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#offline-filter">Offline filter</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#datalink-types">Datalink types</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#utils">Utils</a></li>
 </ul>
 </li>
@@ -291,19 +835,6 @@
 </li>
 </ul>
 
-<div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
-    <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
-    </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>

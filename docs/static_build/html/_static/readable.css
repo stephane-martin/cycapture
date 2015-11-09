@@ -46,7 +46,7 @@ div.body {
 div.footer {
     color: #555;
     font-size: 14px;
-    margin: 20px auto 30px auto;
+    margin: 20px auto 5em auto;
     text-align: right;
     max-width: 880px;
 }
@@ -62,7 +62,7 @@ div.related {
 }
 
 div.sphinxsidebar {
-    top: 1em;
+    top: 0;
     left: 3em;
     position: fixed;
     font-size: 14px;
@@ -93,6 +93,36 @@ div.sphinxsidebar li.toctree-l1.current li.toctree-l2.current li.toctree-l3.curr
     background-color: yellow;
 }
 
+#searchbox {
+    position: fixed;
+    margin: 0;
+    left: 42%;
+    width: 15em;
+    padding: 0;
+    bottom: 0.5em;
+    z-index: 80;
+}
+
+#searchbox h3, #searchbox p {
+    display: none;
+}
+
+#searchbox form {
+    padding: 0;
+    margin: 0 auto;
+    width: 15em;
+}
+
+#searchbox form input {
+    margin: 0;
+    padding: 0.25em;
+    font-size: 95%;
+    border: 1px solid lightgrey;
+}
+
+#searchbox form input[type=text] {
+    width: 12em;
+}
 
 div.related[role=navigation] {
     position: fixed;
@@ -101,12 +131,14 @@ div.related[role=navigation] {
     margin: 0;
     width: 100%;
     z-index: 40;
+    height: 3em;
 }
 
 div.related[role=navigation] > ul {
     background-color: #F1FFFF;
     padding: 0.75em;
     border-top: 1px dashed grey;
+    border-bottom: 1px solid grey;
     font-size: 100%;
 }
 
@@ -123,9 +155,12 @@ div.related[role=navigation] > ul a:hover {
 div.sphinxsidebarwrapper {
     font-size: 14px;
     line-height: 1.5em;
-    padding: 10px 0 10px 10px;
+    padding: 0 0 10px 10px;
 }
 
+div.sphinxsidebar h2 {
+
+}
 div.sphinxsidebar h3,
 div.sphinxsidebar h4 {
     color: #333;

@@ -1,5 +1,5 @@
-
+# -*- coding: utf-8 -*-
 
 cpdef object lookupdev()
-cpdef object findalldevs()
-cpdef object lookupnet(bytes device)
+cpdef object lookupnet(device)
+cpdef object datalink_to_description(int dlt)

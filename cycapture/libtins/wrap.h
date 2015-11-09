@@ -12,6 +12,8 @@
 #include "tins/network_interface.h"
 #include "tins/tcp.h"
 #include "tins/pppoe.h"
+#include "tins/bootp.h"
+#include "tins/dhcp.h"
 #include "tins/address_range.h"
 #include "tins/dot11/dot11_base.h"
 
@@ -22,15 +24,14 @@
 #endif
 
 namespace Tins {
-    uint32_t convert_to_big_endian_int (IPv4Address& addr);
-    bool network_interface_to_bool(const NetworkInterface& nwi);
 
     typedef HWAddress<6, uint8_t> HWAddress6;
 
     typedef PDUOption<IP::option_identifier, IP> ip_pdu_option;
+    typedef PDUOption<PPPoE::TagTypes, PPPoE> pppoe_tag;
     typedef PDUOption<uint8_t, TCP> tcp_pdu_option;
     typedef PDUOption<uint8_t, Dot11> dot11_pdu_option;
-    typedef PDUOption<PPPoE::TagTypes, PPPoE> pppoe_tag;
+    typedef PDUOption<uint8_t, DHCP> dhcp_option;
 
     inline PDU* cpp_find_pdu(const PDU* pdu, PDU::PDUType t) {
         PDU* current_pdu = (PDU*) pdu;
@@ -42,6 +43,9 @@ namespace Tins {
         return 0;
     }
 
+    inline void bootp_set_chaddr(BootP& bootp_obj, const HWAddress<16> &new_chaddr) {
+        bootp_obj.chaddr(new_chaddr);
+    }
 
     class WrappedIPv4Range : public IPv4Range {
     public:

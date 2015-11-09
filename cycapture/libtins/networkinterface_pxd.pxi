@@ -16,23 +16,22 @@ cdef extern from "tins/network_interface.h" namespace "Tins" nogil:
         cpp_bool is_loopback() const
         cpp_bool operator==(const cppNetworkInterface &rhs) const
         cpp_bool operator!=(const cppNetworkInterface &rhs) const
+        cpp_bool to_bool "operator bool" () const
 
     cppNetworkInterface default_interface "Tins::NetworkInterface::default_interface"()
     # noinspection PyUnresolvedReferences
     vector[cppNetworkInterface] all_interfaces "Tins::NetworkInterface::all"()
     cppNetworkInterface network_interface_from_index "Tins::NetworkInterface::from_index"(uint32_t identifier)
 
-cdef extern from "wrap.h" namespace "Tins" nogil:
-    cpp_bool network_interface_to_bool(const cppNetworkInterface& nwi)
 
 cdef class NetworkInterface(object):
-    cdef cppNetworkInterface* ptr
-    cpdef int ident(self)
-    cpdef bytes name(self)
-    cpdef object addresses(self)
-    cpdef cpp_bool is_loopback(self)
-    cdef object _make_from_address(self, object address)
+    cdef cppNetworkInterface interface
+    cpdef is_loopback(self)
+    cpdef equals(self, other)
 
     @staticmethod
     cdef inline factory(cppNetworkInterface* ptr):
-        return NetworkInterface(name=ptr.name())
+        i = NetworkInterface()
+        if ptr is not NULL:
+            i.interface = ptr[0]
+        return i

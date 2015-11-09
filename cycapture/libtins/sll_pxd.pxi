@@ -5,7 +5,7 @@ cdef extern from "tins/sll.h" namespace "Tins" nogil:
 
     cppclass cppSLL "Tins::SLL" (cppPDU):
         cppSLL()
-        cppSLL(const uint8_t *buf, uint32_t total_sz)
+        cppSLL(const uint8_t *buf, uint32_t total_sz) except +custom_exception_handler
 
         uint16_t packet_type() const
         void packet_type(uint16_t new_packet_type)
@@ -25,13 +25,4 @@ cdef extern from "tins/sll.h" namespace "Tins" nogil:
 cdef class SLL(PDU):
     cdef cppSLL* ptr
 
-    @staticmethod
-    cdef inline factory(cppPDU* ptr, uint8_t* buf, int size, object parent):
-        if ptr is NULL and buf is NULL:
-            return SLL()
-        obj = SLL(_raw=True)
-        obj.ptr = new cppSLL(<uint8_t*> buf, <uint32_t> size) if ptr is NULL else <cppSLL*> ptr
-        obj.base_ptr = <cppPDU*> obj.ptr
-        obj.parent = parent
-        return obj
 

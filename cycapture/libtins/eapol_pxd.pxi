@@ -8,6 +8,7 @@ cdef extern from "tins/eapol.h" namespace "Tins" nogil:
 
     size_t rc4eapol_key_iv_size "Tins::RC4EAPOL::key_iv_size"
     size_t rc4eapol_key_sign_size "Tins::RC4EAPOL::key_sign_size"
+
     size_t rsneapol_key_iv_size "Tins::RSNEAPOL::key_iv_size"
     size_t rsneapol_nonce_size "Tins::RSNEAPOL::nonce_size"
     size_t rsneapol_mic_size "Tins::RSNEAPOL::mic_size"
@@ -15,9 +16,9 @@ cdef extern from "tins/eapol.h" namespace "Tins" nogil:
     size_t rsneapol_id_size "Tins::RSNEAPOL::id_size"
 
     enum EAPOLTYPE "Tins::EAPOL::EAPOLTYPE":
-        RC4 "Tins::EAPOL::RC4",
-        RSN "Tins::EAPOL::RSN",
-        EAPOL_WPA "Tins::EAPOL::EAPOL_WPA"
+        EAPOL_RC4 "Tins::EAPOL::RC4",
+        EAPOL_RSN "Tins::EAPOL::RSN",
+        EAPOL_EAPOL_WPA "Tins::EAPOL::EAPOL_WPA"
 
     # Note: allocate a cppEAPOL* with 'new' -> careful with memory management
     cppEAPOL* eapol_from_bytes "Tins::EAPOL::from_bytes" (const uint8_t *buf, uint32_t total_sz) except +custom_exception_handler
@@ -77,52 +78,34 @@ cdef extern from "tins/eapol.h" namespace "Tins" nogil:
         small_uint1 install() const
         small_uint1 key_ack() const
 
-        void key_length(uint16_t new_key_length)
-        void replay_counter(uint64_t new_replay_counter)
+        void key_length(uint16_t new_key_length)                #
+        void replay_counter(uint64_t new_replay_counter)        #
         void key_iv(const uint8_t *new_key_iv)
         void nonce(const uint8_t *new_nonce)
         void rsc(const uint8_t *new_rsc)
         void id(const uint8_t *new_id)
         void mic(const uint8_t *new_mic)
-        void wpa_length(uint16_t new_wpa_length)
-        void key(const vector[uint8_t] &new_key)
-        void key_mic(small_uint1 new_key_mic)
-        void secure(small_uint1 new_secure)
-        void error(small_uint1 new_error)
-        void request(small_uint1 new_request)
-        void encrypted(small_uint1 new_encrypted)
-        void key_descriptor(small_uint3 new_key_descriptor)
-        void key_t(small_uint1 new_key_t)
-        void key_index(small_uint2 new_key_index)
-        void install(small_uint1 new_install)
-        void key_ack(small_uint1 new_key_ack)
+        void wpa_length(uint16_t new_wpa_length)                #
+        void key(const vector[uint8_t] &new_key)                #
+        void key_mic(small_uint1 new_key_mic)                   #
+        void secure(small_uint1 new_secure)                     #
+        void error(small_uint1 new_error)                       #
+        void request(small_uint1 new_request)                   #
+        void encrypted(small_uint1 new_encrypted)               #
+        void key_descriptor(small_uint3 new_key_descriptor)     #
+        void key_t(small_uint1 new_key_t)                       #
+        void key_index(small_uint2 new_key_index)               #
+        void install(small_uint1 new_install)                   #
+        void key_ack(small_uint1 new_key_ack)                   #
 
 cdef class EAPOL(PDU):
-
     cdef cppEAPOL* ptr
 
     @staticmethod
     cdef c_from_bytes(uint8_t* buf_addr, uint32_t size)
 
 cdef class RC4EAPOL(EAPOL):
-    @staticmethod
-    cdef inline factory(cppPDU* ptr, uint8_t* buf, int size, object parent):
-        if ptr is NULL and buf is NULL:
-            return RC4EAPOL()
-        obj = RC4EAPOL(_raw=True)
-        obj.ptr = new cppRC4EAPOL(<uint8_t*> buf, <uint32_t> size) if ptr is NULL else <cppRC4EAPOL*> ptr
-        obj.base_ptr = <cppPDU*> obj.ptr
-        obj.parent = parent
-        return obj
+    pass
 
 cdef class RSNEAPOL(EAPOL):
-
-    @staticmethod
-    cdef inline factory(cppPDU* ptr, uint8_t* buf, int size, object parent):
-        if ptr is NULL and buf is NULL:
-            return RSNEAPOL()
-        obj = RSNEAPOL(_raw=True)
-        obj.ptr = new cppRSNEAPOL(<uint8_t*> buf, <uint32_t> size) if ptr is NULL else <cppRSNEAPOL*> ptr
-        obj.base_ptr = <cppPDU*> obj.ptr
-        obj.parent = parent
-        return obj
+    pass

@@ -5,62 +5,38 @@ ICMP packet python class
 
 cdef class ICMP(PDU):
     """
-    ICMP packet
+    ICMP packet.
+
+    Instances of this class must be sent over a level 3 PDU.
     """
     pdu_flag = PDU.ICMP
     pdu_type = PDU.ICMP
 
-    ECHO_REPLY = ICMP_ECHO_REPLY
-    DEST_UNREACHABLE = ICMP_DEST_UNREACHABLE
-    SOURCE_QUENCH = ICMP_SOURCE_QUENCH
-    REDIRECT = ICMP_REDIRECT
-    ECHO_REQUEST = ICMP_ECHO_REQUEST
-    TIME_EXCEEDED = ICMP_TIME_EXCEEDED
-    PARAM_PROBLEM = ICMP_PARAM_PROBLEM
-    TIMESTAMP_REQUEST = ICMP_TIMESTAMP_REQUEST
-    TIMESTAMP_REPLY = ICMP_TIMESTAMP_REPLY
-    INFO_REQUEST = ICMP_INFO_REQUEST
-    INFO_REPLY = ICMP_INFO_REPLY
-    ADDRESS_MASK_REQUEST = ICMP_ADDRESS_MASK_REQUEST
-    ADDRESS_MASK_REPLY = ICMP_ADDRESS_MASK_REPLY
-
-    FLAGS = Enum('FLAGS', {
-        'ECHO_REPLY': ECHO_REPLY,
-        'DEST_UNREACHABLE': DEST_UNREACHABLE,
-        'SOURCE_QUENCH': SOURCE_QUENCH,
-        'REDIRECT': REDIRECT,
-        'ECHO_REQUEST': ECHO_REQUEST,
-        'TIME_EXCEEDED': TIME_EXCEEDED,
-        'PARAM_PROBLEM': PARAM_PROBLEM,
-        'TIMESTAMP_REQUEST': TIMESTAMP_REQUEST,
-        'TIMESTAMP_REPLY': TIMESTAMP_REPLY,
-        'INFO_REQUEST': INFO_REQUEST,
-        'INFO_REPLY': INFO_REPLY,
-        'ADDRESS_MASK_REQUEST': ADDRESS_MASK_REQUEST,
-        'ADDRESS_MASK_REPLY': ADDRESS_MASK_REPLY
+    Flags = make_enum('ICMP_Flags', 'Flags', 'ICMP flags', {
+        'ECHO_REPLY': ICMP_ECHO_REPLY,
+        'DEST_UNREACHABLE': ICMP_DEST_UNREACHABLE,
+        'SOURCE_QUENCH': ICMP_SOURCE_QUENCH,
+        'REDIRECT': ICMP_REDIRECT,
+        'ECHO_REQUEST': ICMP_ECHO_REQUEST,
+        'TIME_EXCEEDED': ICMP_TIME_EXCEEDED,
+        'PARAM_PROBLEM': ICMP_PARAM_PROBLEM,
+        'TIMESTAMP_REQUEST': ICMP_TIMESTAMP_REQUEST,
+        'TIMESTAMP_REPLY': ICMP_TIMESTAMP_REPLY,
+        'INFO_REQUEST': ICMP_INFO_REQUEST,
+        'INFO_REPLY': ICMP_INFO_REPLY,
+        'ADDRESS_MASK_REQUEST': ICMP_ADDRESS_MASK_REQUEST,
+        'ADDRESS_MASK_REPLY': ICMP_ADDRESS_MASK_REPLY
     })
 
-    FLAGS_VALUES = [flag.value for flag in FLAGS]
 
-    def __cinit__(self, flag=None, buf=None, _raw=False):
+    def __cinit__(self, flag=None, _raw=False):
         if _raw:
             return
 
-        cdef uint8_t* buf_addr
-        cdef uint32_t size
-
-        if buf is None and flag is None:
+        if flag is None:
             self.ptr = new cppICMP()
-        elif buf is not None:
-            PDU.prepare_buf_arg(buf, &buf_addr, &size)
-            self.ptr = new cppICMP(buf_addr, size)
-        elif isinstance(flag, int) and flag in ICMP.FLAGS_VALUES:
-            self.ptr = new cppICMP(<ICMP_Flags> flag)
-        elif isinstance(flag, ICMP.FLAGS):
-            self.ptr = new cppICMP(<ICMP_Flags> flag.value)
         else:
-            flag = int(flag)
-            self.ptr = new cppICMP(<ICMP_Flags> flag)
+            self.ptr = new cppICMP(ICMP.Flags(int(flag)))
 
         self.base_ptr = <cppPDU*> self.ptr
         self.parent = None
@@ -71,74 +47,109 @@ cdef class ICMP(PDU):
         self.ptr = NULL
         self.parent = None
 
-    def __init__(self, flag=None, buf=None, _raw=False):
-        pass
+    def __init__(self, flag=None):
+        """
+        __init__(flag=None)
+        Parameters
+        ----------
+        flag: int or :py:class:`~.ICMP.Flags`
+            The type flag which will be set (`ECHO_REQUEST` if none provided)
+        """
 
     property checksum:
+        """
+        The checksum field (read-only)
+        """
         def __get__(self):
             return self.ptr.checksum()
 
     property code:
+        """
+        Code field (read-write, `uint8_t`)
+        """
         def __get__(self):
             return self.ptr.code()
         def __set__(self, value):
             self.ptr.code(<uint8_t> int(value))
 
-    property icmp_type:
+    property type:
+        """
+        Type field (read-write, :py:class:`~.ICMP.Flags`
+        """
         def __get__(self):
             return self.ptr.get_type()
-        def __set__(self, value):
-            if isinstance(value, ICMP.FLAGS):
-                value = value.value
-            value = int(value)
-            if value in ICMP.FLAGS_VALUES:
-                self.ptr.set_type(<ICMP_Flags>value)
-            else:
-                raise ValueError("unknown ICMP flag type")
 
-    property ident:
+        def __set__(self, value):
+            value = ICMP.Flags(value)
+            self.ptr.set_type(<ICMP_Flags>value)
+
+    property id:
+        """
+        Id field (read-write, `uint16_t`)
+        """
         def __get__(self):
             return self.ptr.ident()
         def __set__(self, value):
             self.ptr.ident(<uint16_t> value)
 
     property sequence:
+        """
+        Sequence field (read-write, `uint16_t`)
+        """
         def __get__(self):
             return self.ptr.sequence()
         def __set__(self, value):
             self.ptr.sequence(<uint16_t> value)
 
     property mtu:
+        """
+        MTU field (read-write, `uint16_t`)
+        """
         def __get__(self):
             return self.ptr.mtu()
         def __set__(self, value):
             self.ptr.mtu(<uint16_t> value)
 
     property pointer:
+        """
+        Pointer field (read-write, `uint8_t`)
+        """
         def __get__(self):
             return self.ptr.pointer()
         def __set__(self, value):
             self.ptr.pointer(<uint8_t> value)
 
     property original_timestamp:
+        """
+        Original timestamp field (read-write, `uint32_t`)
+        """
         def __get__(self):
             return self.ptr.original_timestamp()
         def __set__(self, value):
             self.ptr.original_timestamp(<uint32_t> value)
 
     property receive_timestamp:
+        """
+        Receive timestamp field (read-write, `uint32_t`)
+        """
         def __get__(self):
             return self.ptr.receive_timestamp()
         def __set__(self, value):
             self.ptr.receive_timestamp(<uint32_t> value)
 
     property transmit_timestamp:
+        """
+        Transmit timestamp field (read-write, `uint32_t`)
+        """
         def __get__(self):
             return self.ptr.transmit_timestamp()
         def __set__(self, value):
             self.ptr.transmit_timestamp(<uint32_t> value)
 
     property gateway:
+        """
+        Gateway field (read-write, :py:class:`~.IPv4Address`)
+        """
         def __get__(self):
             cdef cppIPv4Address g = self.ptr.gateway()
             return IPv4Address.factory(&g)
@@ -147,6 +158,9 @@ cdef class ICMP(PDU):
             self.ptr.gateway(<cppIPv4Address>(addr.ptr[0]))
 
     property address_mask:
+        """
+        Address mask field (read-write, :py:class:`~.IPv4Address`)
+        """
         def __get__(self):
             cdef cppIPv4Address mask = self.ptr.address_mask()
             return IPv4Address.factory(&mask)
@@ -155,6 +169,10 @@ cdef class ICMP(PDU):
             self.ptr.address_mask(<cppIPv4Address>(addr.ptr[0]))
 
     cpdef set_dest_unreachable(self):
+        """
+        set_dest_unreachable()
+        Sets `destination unreachable` for this PDU.
+        """
         self.ptr.set_dest_unreachable()
 
     cpdef set_source_quench(self):
@@ -184,3 +202,15 @@ cdef class ICMP(PDU):
         addr = IPv4Address(address)
         self.ptr.set_redirect(<uint8_t> code, <cppIPv4Address>(addr.ptr[0]))
 
+
+
+    cdef cppPDU* replace_ptr_with_buf(self, uint8_t* buf, int size) except NULL:
+        if self.ptr is not NULL and self.parent is None:
+            del self.ptr
+        self.ptr = new cppICMP(<uint8_t*> buf, <uint32_t> size)
+        return self.ptr
+
+    cdef replace_ptr(self, cppPDU* ptr):
+        if self.ptr is not NULL and self.parent is None:
+            del self.ptr
+        self.ptr = <cppICMP*> ptr

@@ -52,9 +52,9 @@ cdef extern from "tins/radiotap.h" namespace "Tins" nogil:
 
     cppclass cppRadioTap "Tins::RadioTap" (cppPDU):
         cppRadioTap()
-        cppRadioTap(const uint8_t *buf, uint32_t total_sz)
+        cppRadioTap(const uint8_t *buf, uint32_t total_sz) except +custom_exception_handler
 
-        void send(cppPacketSender &sender, const cppNetworkInterface &iface)
+        void send(cppPacketSender &sender, const cppNetworkInterface &iface) except +custom_exception_handler
 
         uint8_t version() const
         void version(uint8_t new_version)
@@ -65,45 +65,45 @@ cdef extern from "tins/radiotap.h" namespace "Tins" nogil:
         uint16_t length() const
         void length(uint16_t new_length)
 
-        uint64_t tsft() const
+        uint64_t tsft() except +custom_exception_handler
         void tsft(uint64_t new_tsft)
 
-        RTFrameFlags flags() const
+        RTFrameFlags flags() except +custom_exception_handler
         void flags(RTFrameFlags new_flags)
 
-        uint8_t rate() const
+        uint8_t rate() except +custom_exception_handler
         void rate(uint8_t new_rate)
 
-        uint16_t channel_freq() const
-        uint16_t channel_type() const
-        uint32_t channel_plus() const
+        uint16_t channel_freq() except +custom_exception_handler
+        uint16_t channel_type() except +custom_exception_handler
+        uint32_t channel_plus() except +custom_exception_handler
         void channel(uint16_t new_freq, uint16_t new_type)
 
-        int8_t dbm_signal() const
+        int8_t dbm_signal() except +custom_exception_handler
         void dbm_signal(int8_t new_dbm_signal)
 
-        int8_t dbm_noise() const
+        int8_t dbm_noise() except +custom_exception_handler
         void dbm_noise(int8_t new_dbm_noise)
 
-        uint16_t signal_quality() const
+        uint16_t signal_quality() except +custom_exception_handler
         void signal_quality(uint8_t new_signal_quality)
 
-        uint8_t antenna() const
+        uint8_t antenna() except +custom_exception_handler
         void antenna(uint8_t new_antenna)
 
-        uint8_t db_signal() const
+        uint8_t db_signal() except +custom_exception_handler
         void db_signal(uint8_t new_db_signal)
 
-        uint16_t rx_flags() const
+        uint16_t rx_flags() except +custom_exception_handler
         void rx_flags(uint16_t new_rx_flag)
 
-        uint16_t tx_flags() const
+        uint16_t tx_flags() except +custom_exception_handler
         void tx_flags(uint16_t new_tx_flag)
 
-        uint8_t data_retries() const
+        uint8_t data_retries() except +custom_exception_handler
         void data_retries(uint8_t new_data_retries)
 
-        mcs_type mcs() const
+        mcs_type mcs() except +custom_exception_handler
         void mcs(const mcs_type& new_mcs)
 
         RTPresentFlags present() const
@@ -111,16 +111,6 @@ cdef extern from "tins/radiotap.h" namespace "Tins" nogil:
 
 cdef class RadioTap(PDU):
     cdef cppRadioTap* ptr
-
-    @staticmethod
-    cdef inline factory(cppPDU* ptr, uint8_t* buf, int size, object parent):
-        if ptr is NULL and buf is NULL:
-            return RadioTap()
-        obj = RadioTap(_raw=True)
-        obj.ptr = new cppRadioTap(<uint8_t*> buf, <uint32_t> size) if ptr is NULL else <cppRadioTap*> ptr
-        obj.base_ptr = <cppPDU*> obj.ptr
-        obj.parent = parent
-        return obj
 
     cpdef send(self, PacketSender sender, NetworkInterface iface)
     cpdef channel(self, new_freq, new_type)

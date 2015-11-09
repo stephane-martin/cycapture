@@ -33,25 +33,6 @@ cdef extern from "tins/ipsec.h" namespace "Tins" nogil:
 cdef class IPSecAH(PDU):
     cdef cppIPSecAH* ptr
 
-    @staticmethod
-    cdef inline factory(cppPDU* ptr, uint8_t* buf, int size, object parent):
-        if ptr is NULL and buf is NULL:
-            return IPSecAH()
-        obj = IPSecAH(_raw=True)
-        obj.ptr = new cppIPSecAH(<uint8_t*> buf, <uint32_t> size) if ptr is NULL else <cppIPSecAH*> ptr
-        obj.base_ptr = <cppPDU*> obj.ptr
-        obj.parent = parent
-        return obj
-
 cdef class IPSecESP(PDU):
     cdef cppIPSecESP* ptr
 
-    @staticmethod
-    cdef inline factory(cppPDU* ptr, uint8_t* buf, int size, object parent):
-        if ptr is NULL and buf is NULL:
-            return IPSecESP()
-        obj = IPSecESP(_raw=True)
-        obj.ptr = new cppIPSecESP(<uint8_t*> buf, <uint32_t> size) if ptr is NULL else <cppIPSecESP*> ptr
-        obj.base_ptr = <cppPDU*> obj.ptr
-        obj.parent = parent
-        return obj

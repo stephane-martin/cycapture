@@ -8,13 +8,6 @@ ctypedef struct packet_node:
     unsigned char* buf
 
 
-ctypedef struct thread_pcap_node:
-    list_head link
-    pthread_t thread
-    int asked_to_stop
-    pcap_t* handle
-
-
 cdef inline void _store_c_callback(long tv_sec, int tv_usec, int caplen, int length, const unsigned char* pkt, void* p) nogil:
     cdef packet_node* temp = <packet_node*> malloc(sizeof(packet_node))
     temp.tv_sec = tv_sec
@@ -36,7 +29,6 @@ cdef inline void _do_python_callback(unsigned char* usr, const pcap_pkthdr_t* pk
         (<object> (<void*> usr))(
             pkthdr.ts.tv_sec,
             pkthdr.ts.tv_usec,
-            pkthdr.caplen,
             pkthdr.len,
             make_mview_from_const_uchar_buf(pkt, pkthdr.caplen)
         )

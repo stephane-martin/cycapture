@@ -48,7 +48,20 @@
              accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">cycapture</a> &raquo;</li> 
       </ul>
-    </div>  
+    </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>  
 
     <div class="document">
       <div class="documentwrapper">
@@ -60,10 +73,13 @@
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="api/libpcap.html">libpcap bindings</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="api/libpcap.html#sniffers">Sniffers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/libpcap.html#sniffers">Sniffers</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/libpcap.html#blocking-sniffer">Blocking Sniffer</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/libpcap.html#non-blocking-sniffer">Non-blocking sniffer</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="api/libpcap.html#packet-writers">Packet writers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/libpcap.html#offline-filter">Offline filter</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/libpcap.html#datalink-types">Datalink types</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/libpcap.html#utils">Utils</a></li>
 </ul>
 </li>
@@ -126,6 +142,7 @@
 <li class="toctree-l3"><a class="reference internal" href="api/dot11.html#ieee-802-11-control-frames">IEEE 802.11 control frames</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/dot11.html#helpers">Helpers</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="api/dot11.html#capabilities">Capabilities</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/dot11.html#rsn-information">RSN information</a></li>
 <li class="toctree-l4"><a class="reference internal" href="api/dot11.html#named-tuples">Named tuples</a></li>
 </ul>
 </li>
@@ -173,7 +190,8 @@
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper"><ul class="current">
+        <div class="sphinxsidebarwrapper"><h2><a href="./index.html">Cycapture</a></h2>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="installation.html#prerequisites">Prerequisites</a></li>
 <li class="toctree-l2"><a class="reference internal" href="installation.html#install-from-sources">Install from sources</a></li>
@@ -192,7 +210,6 @@
 <li class="toctree-l3"><a class="reference internal" href="api/libpcap.html#sniffers">Sniffers</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/libpcap.html#packet-writers">Packet writers</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/libpcap.html#offline-filter">Offline filter</a></li>
-<li class="toctree-l3"><a class="reference internal" href="api/libpcap.html#datalink-types">Datalink types</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/libpcap.html#utils">Utils</a></li>
 </ul>
 </li>
@@ -213,19 +230,6 @@
 </li>
 </ul>
 
-<div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
-    </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>

@@ -1,34 +1,30 @@
 # -*- coding: utf-8 -*-
 
-cdef void sig_handler(int signum) nogil
-ctypedef void (*sighandler_t)(int s) nogil
+# noinspection PyUnresolvedReferences
+from .._pthreadwrap cimport create_error_check_lock, pthread_mutex_lock, pthread_mutex_unlock, destroy_error_check_lock
+# noinspection PyUnresolvedReferences
+from .._pthreadwrap cimport PThread
 
-cdef class BlockingSniffer(Sniffer):
+# noinspection PyUnresolvedReferences
+from .._signal cimport block_sig_except, set_sig_interrupt, unset_sig_interrupt, set_sigaction
+from .._signal cimport SIGUSR1
+from .._signal cimport siginfo_t
+from .._signal cimport Sigaction
+
+cdef void sigaction_handler(int signum, siginfo_t* info, void* unused) nogil
+
+cdef class BlockingSniffer(BaseSniffer):
     cdef unsigned char* python_callback_ptr
     cdef object python_callback
-    cdef pthread_t* parent_thread
-    cdef sighandler_t old_sigint
+    cdef PThread parent_thread
+    cdef Sigaction old_sigaction
 
     cpdef sniff_and_store(self, container, f=?, int set_signal_mask=?, int max_p=?)
     cpdef sniff_callback(self, f, int set_signal_mask=?, int max_p=?)
     cpdef ask_stop(self)
 
-    cdef void _set_signal_mask(self) nogil
-    cdef thread_pcap_node* register(self) except NULL
+    cdef register(self)
     cdef unregister(self)
-
-    @staticmethod
-    cdef thread_pcap_node* get_pcap_for_thread(pthread_t thread) nogil
-
-    @staticmethod
-    cdef thread_pcap_node* register_pcap_for_thread(pcap_t* handle) except NULL
-
-    @staticmethod
-    cdef unregister_pcap_for_thread()
-
-    @staticmethod
-    cdef inline int thread_has_pcap(pthread_t thread) nogil:
-        return <int>(BlockingSniffer.get_pcap_for_thread(thread) != NULL)
 
     @staticmethod
     cdef inline void store_packet_node_in_seq_with_f(packet_node* n, object l, object f):

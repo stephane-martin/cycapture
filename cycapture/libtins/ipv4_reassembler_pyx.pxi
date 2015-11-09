@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
 
 cdef class IPReassembler(object):
-    FRAGMENTED = TINS_FRAGMENTED
-    NOT_FRAGMENTED = TINS_NOT_FRAGMENTED
-    REASSEMBLED = TINS_REASSEMBLED
+    Status = IntEnum('IPReassemblerStatus', {
+        'FRAGMENTED': TINS_FRAGMENTED,
+        'NOT_FRAGMENTED': TINS_NOT_FRAGMENTED,
+        'REASSEMBLED': TINS_REASSEMBLED
+    })
+
 
     def __cinit__(self, callback=None):
         self.assembler = new IPv4Reassembler()
@@ -15,13 +18,11 @@ cdef class IPReassembler(object):
     def __init__(self, callback=None):
         self.py_callback = callback
 
-    cpdef feed(self, PDU pdu):
-        if pdu is None:
-            return None
-        cdef packet_status status = self.assembler.process(pdu.base_ptr[0])
-        if status != self.FRAGMENTED:
-            if self.py_callback is not None:
-                self.py_callback(pdu)
-            return pdu
-        return None
+    cpdef process(self, pdu):
+        if not isinstance(pdu, PDU):
+            raise TypeError
+        cdef packet_status status = int(self.assembler.process((<PDU> pdu).base_ptr[0]))
+        if status != IPReassembler.Status.FRAGMENTED and self.py_callback is not None:
+            self.py_callback(pdu)
+        return status
 

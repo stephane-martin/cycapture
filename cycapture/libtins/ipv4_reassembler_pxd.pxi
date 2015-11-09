@@ -21,6 +21,6 @@ cdef extern from "tins/ip_reassembler.h" namespace "Tins" nogil:
 cdef class IPReassembler(object):
     cdef object py_callback
     cdef IPv4Reassembler* assembler
-    cpdef feed(self, PDU pdu)
+    cpdef process(self, pdu)
 
 

@@ -23,18 +23,9 @@ cdef extern from "tins/ethernetII.h" namespace "Tins" nogil:
 
 cdef class EthernetII(PDU):
     cdef cppEthernetII* ptr
-
-    @staticmethod
-    cdef inline factory(cppPDU* ptr, uint8_t* buf, int size, object parent):
-        if ptr is NULL and buf is NULL:
-            return EthernetII()
-        obj = EthernetII(_raw=True)
-        obj.ptr = new cppEthernetII(<uint8_t*> buf, <uint32_t> size) if ptr is NULL else <cppEthernetII*> ptr
-        obj.base_ptr = <cppPDU*> obj.ptr
-        obj.parent = parent
-        return obj
-
     cpdef send(self, PacketSender sender, NetworkInterface iface)
+
+
 
 
 

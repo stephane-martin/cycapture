@@ -42,6 +42,7 @@ cdef extern from "wrap.h":
     cdef bint BSD_OR_ZERO
 
 include "small_uint_pxd.pxi"
+include "constants_pxd.pxi"
 include "ipv4_address_pxd.pxi"
 include "ipv6_address_pxd.pxi"
 include "hw_address_pxd.pxi"
@@ -61,6 +62,7 @@ include "radiotap_pxd.pxi"
 include "arp_pxd.pxi"
 include "dot3_pxd.pxi"
 include "bootp_pxd.pxi"
+include "dhcp_pxd.pxi"
 include "dot1q_pxd.pxi"
 include "loopback_pxd.pxi"
 include "llc_pxd.pxi"

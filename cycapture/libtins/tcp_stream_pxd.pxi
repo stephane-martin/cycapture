@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 cdef extern from "tins/tcp_stream.h" namespace "Tins":
-
     cppclass cppTCPStream "Tins::TCPStream":
 
         cppclass StreamInfo:

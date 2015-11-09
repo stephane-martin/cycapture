@@ -30,9 +30,9 @@ class NetworkInterfaceTest(unittest.TestCase):
     def test_info(self):
         addr = IPv4Address('127.0.0.1')
         iface = NetworkInterface(address=addr)
-        addrs = iface.addresses()
-        self.assertEquals(addrs['ip_addr'], "127.0.0.1")
-        self.assertEquals(addrs['netmask'], "255.0.0.0")
+        addrs = iface.addresses
+        self.assertEquals(addrs.address, "127.0.0.1")
+        self.assertEquals(addrs.netmask, "255.0.0.0")
 
     def test_equals(self):
         addr = IPv4Address('127.0.0.1')

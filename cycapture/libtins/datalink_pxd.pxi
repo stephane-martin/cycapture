@@ -9,9 +9,21 @@ cdef extern from "tins/data_link_type.h" nogil:
         DLT_IEEE802_11,
         DLT_IEEE802_11_RADIO
 
-cdef extern from "tins/data_link_type.h" namespace "Tins" nogil:
-    cdef cppclass DataLinkType[cppEthernetII]:
-        int get_type() const
+# cdef extern from "tins/data_link_type.h" namespace "Tins" nogil:
+#     cdef cppclass DataLinkType[cppEthernetII]:
+#         int get_type() const
+#     cdef cppclass DataLinkType[cppDot3]:
+#         int get_type() const
+#     cdef cppclass DataLinkType[cppSLL]:
+#         int get_type() const
+#     cdef cppclass DataLinkType[cppLoopback]:
+#         int get_type() const
+#     cdef cppclass DataLinkType[cppPPI]:
+#         int get_type() const
+#     cdef cppclass DataLinkType[cppDot11]:
+#         int get_type() const
+#     cdef cppclass DataLinkType[cppRadioTap]:
+#         int get_type() const
 
 # TINS_MAKE_DATA_LINK_TYPE(EthernetII, DLT_EN10MB)
 # TINS_MAKE_DATA_LINK_TYPE(Dot3, DLT_EN10MB)

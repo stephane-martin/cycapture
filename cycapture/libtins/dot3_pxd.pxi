@@ -24,17 +24,4 @@ cdef extern from "tins/dot3.h" namespace "Tins" nogil:
 cdef class Dot3(PDU):
     cdef cppDot3* ptr
 
-    @staticmethod
-    cdef inline factory(cppPDU* ptr, uint8_t* buf, int size, object parent):
-        if ptr is NULL and buf is NULL:
-            return Dot3()
-        obj = Dot3(_raw=True)
-        obj.ptr = new cppDot3(<uint8_t*> buf, <uint32_t> size) if ptr is NULL else <cppDot3*> ptr
-        obj.base_ptr = <cppPDU*> obj.ptr
-        obj.parent = parent
-        return obj
-
     cpdef send(self, PacketSender sender, NetworkInterface iface)
-
-
-

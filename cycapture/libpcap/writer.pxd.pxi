@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 cdef class PacketWriter(object):
-    cdef object output_stream
+    cdef object output
     cdef int linktype
     cdef pcap_t* handle
     cdef pcap_dumper_t* dumper
@@ -11,7 +11,8 @@ cdef class PacketWriter(object):
     cpdef write(self, object buf, long tv_sec=?, int tv_usec=?)
     cdef int write_uchar_buf(self, unsigned char* buf, int length, long tv_sec=?, int tv_usec=?) nogil
     cdef _clean(self)
-    cpdef stop(self)
+    cpdef open(self)
+    cpdef close(self)
 
 cdef class NonBlockingPacketWriter(PacketWriter):
     cdef object q

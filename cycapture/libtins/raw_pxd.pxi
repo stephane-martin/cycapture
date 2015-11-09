@@ -13,14 +13,5 @@ cdef extern from "tins/rawpdu.h" namespace "Tins" nogil:
 
 cdef class RAW(PDU):
     cdef cppRAW* ptr
-    cpdef to(self, obj)
-
-    @staticmethod
-    cdef inline factory(cppPDU* ptr, uint8_t* buf, int size, object parent):
-        if ptr is NULL and buf is NULL:
-            return RAW()
-        obj = RAW(_raw=True)
-        obj.ptr = new cppRAW(<uint8_t*> buf, <uint32_t> size) if ptr is NULL else <cppRAW*> ptr
-        obj.base_ptr = <cppPDU*> obj.ptr
-        obj.parent = parent
-        return obj
+    cpdef to(self, pdu_class)
+    cdef equals(self, other)

@@ -3,24 +3,45 @@
 cdef class IPv4Address(object):
     """
     Encapsulate an IPv4 address.
+
+    IPv4Address implements rich comparison::
+
+        IPv4Address("192.168.0.1") != IPv4Address("8.8.8.8")
+        IPv4Address("192.168.0.1") > IPv4Address("8.8.8.8")
+
+    IPv4Address can be hashed::
+
+        print(hash(IPv4Address("192.168.0.1")))
+
+    To get the integer representation::
+
+        print(int(IPv4Address("192.168.0.1")))
+
+    IPv4 ranges can be be built from addresses::
+
+        range = IPv4Address("192.168.0.1") / 24
     """
     broadcast = IPv4Address("255.255.255.255")
 
-    def __cinit__(self, object addr=None):
+    def __cinit__(self, addr=None):
         if addr is None:
             self.ptr = new cppIPv4Address()
         elif isinstance(addr, int):
             self.ptr = new cppIPv4Address(<uint32_t> addr)
+        elif isinstance(addr, unicode):
+            addr = addr.encode('ascii')
+            self.ptr = new cppIPv4Address(<string> (<bytes> addr))
         elif isinstance(addr, bytes):
             self.ptr = new cppIPv4Address(<string> (<bytes> addr))
         elif isinstance(addr, IPv4Address):
-            self.ptr = new cppIPv4Address(convert_to_big_endian_int((<IPv4Address> addr).ptr[0]))
+            self.ptr = new cppIPv4Address((<IPv4Address> addr).ptr.to_uint32())
         else:
-            self.ptr = new cppIPv4Address(<string> (bytes(addr)))
+            addr = bytes(addr)
+            self.ptr = new cppIPv4Address(<string> addr)
 
-    def __init__(self, object addr=None):
+    def __init__(self, addr=None):
         """
-        __init__(self, object addr=None)
+        __init__(self, addr=None)
 
         Parameters
         ----------
@@ -33,39 +54,39 @@ cdef class IPv4Address(object):
             del self.ptr
 
     def __str__(self):
-        return bytes(self.ptr.to_string()).decode('utf-8')
+        return <bytes> (self.ptr.to_string())
 
     def __repr__(self):
-        return u"IPv4Address('{}')".format(bytes(self.ptr.to_string()).decode('utf-8'))
+        return b"IPv4Address('{}')".format(<bytes> (self.ptr.to_string()))
 
-    cpdef cpp_bool is_loopback(self):
+    cpdef is_loopback(self):
         """
         Returns
         -------
         bool
             True if the address is a loopback address.
         """
-        return self.ptr.is_loopback()
+        return bool(self.ptr.is_loopback())
 
-    cpdef cpp_bool is_private(self):
+    cpdef is_private(self):
         """
         Returns
         -------
         bool
             True if the address is a private address.
         """
-        return self.ptr.is_private()
+        return bool(self.ptr.is_private())
 
-    cpdef cpp_bool is_broadcast(self):
+    cpdef is_broadcast(self):
         """
         Returns
         -------
         bool
             True if the address is a broadcast address.
         """
-        return self.ptr.is_broadcast()
+        return bool(self.ptr.is_broadcast())
 
-    cpdef cpp_bool is_unicast(self):
+    cpdef is_unicast(self):
         """
         Returns
         -------
@@ -73,9 +94,9 @@ cdef class IPv4Address(object):
             True if the address is a unicast address.
         """
 
-        return self.ptr.is_unicast()
+        return bool(self.ptr.is_unicast())
 
-    cpdef cpp_bool is_multicast(self):
+    cpdef is_multicast(self):
         """
         Returns
         -------
@@ -83,17 +104,15 @@ cdef class IPv4Address(object):
             True if the address is a multicast address.
         """
 
-        return self.ptr.is_multicast()
+        return bool(self.ptr.is_multicast())
 
     def __richcmp__(self, other, op):
-        if isinstance(other, bytes):
+        if not isinstance(other, IPv4Address):
             other = IPv4Address(other)
         if op == 2:   # equals ==
             return self.equals(other)
         if op == 3:   # different !=
             return self.different(other)
-        if not isinstance(other, IPv4Address):
-            raise ValueError("can't compare IPv4Address with %s" % type(other))
         if op == 0:     # less <
             return self.less(other)
         if op == 1:   # <=
@@ -104,29 +123,26 @@ cdef class IPv4Address(object):
             return not self.less(other)
         raise ValueError("this comparison is not implemented")
 
-    cpdef equals(self, object other):
-        if isinstance(other, bytes):
-            other = IPv4Address(other)
-        if isinstance(other, IPv4Address):
-            return self.ptr.equals((<IPv4Address> other).ptr[0])
-        else:
-            return False
+    cpdef equals(self, other):
+        if not isinstance(other, IPv4Address):
+            try:
+                other = IPv4Address(other)
+            except ValueError:
+                return False
+        return self.ptr.equals((<IPv4Address> other).ptr[0])
 
-    cpdef different(self, object other):
-        if isinstance(other, bytes):
-            other = IPv4Address(other)
-        if isinstance(other, IPv4Address):
-            return self.ptr.different((<IPv4Address> other).ptr[0])
-        else:
-            return True
+    cpdef different(self, other):
+        if not isinstance(other, IPv4Address):
+            try:
+                other = IPv4Address(other)
+            except ValueError:
+                return True
+        return self.ptr.different((<IPv4Address> other).ptr[0])
 
-    cpdef less(self, object other):
-        if isinstance(other, bytes):
+    cpdef less(self, other):
+        if not isinstance(other, IPv4Address):
             other = IPv4Address(other)
-        if isinstance(other, IPv4Address):
-            return self.ptr.less((<IPv4Address> other).ptr[0])
-        else:
-            raise ValueError("don't know how to compare")
+        return self.ptr.less((<IPv4Address> other).ptr[0])
 
     def __int__(self):
         """
@@ -138,8 +154,10 @@ cdef class IPv4Address(object):
         int
             integer representation
         """
-        return int(convert_to_big_endian_int(self.ptr[0]))
+        return int(self.ptr.to_uint32())
 
+    def __hash__(self):
+        return hash(int(self))
 
     def __div__(self, mask):
         """
@@ -149,19 +167,20 @@ cdef class IPv4Address(object):
         Parameters
         ----------
         mask: int
-            the mask as an integer
+            the mask as an integer or as an IPv4Address
 
         Returns
         -------
         range: :py:class:`~.IPv4Range`
             new IPv4 range
         """
-        if not isinstance(self, IPv4Address):
-            raise TypeError("operation not supported")
-        r = IPv4Range()
-        cdef cppIPv4Range cpp_r = ipv4_slashrange((<IPv4Address>self).ptr[0], <int>int(mask))
-        r.clone_from_cpp(cpp_r)
-        return r
+        return IPv4Range(first=self, mask=mask)
 
     def __truediv__(self, mask):
         return self.__div__(mask)
+
+    def __copy__(self):
+        return IPv4Address(int(self))
+
+    def __reduce__(self):
+        return IPv4Address, (str(self),)

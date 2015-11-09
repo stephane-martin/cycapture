@@ -63,11 +63,14 @@ cdef extern from "tins/icmp.h" namespace "Tins" nogil:
         void set_info_request(uint16_t ident, uint16_t seq)
         void set_info_reply(uint16_t ident, uint16_t seq)
         void set_dest_unreachable()
+
         void set_time_exceeded()
         void set_time_exceeded(cpp_bool ttl_exceeded)
+
         void set_param_problem()
         void set_param_problem(cpp_bool set_pointer)
         void set_param_problem(cpp_bool set_pointer, uint8_t bad_octet)
+
         void set_source_quench()
         void set_redirect(uint8_t icode, cppIPv4Address address)
 

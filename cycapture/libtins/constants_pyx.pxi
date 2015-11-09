@@ -2,7 +2,7 @@
 
 cdef class Constants:
 
-    Proto = IntEnum("ConstantsProto", {
+    Proto = make_enum("Constants_Proto", 'Proto', 'Protocols',{
         'PROTO_IP': CSTS_PROTO_IP,
         'PROTO_HOPOPTS': CSTS_PROTO_HOPOPTS,
         'PROTO_ICMP': CSTS_PROTO_ICMP,
@@ -34,7 +34,7 @@ cdef class Constants:
         'PROTO_RAW': CSTS_PROTO_RAW
     })
 
-    Ethernet = IntEnum("ConstantsEthernet", {
+    Ethernet = make_enum("Constants_Ethernet", 'Ethernet', 'Ethernet packet types', {
         'UNKNOWN': CSTS_ETH_UNKNOWN,
         'SPRITE': CSTS_ETH_SPRITE,
         'IP': CSTS_ETH_IP,
@@ -51,7 +51,7 @@ cdef class Constants:
         'LOOPBACK': CSTS_ETH_LOOPBACK,
     })
 
-    ARP = IntEnum("ConstantsARP", {
+    ARP = make_enum("ConstantsARP", 'ARP', 'ARP constants', {
         'NETROM': CSTS_ARP_NETROM,
         'ETHER': CSTS_ARP_ETHER,
         'EETHER': CSTS_ARP_EETHER,

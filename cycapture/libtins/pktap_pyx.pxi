@@ -4,21 +4,11 @@ cdef class PKTAP(PDU):
     pdu_flag = PDU.PKTAP
     pdu_type = PDU.PKTAP
 
-    def __cinit__(self, buf=None, _raw=False):
-        if _raw:
-            return
-        if type(self) != PKTAP:
+    def __cinit__(self, _raw=False):
+        if _raw is True or type(self) != PKTAP:
             return
 
-        cdef uint8_t* buf_addr
-        cdef uint32_t size
-
-        if buf is None:
-            self.ptr = new cppPKTAP()
-        else:
-            PDU.prepare_buf_arg(buf, &buf_addr, &size)
-            self.ptr = new cppPKTAP(buf_addr, size)
-
+        # todo: self.ptr = new cppPKTAP()
         self.base_ptr = <cppPDU*> self.ptr
         self.parent = None
 
@@ -28,5 +18,19 @@ cdef class PKTAP(PDU):
             del p
         self.ptr = NULL
 
-    def __init__(self, buf=None, _raw=False):
-        pass
+    def __init__(self):
+        """
+        __init__()
+        """
+
+    cdef cppPDU* replace_ptr_with_buf(self, uint8_t* buf, int size) except NULL:
+        if self.ptr is not NULL and self.parent is None:
+            del self.ptr
+        self.ptr = new cppPKTAP(<uint8_t*> buf, <uint32_t> size)
+        return self.ptr
+
+    cdef replace_ptr(self, cppPDU* ptr):
+        if self.ptr is not NULL and self.parent is None:
+            del self.ptr
+        self.ptr = <cppPKTAP*> ptr
+

@@ -1,3 +1,4 @@
+nose
 setuptools_git
 setuptools
 twine

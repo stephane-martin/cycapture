@@ -2,10 +2,12 @@
 
 cdef extern from "tins/ip.h" namespace "Tins" nogil:
     PDUType ip_pdu_flag "Tins::IP::pdu_flag"
-    ctypedef enum OptionClass "Tins::IP::OptionClass":
+
+    ctypedef enum cppOptionClass "Tins::IP::OptionClass":
         IP_OPT_CLASS_CONTROL "Tins::IP::CONTROL"
         IP_OPT_CLASS_MEASUREMENT "Tins::IP::MEASUREMENT"
-    ctypedef enum OptionNumber "Tins::IP::OptionNumber":
+
+    ctypedef enum cppOptionNumber "Tins::IP::OptionNumber":
         IP_OPT_NUMBER_END "Tins::IP::END",
         IP_OPT_NUMBER_NOOP "Tins::IP::NOOP",
         IP_OPT_NUMBER_SEC "Tins::IP::SEC",
@@ -54,13 +56,11 @@ cdef extern from "tins/ip.h" namespace "Tins" nogil:
         void version(small_uint4 ver)
         cpp_bool is_fragmented() const
 
-
         # options
         void eol()
         void noop()
         uint16_t stream_identifier() except +custom_exception_handler
         void stream_identifier(uint16_t stream_id) except +custom_exception_handler
-
 
         cppclass option_identifier:
             uint8_t number
@@ -68,33 +68,41 @@ cdef extern from "tins/ip.h" namespace "Tins" nogil:
             uint8_t copied
             option_identifier()
             option_identifier(uint8_t value)
-            option_identifier(OptionNumber number, OptionClass op_class, small_uint1 copied)
+            option_identifier(cppOptionNumber number, cppOptionClass op_class, small_uint1 copied)
             cpp_bool operator==(const option_identifier &rhs) const
 
         cppclass security_type:
-            uint16_t security, compartments
+            uint16_t security
+            uint16_t compartments
             uint16_t handling_restrictions
             small_uint24 transmission_control
             security_type()
+            security_type(uint16_t sec)
+            security_type(uint16_t sec, uint16_t comp)
+            security_type(uint16_t sec, uint16_t comp, uint16_t hand_res)
             security_type(uint16_t sec, uint16_t comp, uint16_t hand_res, small_uint24 tcc)
 
         cppclass generic_route_option_type:
             uint8_t pointer
             vector[cppIPv4Address] routes
             generic_route_option_type()
+            generic_route_option_type(uint8_t ptr)
             generic_route_option_type(uint8_t ptr, vector[cppIPv4Address] rts)
 
-        const cpp_list[ip_pdu_option] & options() const
-        const ip_pdu_option *search_option(cppIP.option_identifier ident) except +custom_exception_handler
+        const cpp_list[ip_pdu_option]& options() const
+        const ip_pdu_option* search_option(cppIP.option_identifier ident) except +custom_exception_handler
         void add_option(const ip_pdu_option &opt) except +custom_exception_handler
 
         # options
         cppIP.security_type security() except +custom_exception_handler
         void security(const cppIP.security_type &data) except +custom_exception_handler
+
         cppIP.generic_route_option_type lsrr() except +custom_exception_handler
         void lsrr(const cppIP.generic_route_option_type &data) except +custom_exception_handler
+
         cppIP.generic_route_option_type ssrr() except +custom_exception_handler
         void ssrr(const cppIP.generic_route_option_type &data) except +custom_exception_handler
+
         cppIP.generic_route_option_type record_route() except +custom_exception_handler
         void record_route(const cppIP.generic_route_option_type &data) except +custom_exception_handler
 
@@ -104,7 +112,17 @@ cdef extern from "tins/ip.h" namespace "Tins" nogil:
 cdef extern from "wrap.h" namespace "Tins" nogil:
     cdef cppclass ip_pdu_option:
         ip_pdu_option()
-        ip_pdu_option(cppIP.option_identifier opt, size_t length, const uint8_t *data)
+        ip_pdu_option(cppIP.option_identifier opt)
+        ip_pdu_option(cppIP.option_identifier opt, size_t length, const uint8_t* data)
+        ip_pdu_option(const ip_pdu_option& rhs)
+        # ip_pdu_option[ForwardIterator](cppIP.option_identifier opt, ForwardIterator start, ForwardIterator end)
+        # ip_pdu_option[ForwardIterator](cppIP.option_identifier opt, size_t length, ForwardIterator start, ForwardIterator end)
+        ip_pdu_option& operator=(const ip_pdu_option& rhs)
+        cppIP.option_identifier option() const
+        size_t data_size() const
+        const uint8_t* data_ptr() const
+        size_t length_field() const
+
 
 cdef extern from "tins/ip.h" namespace "Tins" nogil:
     cppIP.security_type security_type_from_option "Tins::IP::security_type::from_option"(const ip_pdu_option &opt)
@@ -114,20 +132,42 @@ cdef class IP(PDU):
     cdef cppIP* ptr
     cpdef eol(self)
     cpdef noop(self)
-    cpdef cpp_bool is_fragmented(self)
+
     cpdef get_record_route(self)
-    cpdef record_route(self, pointer, routes)
+    cpdef set_record_route(self, pointer, routes)
+
     cpdef get_lsrr(self)
-    cpdef lsrr(self, pointer, routes)
+    cpdef set_lsrr(self, pointer, routes)
+
     cpdef get_ssrr(self)
-    cpdef ssrr(self, pointer, routes)
+    cpdef set_ssrr(self, pointer, routes)
+
+    cpdef get_security(self)
+    cpdef set_security(self, security_obj)
+    cpdef set_security_ex(self, security=?, compartments=?, handling_restrictions=?, transmission_control=?)
+    cpdef add_option(self, identifier, data=?)
+    cpdef search_option(self, identifier)
+    cpdef options(self)
+
+cdef class IPSecurityType(object):
+    cdef uint16_t _security
+    cdef uint16_t _compartments
+    cdef uint16_t _handling_restrictions
+    cdef small_uint24 _transmission_control
+
+    cdef cppIP.security_type to_cpp(self)
+    cdef equals(self, other)
 
     @staticmethod
-    cdef inline factory(cppPDU* ptr, uint8_t* buf, int size, object parent):
-        if ptr is NULL and buf is NULL:
-            return IP()
-        obj = IP(_raw=True)
-        obj.ptr = new cppIP(<uint8_t*> buf, <uint32_t> size) if ptr is NULL else <cppIP*> ptr
-        obj.base_ptr = <cppPDU*> obj.ptr
-        obj.parent = parent
-        return obj
+    cdef from_cpp(cppIP.security_type native)
+
+cdef class IPOptionIdentifier(object):
+    cdef uint8_t _number
+    cdef uint8_t _op_class
+    cdef uint8_t _copied
+
+    cdef cppIP.option_identifier to_cpp(self)
+    cdef equals(self, other)
+
+    @staticmethod
+    cdef from_cpp(cppIP.option_identifier native)

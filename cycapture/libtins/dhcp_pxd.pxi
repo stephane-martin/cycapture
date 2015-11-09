@@ -100,49 +100,50 @@ cdef extern from "tins/tcp.h" namespace "Tins" nogil:
 
     cdef cppclass cppDHCP "Tins::DHCP" (cppBootP):
         cppDHCP()
-        cppDHCP(const uint8_t *buf, uint32_t total_sz)
+        cppDHCP(const uint8_t *buf, uint32_t total_sz) except +custom_exception_handler
 
         void add_option(const dhcp_option &opt)
         const dhcp_option* search_option(DHCP_OptionTypes opt) const
         const cpp_list[dhcp_option] options() const
 
-        uint8_t type() const
+        uint8_t type() except +custom_exception_handler
         void type(DHCP_Flags t)
 
         void end()
 
-        cppIPv4Address server_identifier() const
+        cppIPv4Address server_identifier() except +custom_exception_handler
         void server_identifier(cppIPv4Address ip)
 
-        uint32_t lease_time() const
+        uint32_t lease_time() except +custom_exception_handler
         void lease_time(uint32_t time)
 
-        uint32_t renewal_time() const
+        uint32_t renewal_time() except +custom_exception_handler
         void renewal_time(uint32_t time)
 
-        uint32_t rebind_time() const
+        uint32_t rebind_time() except +custom_exception_handler
         void rebind_time(uint32_t time)
 
-        cppIPv4Address subnet_mask() const
+        cppIPv4Address subnet_mask() except +custom_exception_handler
         void subnet_mask(cppIPv4Address mask)
 
-        vector[cppIPv4Address] routers() const
+        vector[cppIPv4Address] routers() except +custom_exception_handler
         void routers(const vector[cppIPv4Address] &routers)
 
-        vector[cppIPv4Address] domain_name_servers() const
+        vector[cppIPv4Address] domain_name_servers() except +custom_exception_handler
         void domain_name_servers(const vector[cppIPv4Address] &dns)
 
-        cppIPv4Address broadcast() const
+        cppIPv4Address broadcast() except +custom_exception_handler
         void broadcast(cppIPv4Address addr)
 
-        cppIPv4Address requested_ip() const
+        cppIPv4Address requested_ip() except +custom_exception_handler
         void requested_ip(cppIPv4Address addr)
 
-        string domain_name() const
+        string domain_name() except +custom_exception_handler
         void domain_name(const string &name)
 
-        string hostname() const
+        string hostname() except +custom_exception_handler
         void hostname(const string &name)
+
 
 cdef class DHCP(BootP):
     cpdef end(self)

@@ -7,7 +7,7 @@ cdef extern from "tins/dot1q.h" namespace "Tins" nogil:
         cppDot1Q()
         cppDot1Q(small_uint12 tag_id)
         cppDot1Q(small_uint12 tag_id, cpp_bool append_pad)
-        cppDot1Q(const uint8_t *buf, uint32_t total_sz)
+        cppDot1Q(const uint8_t *buf, uint32_t total_sz) except +custom_exception_handler
 
         small_uint3 priority() const
         void priority(small_uint3 new_priority)
@@ -26,13 +26,3 @@ cdef extern from "tins/dot1q.h" namespace "Tins" nogil:
 
 cdef class Dot1Q(PDU):
     cdef cppDot1Q* ptr
-
-    @staticmethod
-    cdef inline factory(cppPDU* ptr, uint8_t* buf, int size, object parent):
-        if ptr is NULL and buf is NULL:
-            return Dot1Q()
-        obj = Dot1Q(_raw=True)
-        obj.ptr = new cppDot1Q(<uint8_t*> buf, <uint32_t> size) if ptr is NULL else <cppDot1Q*> ptr
-        obj.base_ptr = <cppPDU*> obj.ptr
-        obj.parent = parent
-        return obj

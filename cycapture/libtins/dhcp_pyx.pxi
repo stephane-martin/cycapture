@@ -1,10 +1,17 @@
 # -*- coding: utf-8 -*-
 
 cdef class DHCP(BootP):
+    """
+    DHCP packet
+
+    Note
+    ----
+    When adding options, the `End` option is not added automatically, so you should add it yourself.
+    """
     pdu_flag = PDU.DHCP
     pdu_type = PDU.DHCP
 
-    Flags = IntEnum('DHCPFlags', {
+    Flags = make_enum('DHCP_Flags', 'Flags', 'DHCP flags', {
         'DISCOVER':     DHCP_DISCOVER ,
         'OFFER':        DHCP_OFFER,
         'REQUEST':      DHCP_REQUEST,
@@ -15,7 +22,7 @@ cdef class DHCP(BootP):
         'INFORM':       DHCP_INFORM
     })
 
-    OptionTypes = IntEnum('DHCPOptionTypes', {
+    OptionTypes = make_enum('DHCP_OptionTypes', 'OptionTypes', 'DHCP options', {
         'PAD': DHCP_PAD,
         'SUBNET_MASK': DHCP_SUBNET_MASK,
         'TIME_OFFSET': DHCP_TIME_OFFSET,
@@ -89,7 +96,7 @@ cdef class DHCP(BootP):
     })
 
     def __cinit__(self, _raw=False):
-        if _raw or type(self) != DHCP:
+        if _raw is True or type(self) != DHCP:
             return
 
         self.ptr = new cppDHCP()
@@ -102,55 +109,108 @@ cdef class DHCP(BootP):
             del p
         self.ptr = NULL
 
-    def __init__(self, _raw=False):
-        pass
+    def __init__(self):
+        """
+        __init__()
+        """
 
     property type:
+        """
+        DHCP type option (read-write, :py:class:`~.DHCP.Flags`)
+        """
         def __get__(self):
-            return int((<cppDHCP*> self.ptr).type())
+            try:
+                return int((<cppDHCP*> self.ptr).type())
+            except OptionNotFound:
+                return None
         def __set__(self, value):
             value = int(value)
             (<cppDHCP*> self.ptr).type(<DHCP_Flags> value)
 
     cpdef end(self):
+        """
+        end()
+        Adds an end option to the option list.
+
+        The END option is not added automatically. You should explicitly
+        add it at the end of the DHCP options to be standard-compliant.
+        """
         (<cppDHCP*> self.ptr).end()
 
     property server_identifier:
+        """
+        Server identifier option (read-write, :py:class:`~.IPv4Address`)
+        """
         def __get__(self):
-            return IPv4Address((<cppDHCP*> self.ptr).server_identifier().to_string())
+            try:
+                return IPv4Address((<cppDHCP*> self.ptr).server_identifier().to_string())
+            except OptionNotFound:
+                return None
         def __set__(self, value):
             value = IPv4Address(value)
             (<cppDHCP*> self.ptr).server_identifier((<IPv4Address> value).ptr[0])
 
     property lease_time:
+        """
+        Lease time option (read-write, `uint32_t`)
+        """
         def __get__(self):
-            return int((<cppDHCP*> self.ptr).lease_time())
+            try:
+                return int((<cppDHCP*> self.ptr).lease_time())
+            except OptionNotFound:
+                return None
         def __set__(self, value):
             (<cppDHCP*> self.ptr).lease_time(<uint32_t> int(value))
 
     property renewal_time:
+        """
+        Renewal time option (read-write, `uint32_t`)
+        """
         def __get__(self):
-            return int((<cppDHCP*> self.ptr).renewal_time())
+            try:
+                return int((<cppDHCP*> self.ptr).renewal_time())
+            except OptionNotFound:
+                return None
         def __set__(self, value):
             (<cppDHCP*> self.ptr).renewal_time(<uint32_t> int(value))
 
     property rebind_time:
+        """
+        Rebind time option (read-write, `uint32_t`)
+        """
+
         def __get__(self):
-            return int((<cppDHCP*> self.ptr).rebind_time())
+            try:
+                return int((<cppDHCP*> self.ptr).rebind_time())
+            except OptionNotFound:
+                return None
         def __set__(self, value):
             (<cppDHCP*> self.ptr).rebind_time(<uint32_t> int(value))
 
     property subnet_mask:
+        """
+        Subnet mask option (read-write, :py:class:`~.IPv4Address`)
+        """
         def __get__(self):
-            return IPv4Address((<cppDHCP*> self.ptr).subnet_mask().to_string())
+            try:
+                return IPv4Address((<cppDHCP*> self.ptr).subnet_mask().to_string())
+            except OptionNotFound:
+                return None
         def __set__(self, value):
             value = IPv4Address(value)
             (<cppDHCP*> self.ptr).subnet_mask((<IPv4Address> value).ptr[0])
 
     property routers:
+        """
+        Routers option (read-write, list of :py:class:`~.IPv4Address`)
+        """
         def __get__(self):
-            cdef vector[cppIPv4Address] v = (<cppDHCP*> self.ptr).routers()
-            return [IPv4Address(cpp_addr.to_string()) for cpp_addr in v]
+            cdef vector[cppIPv4Address] v
+            try:
+                v = (<cppDHCP*> self.ptr).routers()
+                return [IPv4Address(cpp_addr.to_string()) for cpp_addr in v]
+            except OptionNotFound:
+                return None
         def __set__(self, value):
             cdef vector[cppIPv4Address] v
             for addr in value:
@@ -158,9 +218,16 @@ cdef class DHCP(BootP):
             (<cppDHCP*> self.ptr).routers(v)
 
     property domain_name_servers:
+        """
+        Domain name servers option (read-write, list of :py:class:`~.IPv4Address`)
+        """
         def __get__(self):
-            cdef vector[cppIPv4Address] v = (<cppDHCP*> self.ptr).domain_name_servers()
-            return [IPv4Address(cpp_addr.to_string()) for cpp_addr in v]
+            cdef vector[cppIPv4Address] v
+            try:
+                v = (<cppDHCP*> self.ptr).domain_name_servers()
+                return [IPv4Address(cpp_addr.to_string()) for cpp_addr in v]
+            except OptionNotFound:
+                return None
         def __set__(self, value):
             cdef vector[cppIPv4Address] v
             for addr in value:
@@ -168,34 +235,69 @@ cdef class DHCP(BootP):
             (<cppDHCP*> self.ptr).domain_name_servers(v)
 
     property broadcast:
+        """
+        Broadcast option (read-write, :py:class:`~.IPv4Address`)
+        """
         def __get__(self):
-            return IPv4Address((<cppDHCP*> self.ptr).broadcast().to_string())
+            try:
+                return IPv4Address((<cppDHCP*> self.ptr).broadcast().to_string())
+            except OptionNotFound:
+                return None
         def __set__(self, value):
             value = IPv4Address(value)
             (<cppDHCP*> self.ptr).broadcast((<IPv4Address> value).ptr[0])
 
     property requested_ip:
+        """
+        Requested IP option (read-write, :py:class:`~.IPv4Address`)
+        """
         def __get__(self):
-            return IPv4Address((<cppDHCP*> self.ptr).requested_ip().to_string())
+            try:
+                return IPv4Address((<cppDHCP*> self.ptr).requested_ip().to_string())
+            except OptionNotFound:
+                return None
         def __set__(self, value):
             value = IPv4Address(value)
             (<cppDHCP*> self.ptr).requested_ip((<IPv4Address> value).ptr[0])
 
     property domain_name:
+        """
+        Domain name option (read-write, `bytes`)
+        """
         def __get__(self):
-            return <bytes> ((<cppDHCP*> self.ptr).domain_name())
+            try:
+                return <bytes> ((<cppDHCP*> self.ptr).domain_name())
+            except OptionNotFound:
+                return None
         def __set__(self, value):
             value = bytes(value)
             (<cppDHCP*> self.ptr).domain_name(<string> value)
 
     property hostname:
+        """
+        Hostname option (read-write, `bytes`)
+        """
         def __get__(self):
-            return <bytes> ((<cppDHCP*> self.ptr).hostname())
+            try:
+                return <bytes> ((<cppDHCP*> self.ptr).hostname())
+            except OptionNotFound:
+                return None
         def __set__(self, value):
             value = bytes(value)
             (<cppDHCP*> self.ptr).hostname(<string> value)
 
     cpdef add_option(self, identifier, data=None):
+        """
+        add_option(identifier, data=None)
+        Add an option
+
+        Parameters
+        ----------
+        identifier: :py:class:`~.DHCP.OptionTypes`
+            option type
+        data: ``None`` or `bytes`
+            option data
+        """
         cdef dhcp_option opt
         identifier = int(identifier)
         if data is None:
@@ -206,21 +308,51 @@ cdef class DHCP(BootP):
         (<cppDHCP*> self.ptr).add_option(opt)
 
     cpdef search_option(self, identifier):
+        """
+        search_option(identifier)
+        Search for an option by type
+
+        Parameters
+        ----------
+        identifier: :py:class:`~.DHCP.OptionTypes`
+
+        Returns
+        -------
+        data: ``None`` (option is not present) or ``b''`` (option is present, no data) or some `bytes` (option data)
+        """
         identifier = int(identifier)
         cdef dhcp_option* opt = <dhcp_option*> ((<cppDHCP*> self.ptr).search_option(<DHCP_OptionTypes> identifier))
         if opt is NULL:
-            raise OptionNotFound
+            return None
         cdef int length = opt.data_size()
         if not length:
-            return ""
+            return b''
         return <bytes> ((opt.data_ptr())[:length])
 
     cpdef options(self):
-        cdef cpp_list[dhcp_option] l = (<cppDHCP*> self.ptr).options()
-        return {
-            int(opt.option()): <bytes> (opt.data_ptr()[:opt.data_size()])
-            for opt in l
-        }
+        """
+        options()
+        Returns the list of current options.
+
+        Returns
+        -------
+        options: list of 2-uple (option type `int`, data `bytes`)
+        """
+        cdef cpp_list[dhcp_option] opts = (<cppDHCP*> self.ptr).options()
+        cdef dhcp_option opt
+        results = []
+        for opt in opts:
+            if opt.data_size() > 0:
+                results.append((
+                    int(opt.option()),
+                    <bytes> (opt.data_ptr()[:opt.data_size()])
+                ))
+            else:
+                results.append((
+                    int(opt.option()),
+                    b''
+                ))
+        return results
 
     cdef cppPDU* replace_ptr_with_buf(self, uint8_t* buf, int size) except NULL:
         if self.ptr is not NULL and self.parent is None:

@@ -5,7 +5,7 @@ cdef extern from "tins/snap.h" namespace "Tins" nogil:
 
     cppclass cppSNAP "Tins::SNAP" (cppPDU):
         cppSNAP()
-        cppSNAP(const uint8_t *buf, uint32_t total_sz)
+        cppSNAP(const uint8_t *buf, uint32_t total_sz) except +custom_exception_handler
 
         void control(uint8_t new_control)
         void org_code(small_uint24 new_org)
@@ -20,12 +20,3 @@ cdef extern from "tins/snap.h" namespace "Tins" nogil:
 cdef class SNAP(PDU):
     cdef cppSNAP* ptr
 
-    @staticmethod
-    cdef inline factory(cppPDU* ptr, uint8_t* buf, int size, object parent):
-        if ptr is NULL and buf is NULL:
-            return SNAP()
-        obj = SNAP(_raw=True)
-        obj.ptr = new cppSNAP(<uint8_t*> buf, <uint32_t> size) if ptr is NULL else <cppSNAP*> ptr
-        obj.base_ptr = <cppPDU*> obj.ptr
-        obj.parent = parent
-        return obj

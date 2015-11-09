@@ -1,25 +1,18 @@
 # -*- coding: utf-8 -*-
 
 cdef class Loopback(PDU):
+    """
+    Loopback PDU
+    """
     pdu_flag = PDU.LOOPBACK
     pdu_type = PDU.LOOPBACK
     datalink_type = DLT_LOOP
 
-    def __cinit__(self, buf=None, _raw=False):
-        if _raw:
-            return
-        if type(self) != BootP:
+    def __cinit__(self, _raw=False):
+        if _raw or type(self) != Loopback:
             return
 
-        cdef uint8_t* buf_addr
-        cdef uint32_t size
-
-        if buf is None:
-            self.ptr = new cppLoopback()
-        else:
-            PDU.prepare_buf_arg(buf, &buf_addr, &size)
-            self.ptr = new cppLoopback(buf_addr, size)
-
+        self.ptr = new cppLoopback()
         self.base_ptr = <cppPDU*> self.ptr
         self.parent = None
 
@@ -29,21 +22,36 @@ cdef class Loopback(PDU):
             del p
         self.ptr = NULL
 
-    def __init__(self, buf=None, _raw=False):
-        pass
+    def __init__(self):
+        """
+        __init__()
+        """
 
     cpdef send(self, PacketSender sender, NetworkInterface iface):
-        if BSD_OR_ZERO:
-            if sender is None:
-                raise ValueError("sender can't be None")
-            if iface is None:
-                raise ValueError("iface can't be None")
-            self.ptr.send((<PacketSender> sender).ptr[0], (<NetworkInterface> iface).ptr[0])
-        else:
+        if not BSD_OR_ZERO:
             raise RuntimeError("The Loopback.send method is not available in this platform")
+        if sender is None:
+            raise ValueError("sender can't be None")
+        if iface is None:
+            raise ValueError("iface can't be None")
+        self.ptr.send((<PacketSender> sender).ptr[0], (<NetworkInterface> iface).interface)
 
     property family:
+        """
+        family identifier (read-write, `uint32_t`)
+        """
         def __get__(self):
             return int(self.ptr.family())
         def __set__(self, value):
             self.ptr.family(<uint32_t> int(value))
+
+    cdef cppPDU* replace_ptr_with_buf(self, uint8_t* buf, int size) except NULL:
+        if self.ptr is not NULL and self.parent is None:
+            del self.ptr
+        self.ptr = new cppLoopback(<uint8_t*> buf, <uint32_t> size)
+        return self.ptr
+
+    cdef replace_ptr(self, cppPDU* ptr):
+        if self.ptr is not NULL and self.parent is None:
+            del self.ptr
+        self.ptr = <cppLoopback*> ptr

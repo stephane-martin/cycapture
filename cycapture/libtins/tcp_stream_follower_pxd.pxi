@@ -17,20 +17,20 @@ cdef extern from "py_tcp_stream_functor.h" namespace "Tins":
         TCPStreamPyFunctor(PyObject* callabl)
 
 
-cdef extern from "py_pdu_iterator.h" namespace "Tins":
-    cppclass PDUIterator:
-        PDUIterator();
-        PDUIterator(PyObject* it)
-        PDUIterator& preinc "operator++" ()
-        PDUIterator& operator=(const PDUIterator& other)
-
-    cpp_bool operator==(const PDUIterator& lhs, const PDUIterator& rhs)
-    cpp_bool operator!=(const PDUIterator& lhs, const PDUIterator& rhs)
+# cdef extern from "py_pdu_iterator.h" namespace "Tins":
+#     cppclass PDUIterator:
+#         PDUIterator();
+#         PDUIterator(PyObject* it)
+#         PDUIterator& preinc "operator++" ()
+#         PDUIterator& operator=(const PDUIterator& other)
+#
+#     cpp_bool operator==(const PDUIterator& lhs, const PDUIterator& rhs)
+#     cpp_bool operator!=(const PDUIterator& lhs, const PDUIterator& rhs)
 
 
 cdef class TCPStreamFollower(object):
     cdef cppTCPStreamFollower* follower
     cdef TCPStreamPyFunctor* data_functor
     cdef TCPStreamPyFunctor* end_functor
-    cpdef feed(self, list_of_pdu)
+    cpdef feed(self, pdu_iterator)
 

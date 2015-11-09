@@ -9,4 +9,4 @@ from .exceptions import SetSnapshotLengthError, SetPromiscModeError, SetMonitorM
 from .exceptions import ActivationError, NotActivatedError, SniffingError, PermissionDenied, PromiscPermissionDenied
 
 from ._pcap import BlockingSniffer, NonBlockingSniffer, PacketWriter, NonBlockingPacketWriter, DLT, OfflineFilter
-from ._pcap import lookupdev, findalldevs, lookupnet, libpcap_version
+from ._pcap import lookupdev, lookupnet, libpcap_version

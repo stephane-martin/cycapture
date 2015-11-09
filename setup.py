@@ -14,11 +14,13 @@ import urllib
 import tarfile
 from os.path import dirname, abspath, join, commonprefix, exists
 import distutils.sysconfig
+import platform
+
 
 on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
 here = abspath(dirname(__file__))
 
-import platform
+
 IS_MACOSX = platform.system().lower().strip() == "darwin"
 disutils_sysconfig = distutils.sysconfig.get_config_vars()
 if IS_MACOSX:
@@ -27,7 +29,6 @@ if IS_MACOSX:
     disutils_sysconfig['CFLAGS'] = disutils_sysconfig['CFLAGS'].replace('-arch i386', '')
     # suppress painful warnings
     disutils_sysconfig['CFLAGS'] = disutils_sysconfig['CFLAGS'].replace('-Wstrict-prototypes', '')
-
 
 
 class Dependency(object):
@@ -201,6 +202,7 @@ class LibtinsDep(Dependency):
             info("Fetching libtins from github in %s\n" % self.external_dir)
             old_dir = os.getcwd()
             os.chdir(self.external_dir)
+
             urllib.urlretrieve("https://github.com/mfontanini/libtins/archive/v3.2.tar.gz", "v3.2.tar.gz")
             t = tarfile.open("v3.2.tar.gz", mode='r:gz')
             try:
@@ -313,7 +315,7 @@ if __name__ == "__main__":
     with open('HISTORY.rst') as history_file:
         history = history_file.read().replace('.. :changelog:', '')
 
-    requirements = ['enum34']
+    requirements = ['enum34', 'nose']
     remove_requirements_if_rtd = []
 
     if on_rtd:
@@ -332,9 +334,15 @@ if __name__ == "__main__":
 
         pthread_extension = Extension(
             name="cycapture._pthreadwrap",
-            sources=["cycapture/_pthreadwrap.pyx"]
+            sources=["cycapture/_pthreadwrap.pyx", "cycapture/murmur.c"]
         )
         extensions.append(pthread_extension)
+
+        signal_extension = Extension(
+            name="cycapture._signal",
+            sources=["cycapture/_signal.pyx"]
+        )
+        extensions.append(signal_extension)
 
         # build libpcap and the cycapture.libpcap python extension
         pcap_extension = Extension(
@@ -388,7 +396,7 @@ if __name__ == "__main__":
         url='https://github.com/stephane-martin/cycapture',
         packages=find_packages(exclude=['tests']),
         setup_requires=[
-            'setuptools_git', 'setuptools', 'twine', 'wheel', 'cython'
+            'setuptools_git', 'setuptools', 'twine', 'wheel', 'cython', 'nose'
         ],
         include_package_data=True,
         exclude_package_data={'': ['_*.c', '_*.cpp', '_*.h']},

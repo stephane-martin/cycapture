@@ -4,7 +4,7 @@ cdef extern from "tins/ppi.h" namespace "Tins" nogil:
     PDUType ppi_pdu_flag "Tins::PPI::pdu_flag"
 
     cppclass cppPPI "Tins::PPI" (cppPDU):
-        cppPPI(const uint8_t *buf, uint32_t total_sz)
+        cppPPI(const uint8_t *buf, uint32_t total_sz) except +custom_exception_handler
         uint8_t version() const
         uint8_t flags() const
         uint16_t length() const
@@ -13,13 +13,3 @@ cdef extern from "tins/ppi.h" namespace "Tins" nogil:
 cdef class PPI(PDU):
     cdef cppPPI* ptr
 
-    @staticmethod
-    cdef inline factory(cppPDU* ptr, uint8_t* buf, int size, object parent):
-        if ptr is NULL and buf is NULL:
-            raise ValueError
-            # return BootP()
-        obj = PPI(_raw=True)
-        obj.ptr = new cppPPI(<uint8_t*> buf, <uint32_t> size) if ptr is NULL else <cppPPI*> ptr
-        obj.base_ptr = <cppPDU*> obj.ptr
-        obj.parent = parent
-        return obj

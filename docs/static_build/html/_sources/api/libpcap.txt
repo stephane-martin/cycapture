@@ -8,8 +8,12 @@ libpcap bindings
 
 Sniffers
 ========
-.. autoclass:: cycapture.libpcap._pcap.Sniffer
+Blocking Sniffer
+----------------
 .. autoclass:: cycapture.libpcap._pcap.BlockingSniffer
+
+Non-blocking sniffer
+--------------------
 .. autoclass:: cycapture.libpcap._pcap.NonBlockingSniffer
 
 Packet writers
@@ -21,13 +25,14 @@ Offline filter
 ==============
 .. autoclass:: cycapture.libpcap._pcap.OfflineFilter
 
-Datalink types
-==============
-.. autoclass:: cycapture.libpcap.DLT
-
 Utils
 =====
-.. autofunction:: cycapture.libpcap.lookupdev
-.. autofunction:: cycapture.libpcap.findalldevs
-.. autofunction:: cycapture.libpcap.lookupnet
-.. autoattribute:: cycapture.libpcap.libpcap_version
+.. autoclass:: cycapture.libpcap._pcap.DLT
+.. autoclass:: cycapture.libpcap._pcap.DIRECTION
+.. autoclass:: cycapture.libpcap._pcap.SniffingIterator
+.. autoclass:: cycapture.libpcap._pcap.BaseSniffer
+.. autofunction:: cycapture.libpcap._pcap.lookupdev
+.. autofunction:: cycapture.libpcap._pcap.datalink_to_description
+.. autofunction:: cycapture.libpcap._pcap.lookupnet
+.. autoattribute:: cycapture.libpcap._pcap.libpcap_version
+   :annotation: = "version of the wrapped libpcap library"

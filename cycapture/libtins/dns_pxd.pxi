@@ -65,7 +65,6 @@ cdef extern from "tins/dns.h" namespace "Tins" nogil:
         DNS_ANY "Tins::DNS::ANY"
 
     cdef cppclass cppDNS "Tins::DNS" (cppPDU):
-        PDUType pdu_type() const
 
         cppclass cppQuery "Query":
             Query(const string &nm, QueryType tp, QueryClass cl)
@@ -145,34 +144,29 @@ cdef extern from "tins/dns.h" namespace "Tins" nogil:
 
 cdef class DNS(PDU):
     cdef cppDNS* ptr
-    cpdef uint16_t queries_count(self)
-    cpdef uint16_t questions_count(self)
-    cpdef queries(self)
+    cpdef queries_count(self)
+    cpdef questions_count(self)
+    cpdef get_queries(self)
     cpdef add_query(self, DNS_Query q)
-    cpdef uint16_t answers_count(self)
-    cpdef answers(self)
+    cpdef answers_count(self)
+    cpdef get_answers(self)
     cpdef add_answer(self, DNS_Resource answer)
-    cpdef uint16_t authority_count(self)
-    cpdef authority(self)
+    cpdef authority_count(self)
+    cpdef get_authorities(self)
     cpdef add_authority(self, DNS_Resource authority)
-    cpdef uint16_t additional_count(self)
-    cpdef additional(self)
+    cpdef additional_count(self)
+    cpdef get_additionals(self)
     cpdef add_additional(self, DNS_Resource additional)
 
-    @staticmethod
-    cdef inline factory(cppPDU* ptr, uint8_t* buf, int size, object parent):
-        if ptr is NULL and buf is NULL:
-            return DNS()
-        obj = DNS(_raw=True)
-        obj.ptr = new cppDNS(<uint8_t*> buf, <uint32_t> size) if ptr is NULL else <cppDNS*> ptr
-        obj.base_ptr = <cppPDU*> obj.ptr
-        obj.parent = parent
-        return obj
 
 cdef class DNS_Query(object):
-    cdef cppDNS.cppQuery* ptr
+    cdef cppDNS.cppQuery cpp_query
+    cdef equals(self, other)
+
 
 cdef class DNS_Resource(object):
-    cdef cppDNS.cppResource *ptr
+    cdef cppDNS.cppResource cpp_resource
+    cdef equals(self, other)
+
 
 cpdef encode_domain_name(domain_name)

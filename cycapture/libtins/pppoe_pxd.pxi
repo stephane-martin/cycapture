@@ -13,19 +13,19 @@ cdef extern from "tins/pppoe.h" namespace "Tins" nogil:
         PPPoE_AC_SYSTEM_ERROR "Tins::PPPoE::AC_SYSTEM_ERROR",
         PPPoE_GENERIC_ERROR "Tins::PPPoE::GENERIC_ERROR"
 
+
 cdef extern from "wrap.h" namespace "Tins" nogil:
     cdef cppclass pppoe_tag:
         pppoe_tag()
         pppoe_tag(PPPoE_TagTypes opt)
-        pppoe_tag(PPPoE_TagTypes opt, size_t length)
+        # pppoe_tag(PPPoE_TagTypes opt, size_t length)
         pppoe_tag(PPPoE_TagTypes opt, size_t length, const uint8_t *data)
 
-        uint8_t option() const
-        void option(uint8_t opt)
-        const uint8_t *data_ptr() const
+        PPPoE_TagTypes option() const
+        void option(PPPoE_TagTypes opt)
+        const uint8_t* data_ptr() const
         size_t data_size() const
         size_t length_field() const
-
 
 cdef extern from "tins/pppoe.h" namespace "Tins" nogil:
     PDUType pppoe_pdu_flag "Tins::PPPoE::pdu_flag"
@@ -41,10 +41,10 @@ cdef extern from "tins/pppoe.h" namespace "Tins" nogil:
 
     cppclass cppPPPoE "Tins::PPPoE" (cppPDU):
         cppPPPoE()
-        cppPPPoE(const uint8_t *buf, uint32_t total_sz)
+        cppPPPoE(const uint8_t *buf, uint32_t total_sz) except +custom_exception_handler
 
         const cpp_list[pppoe_tag] &tags() const
-        const pppoe_tag *search_tag(PPPoE_TagTypes identifier) const
+        const pppoe_tag* search_tag(PPPoE_TagTypes identifier) const
         void add_tag(const pppoe_tag &option)
 
         small_uint4 version() const
@@ -83,17 +83,13 @@ cdef extern from "tins/pppoe.h" namespace "Tins" nogil:
         string ac_system_error() const
         string generic_error() const
 
+
 cdef class PPPoE(PDU):
     cdef cppPPPoE* ptr
 
-    @staticmethod
-    cdef inline factory(cppPDU* ptr, uint8_t* buf, int size, object parent):
-        if ptr is NULL and buf is NULL:
-            return SNAP()
-        obj = SNAP(_raw=True)
-        obj.ptr = new cppSNAP(<uint8_t*> buf, <uint32_t> size) if ptr is NULL else <cppSNAP*> ptr
-        obj.base_ptr = <cppPDU*> obj.ptr
-        obj.parent = parent
-        return obj
+    cpdef search_tag(self, tag_type)
+    cpdef add_tag(self, tag_type, data=?)
 
-    cpdef tags(self)
+    cpdef get_vendor_specific(self)
+    cpdef set_vendor_specific(self, vendor_id, data)
+

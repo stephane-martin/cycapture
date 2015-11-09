@@ -11,7 +11,7 @@ country_params = namedtuple('country_params', ['country', 'first_channel', 'numb
 fh_pattern = namedtuple('fh_pattern', ['flag', 'number_of_sets', 'modulus', 'offset', 'random_table'])
 channel_switch_t = namedtuple('channel_switch_t', ['switch_mode', 'new_channel', 'count'])
 quiet_t = namedtuple('quiet_t', ['quiet_count', 'quiet_period', 'quiet_duration', 'quiet_offset'])
-bss_load_t = namedtuple('bss_load_t', ['station_count', 'available_capacity', 'channel_utilization'])
+bss_load_t = namedtuple('bss_load_t', ['station_count', 'channel_utilization', 'available_capacity'])
 tim_t = namedtuple('tim_t', ['dtim_count', 'dtim_period', 'bitmap_control', 'partial_virtual_bitmap'])
 vendor_specific_t = namedtuple('vendor_specific_t', ['oui', 'data'])
 
@@ -23,7 +23,13 @@ cdef class Dot11(PDU):
     pdu_type = PDU.DOT11
     datalink_type = DLT_IEEE802_11
 
-    OptionTypes = IntEnum('OptionTypes', {
+    Types = make_enum("Dot11_Types", 'Types', 'the different types of 802.11 frames', {
+        'MANAGEMENT':   D11_T_MANAGEMENT,
+        'CONTROL':      D11_T_CONTROL,
+        'DATA':         D11_T_DATA
+    })
+
+    OptionTypes = make_enum('Dot11_OptionTypes', 'OptionTypes', 'the different types of tagged options', {
         "SSID": D11_SSID,
         "SUPPORTED_RATES": D11_SUPPORTED_RATES,
         "FH_SET": D11_FH_SET,
@@ -60,7 +66,7 @@ cdef class Dot11(PDU):
         "VENDOR_SPECIFIC": D11_VENDOR_SPECIFIC
     })
 
-    ManagementSubtypes = IntEnum('ManagementSubtypes', {
+    ManagementSubtypes = make_enum('Dot11_ManagementSubtypes', 'ManagementSubtypes', 'the different subtypes of 802.11 management frames', {
         "ASSOC_REQ": D11_ASSOC_REQ,
         "ASSOC_RESP": D11_ASSOC_RESP,
         "REASSOC_REQ": D11_REASSOC_REQ,
@@ -74,7 +80,7 @@ cdef class Dot11(PDU):
         "DEAUTH": D11_DEAUTH
     })
 
-    ControlSubtypes = IntEnum('ControlSubtypes', {
+    ControlSubtypes = make_enum('Dot11_ControlSubtypes', 'ControlSubtypes', 'the different subtypes of 802.11 control frames', {
         "BLOCK_ACK_REQ": D11_BLOCK_ACK_REQ,
         "BLOCK_ACK": D11_BLOCK_ACK,
         "PS": D11_PS,
@@ -85,7 +91,7 @@ cdef class Dot11(PDU):
         "CF_END_ACK": D11_CF_END_ACK
     })
 
-    DataSubtypes = IntEnum('DataSubtypes', {
+    DataSubtypes = make_enum('Dot11DataSubtypes', 'DataSubtypes', 'the different subtypes of 802.11 data frames', {
         "DATA_DATA": D11_DATA_DATA,
         "DATA_CF_ACK": D11_DATA_CF_ACK,
         "DATA_CF_POLL": D11_DATA_CF_POLL,
@@ -101,29 +107,28 @@ cdef class Dot11(PDU):
         "QOS_DATA_NULL": D11_QOS_DATA_NULL
     })
 
-    def __cinit__(self, dest=None, src=None, buf=None, _raw=False):
-        if _raw:
-            return
-        if type(self) != Dot11:
-            # object will be initialized later
+    def __cinit__(self, dst_hw_addr=None, src_hw_addr=None, _raw=False):
+        if _raw is True or type(self) != Dot11:
             return
 
-        cdef uint8_t* buf_addr
-        cdef uint32_t size
-
-        if buf is not None:
-            PDU.prepare_buf_arg(buf, &buf_addr, &size)
-            self.ptr = new cppDot11(buf_addr, size)
-        else:
-            if not isinstance(dest, HWAddress):
-                dest = HWAddress(dest)
-            self.ptr = new cppDot11(<cppHWAddress6> ((<HWAddress> dest).ptr[0]))
-
+        if not isinstance(dst_hw_addr, HWAddress):
+            dst_hw_addr = HWAddress(dst_hw_addr)
+        # src is in signature just for inheritance
+        self.ptr = new cppDot11(<cppHWAddress6> ((<HWAddress> dst_hw_addr).ptr[0]))
         self.base_ptr = <cppPDU*> self.ptr
         self.parent = None
 
-    def __init__(self, dest=None, src=None, buf=None, _raw=False):
-        pass
+    def __init__(self, dst_hw_addr=None, src_hw_addr=None):
+        """
+        __init__(dst_hw_addr=None, src_hw_addr=None)
+
+        Parameters
+        ----------
+        dst_hw_addr: :py:class:`~.HWAddress`
+            The destination hardware address
+        src_hw_addr
+            not used
+        """
 
     def __dealloc__(self):
         cdef cppDot11* p = <cppDot11*> self.ptr
@@ -133,24 +138,36 @@ cdef class Dot11(PDU):
         self.parent = None
 
     property protocol:
+        """
+        protocol version field (read-write, `uint8_t`)
+        """
         def __get__(self):
             return <uint8_t> self.ptr.protocol()
         def __set__(self, value):
             self.ptr.protocol(small_uint2(<uint8_t> value))
 
     property type:
+        """
+        type field (read-write, `2 bits int`)
+        """
         def __get__(self):
             return <uint8_t> self.ptr.type()
         def __set__(self, value):
             self.ptr.type(small_uint2(<uint8_t> value))
 
     property subtype:
+        """
+        subtype field (read-write, `4 bits int`)
+        """
         def __get__(self):
             return <uint8_t> self.ptr.subtype()
         def __set__(self, value):
             self.ptr.subtype(small_uint4(<uint8_t> value))
 
     property to_ds:
+        """
+        To-DS field (read-write, `bool`)
+        """
         def __get__(self):
             return bool(<uint8_t> self.ptr.to_ds())
         def __set__(self, value):
@@ -158,6 +175,9 @@ cdef class Dot11(PDU):
             self.ptr.to_ds(small_uint1(<uint8_t> value))
 
     property from_ds:
+        """
+        From-DS field (read-write, `bool`)
+        """
         def __get__(self):
             return bool(<uint8_t> self.ptr.from_ds())
         def __set__(self, value):
@@ -165,6 +185,9 @@ cdef class Dot11(PDU):
             self.ptr.from_ds(small_uint1(<uint8_t> value))
 
     property more_frag:
+        """
+        More-Frag field (read-write, `bool`)
+        """
         def __get__(self):
             return bool(<uint8_t> self.ptr.more_frag())
         def __set__(self, value):
@@ -172,6 +195,9 @@ cdef class Dot11(PDU):
             self.ptr.more_frag(small_uint1(<uint8_t> value))
 
     property retry:
+        """
+        Retry field (read-write, `bool`)
+        """
         def __get__(self):
             return bool(<uint8_t> self.ptr.retry())
         def __set__(self, value):
@@ -179,6 +205,9 @@ cdef class Dot11(PDU):
             self.ptr.retry(small_uint1(<uint8_t> value))
 
     property power_mgmt:
+        """
+        Power-Management field (read-write, `bool`)
+        """
         def __get__(self):
             return bool(<uint8_t> self.ptr.power_mgmt())
         def __set__(self, value):
@@ -186,6 +215,9 @@ cdef class Dot11(PDU):
             self.ptr.power_mgmt(small_uint1(<uint8_t> value))
 
     property wep:
+        """
+        WEP field (read-write, `bool`)
+        """
         def __get__(self):
             return bool(<uint8_t> self.ptr.wep())
         def __set__(self, value):
@@ -193,6 +225,9 @@ cdef class Dot11(PDU):
             self.ptr.wep(small_uint1(<uint8_t> value))
 
     property order:
+        """
+        Order field (read-write, `bool`)
+        """
         def __get__(self):
             return bool(<uint8_t> self.ptr.order())
         def __set__(self, value):
@@ -200,12 +235,18 @@ cdef class Dot11(PDU):
             self.ptr.order(small_uint1(<uint8_t> value))
 
     property duration_id:
+        """
+        Duration-ID field (read-write, `uint16_t`)
+        """
         def __get__(self):
             return <uint16_t> self.ptr.duration_id()
         def __set__(self, value):
             self.ptr.duration_id(<uint16_t> value)
 
     property addr1:
+        """
+        First address (read-write, :py:class:`~.HWAddress`)
+        """
         def __get__(self):
             return HWAddress(<bytes>(self.ptr.addr1().to_string()))
         def __set__(self, value):
@@ -218,10 +259,25 @@ cdef class Dot11(PDU):
             raise ValueError("sender can't be None")
         if iface is None:
             raise ValueError("iface can't be None")
-        self.ptr.send((<PacketSender> sender).ptr[0], (<NetworkInterface> iface).ptr[0])
+        self.ptr.send((<PacketSender> sender).ptr[0], (<NetworkInterface> iface).interface)
 
     @staticmethod
     def from_bytes(buf):
+        """
+        from_bytes(buf)
+        Static. Allocates an Dot11 PDU from a buffer.
+
+        Instantiate the appropriate subclass of Dot11 from the given buffer. The type of the allocated class
+        will be figured out from the the buffer.
+
+        Parameters
+        ----------
+        buf: bytes or bytearray or memoryview
+
+        Returns
+        -------
+        pdu: :py:class:`~._tins.Dot11`
+        """
         if buf is None:
             return Dot11()
         cdef uint8_t* buf_addr
@@ -231,47 +287,129 @@ cdef class Dot11(PDU):
 
     @staticmethod
     cdef c_from_bytes(uint8_t* buf_addr, uint32_t size):
+        """
+        c_from_bytes(uint8_t* buf_addr, uint32_t size)
+        Static. Allocates an Dot11 PDU from a buffer.
+
+        Parameters
+        ----------
+        buf_addr: uint8_t*
+        size: uint32_t
+
+        Returns
+        -------
+        pdu: :py:class:`~._tins.Dot11`
+        """
         if buf_addr is NULL or size == 0:
             return Dot11()
         cdef cppDot11* p = dot11_from_bytes(buf_addr, size)         # equivalent to new
-        cdef string classname
-        if p is not NULL:
-            classname = map_pdutype_to_classname[p.pdu_type()]
-            return (map_classname_to_factory[classname])(p, NULL, 0, None)
-        else:
+        if p is NULL:
             raise MalformedPacket
+        return PDU.from_ptr(p, parent=None)
+
+    cpdef add_option(self, identifier, data=None):
+        """
+        add_option(identifier, data=None)
+        Adds a new option to this Dot11 PDU.
+
+        Parameters
+        ----------
+        identifier: int or :py:class:`~.Dot11.OptionTypes`
+        data: bytes
+        """
+        cdef dot11_pdu_option opt
+        identifier = int(identifier)
+        if data is None:
+            opt = dot11_pdu_option(<uint8_t> identifier)
+        else:
+            data = bytes(data)
+            opt = dot11_pdu_option(<uint8_t> identifier, len(data), <uint8_t*> data)
+        (<cppDot11*> self.ptr).add_option(opt)
+
+    cpdef search_option(self, identifier):
+        """
+        search_option(identifier)
+        Look up a tagged option in the option list. Returns ``None`` if the option is not found.
+
+        Parameters
+        ----------
+        identifier: int or :py:class:`~.Dot11.OptionTypes`
+
+        Returns
+        -------
+        option: bytes
+        """
+        identifier = int(identifier)
+        cdef dot11_pdu_option* opt = <dot11_pdu_option*> ((<cppDot11*> self.ptr).search_option(<D11_OptionTypes> identifier))
+        if opt is NULL:
+            return None
+        cdef int length = opt.data_size()
+        if not length:
+            return ""
+        return <bytes> ((opt.data_ptr())[:length])
+
+    cpdef options(self):
+        """
+        options()
+        Returns the list of options
+
+        Returns
+        -------
+        l: list of (int, bytes)
+        """
+        cdef cpp_list[dot11_pdu_option] l = (<cppDot11*> self.ptr).options()
+        return [
+            (
+                int(opt.option()),
+                (<bytes> (opt.data_ptr()[:opt.data_size()])) if opt.data_size() > 0 else b''
+            )
+            for opt in l
+        ]
+
+    cdef cppPDU* replace_ptr_with_buf(self, uint8_t* buf, int size) except NULL:
+        if self.ptr is not NULL and self.parent is None:
+            del self.ptr
+        self.ptr = new cppDot11(<uint8_t*> buf, <uint32_t> size)
+        return self.ptr
+
+    cdef replace_ptr(self, cppPDU* ptr):
+        if self.ptr is not NULL and self.parent is None:
+            del self.ptr
+        self.ptr = <cppDot11*> ptr
+
 
 cdef class Dot11Data(Dot11):
     """
-    Base Dot11 packet
+    802.11 Data frame
     """
     pdu_flag = PDU.DOT11_DATA
     pdu_type = PDU.DOT11_DATA
 
-    def __cinit__(self, dest=None, src=None, buf=None, _raw=False):
-        if _raw:
-            return
-        if type(self) != Dot11Data:
+    def __cinit__(self, dst_hw_addr=None, src_hw_addr=None, _raw=False):
+        if _raw is True or type(self) != Dot11Data:
             return
 
-        cdef uint8_t* buf_addr
-        cdef uint32_t size
+        if not isinstance(dst_hw_addr, HWAddress):
+            dst_hw_addr = HWAddress(dst_hw_addr)
+        if not isinstance(src_hw_addr, HWAddress):
+            src_hw_addr = HWAddress(src_hw_addr)
 
-        if buf is not None:
-            PDU.prepare_buf_arg(buf, &buf_addr, &size)
-            self.ptr = new cppDot11Data(buf_addr, size)
-        else:
-            if not isinstance(dest, HWAddress):
-                dest = HWAddress(dest)
-            if not isinstance(src, HWAddress):
-                src = HWAddress(src)
-            self.ptr = new cppDot11Data((<HWAddress> dest).ptr[0], (<HWAddress> src).ptr[0])
-
+        self.ptr = new cppDot11Data((<HWAddress> dst_hw_addr).ptr[0], (<HWAddress> src_hw_addr).ptr[0])
         self.base_ptr = <cppPDU*> self.ptr
         self.parent = None
 
-    def __init__(self, dest=None, src=None, buf=None, _raw=False):
-        Dot11.__init__(dest, src, buf, _raw)
+    def __init__(self, dst_hw_addr=None, src_hw_addr=None):
+        """
+        __init__(self, dst_hw_addr=None, src=None)
+
+        Parameters
+        ----------
+        dst_hw_addr: :py:class:`~.HWAddress`
+            The destination hardware address
+        src_hw_addr: :py:class:`~.HWAddress`
+            The source hardware address
+        """
+        Dot11.__init__(self, dst_hw_addr, src_hw_addr)
 
     def __dealloc__(self):
         cdef cppDot11Data* p = <cppDot11Data*> self.ptr
@@ -281,6 +419,9 @@ cdef class Dot11Data(Dot11):
         self.parent = None
 
     property addr2:
+        """
+        the second address (read-write, :py:class:`~.HWAddress`)
+        """
         def __get__(self):
             return HWAddress(<bytes>((<cppDot11Data*> self.ptr).addr2().to_string()))
         def __set__(self, value):
@@ -289,6 +430,9 @@ cdef class Dot11Data(Dot11):
             (<cppDot11Data*> self.ptr).addr2((<HWAddress> value).ptr[0])
 
     property addr3:
+        """
+        the third address (read-write, :py:class:`~.HWAddress`)
+        """
         def __get__(self):
             return HWAddress(<bytes>((<cppDot11Data*> self.ptr).addr3().to_string()))
         def __set__(self, value):
@@ -297,6 +441,9 @@ cdef class Dot11Data(Dot11):
             (<cppDot11Data*> self.ptr).addr3((<HWAddress> value).ptr[0])
 
     property addr4:
+        """
+        the fourth address (read-write, :py:class:`~.HWAddress`)
+        """
         def __get__(self):
             return HWAddress(<bytes>((<cppDot11Data*> self.ptr).addr4().to_string()))
         def __set__(self, value):
@@ -305,58 +452,106 @@ cdef class Dot11Data(Dot11):
             (<cppDot11Data*> self.ptr).addr4((<HWAddress> value).ptr[0])
 
     property frag_num:
+        """
+        the fragment number field (read-write, `uint8_t`)
+        """
         def __get__(self):
             return <uint8_t> ((<cppDot11Data*> self.ptr).frag_num())
         def __set__(self, value):
             (<cppDot11Data*> self.ptr).frag_num(small_uint4(<uint8_t> value))
 
     property seq_num:
+        """
+        the sequence number field (read-write, `uint16_t`)
+        """
         def __get__(self):
             return <uint16_t> ((<cppDot11Data*> self.ptr).seq_num())
         def __set__(self, value):
             (<cppDot11Data*> self.ptr).seq_num(small_uint12(<uint16_t> value))
 
     property src_addr:
+        """
+        the frame's source address (read-only, :py:class:`~.HWAddress`)
+
+        It is a wrapper over the `addr*` methods that takes into account the value of the FromDS and ToDS bits.
+
+        If ``FromDS == ToDS == 1``, ``None`` is returned.
+        """
         def __get__(self):
+            if self.from_ds and self.to_ds:
+                return None
             return HWAddress(<bytes>((<cppDot11Data*> self.ptr).src_addr().to_string()))
 
     property dst_addr:
+        """
+        the frame's destination address (read-only, :py:class:`~.HWAddress`)
+
+        It is a wrapper over the `addr*` methods that takes into account the value of the FromDS and ToDS bits.
+
+        If ``FromDS == ToDS == 1``, ``None`` is returned.
+        """
         def __get__(self):
+            if self.from_ds and self.to_ds:
+                return None
             return HWAddress(<bytes>((<cppDot11Data*> self.ptr).dst_addr().to_string()))
 
     property bssid_addr:
+        """
+        the frame's BSSID address (read-only, :py:class:`~.HWAddress`)
+
+        It is a wrapper over the `addr*` methods that takes into account the value of the FromDS and ToDS bits.
+
+        If ``FromDS == ToDS == 1``, ``None`` is returned.
+        """
         def __get__(self):
+            if self.from_ds and self.to_ds:
+                return None
             return HWAddress(<bytes>((<cppDot11Data*> self.ptr).bssid_addr().to_string()))
+
+    cdef cppPDU* replace_ptr_with_buf(self, uint8_t* buf, int size) except NULL:
+        if self.ptr is not NULL and self.parent is None:
+            del self.ptr
+        self.ptr = new cppDot11Data(<uint8_t*> buf, <uint32_t> size)
+        return self.ptr
+
+    cdef replace_ptr(self, cppPDU* ptr):
+        if self.ptr is not NULL and self.parent is None:
+            del self.ptr
+        self.ptr = <cppDot11Data*> ptr
 
 
 cdef class Dot11QoSData(Dot11Data):
+    """
+    802.11 QoS Data frame
+    """
     pdu_flag = PDU.DOT11_QOS_DATA
     pdu_type = PDU.DOT11_QOS_DATA
 
-    def __cinit__(self, dest=None, src=None, buf=None, _raw=False):
-        if _raw:
-            return
-        if type(self) != Dot11QoSData:
+    def __cinit__(self, dst_hw_addr=None, src_hw_addr=None, _raw=False):
+        if _raw is True or type(self) != Dot11QoSData:
             return
 
-        cdef uint8_t* buf_addr
-        cdef uint32_t size
+        if not isinstance(dst_hw_addr, HWAddress):
+            dst_hw_addr = HWAddress(dst_hw_addr)
+        if not isinstance(src_hw_addr, HWAddress):
+            src_hw_addr = HWAddress(src_hw_addr)
 
-        if buf is not None:
-            PDU.prepare_buf_arg(buf, &buf_addr, &size)
-            self.ptr = new cppDot11QoSData(buf_addr, size)
-        else:
-            if not isinstance(dest, HWAddress):
-                dest = HWAddress(dest)
-            if not isinstance(src, HWAddress):
-                src = HWAddress(src)
-            self.ptr = new cppDot11QoSData((<HWAddress> dest).ptr[0], (<HWAddress> src).ptr[0])
-
+        self.ptr = new cppDot11QoSData((<HWAddress> dst_hw_addr).ptr[0], (<HWAddress> src_hw_addr).ptr[0])
         self.base_ptr = <cppPDU*> self.ptr
         self.parent = None
 
-    def __init__(self, dest=None, src=None, buf=None, _raw=False):
-        Dot11Data.__init__(dest, src, buf, _raw)
+    def __init__(self, dst_hw_addr=None, src_hw_addr=None):
+        """
+        __init__(dst_hw_addr=None, src_hw_addr=None)
+
+        Parameters
+        ----------
+        dst_hw_addr: :py:class:`~.HWAddress`
+            The destination hardware address
+        src_hw_addr: :py:class:`~.HWAddress`
+            The source hardware address
+        """
+        Dot11Data.__init__(self, dst_hw_addr, src_hw_addr)
 
     def __dealloc__(self):
         cdef cppDot11QoSData* p = <cppDot11QoSData*> self.ptr
@@ -366,26 +561,51 @@ cdef class Dot11QoSData(Dot11Data):
         self.parent = None
 
     property qos_control:
+        """
+        the QOS Control field (read-write, `uint16_t`)
+        """
         def __get__(self):
             return int((<cppDot11QoSData*> self.ptr).qos_control())
         def __set__(self, value):
             (<cppDot11QoSData*> self.ptr).qos_control(<uint16_t> int(value))
 
+    cdef cppPDU* replace_ptr_with_buf(self, uint8_t* buf, int size) except NULL:
+        if self.ptr is not NULL and self.parent is None:
+            del self.ptr
+        self.ptr = new cppDot11QoSData(<uint8_t*> buf, <uint32_t> size)
+        return self.ptr
+
+    cdef replace_ptr(self, cppPDU* ptr):
+        if self.ptr is not NULL and self.parent is None:
+            del self.ptr
+        self.ptr = <cppDot11QoSData*> ptr
+
 
 cdef class Dot11ManagementFrame(Dot11):
+    """
+    Abstract class for all Management frames in the 802.11 family.
+    """
     pdu_flag = PDU.DOT11_MANAGEMENT
     pdu_type = PDU.DOT11_MANAGEMENT
 
-    def __cinit__(self, dest=None, src=None, buf=None, _raw=False):
-        pass
+    def __cinit__(self, dst_hw_addr=None, src_hw_addr=None, _raw=False):
+        if type(self) == Dot11ManagementFrame:
+            raise NotImplementedError
 
-    def __init__(self, dest=None, src=None, buf=None, _raw=False):
-        Dot11.__init__(self, dest, src, buf, _raw)
+    def __init__(self, dst_hw_addr=None, src_hw_addr=None):
+        """
+        __init__(dst_hw_addr=None, src_hw_addr=None)
+
+        Raises
+        ------
+        exception: NotImplementedError
+        """
+        Dot11.__init__(self, dst_hw_addr, src_hw_addr)
 
     def __dealloc__(self):
         pass
 
-    ReasonCodes = IntEnum('ReasonCodes', {
+    ReasonCodes = make_enum('Dot11_ReasonCodes', 'ReasonCodes', 'Reason codes', {
         'UNSPECIFIED': D11MGMT_UNSPECIFIED,
         'PREV_AUTH_NOT_VALID': D11MGMT_PREV_AUTH_NOT_VALID,
         'STA_LEAVING_IBSS_ESS': D11MGMT_STA_LEAVING_IBSS_ESS,
@@ -420,7 +640,28 @@ cdef class Dot11ManagementFrame(Dot11):
         'PEER_STA_NOT_SUPPORT_CIPHER': D11MGMT_PEER_STA_NOT_SUPPORT_CIPHER
     })
 
+    property frag_num:
+        """
+        the fragment number (read-write, `4-bits int`)
+        """
+        def __get__(self):
+            return <uint8_t> ((<cppDot11ManagementFrame*> self.ptr).frag_num())
+        def __set__(self, value):
+            (<cppDot11ManagementFrame*> self.ptr).frag_num(small_uint4(<uint8_t> value))
+
+    property seq_num:
+        """
+        the sequence number field (read-write, `uint16_t`)
+        """
+        def __get__(self):
+            return <uint16_t> ((<cppDot11ManagementFrame*> self.ptr).seq_num())
+        def __set__(self, value):
+            (<cppDot11ManagementFrame*> self.ptr).seq_num(small_uint12(<uint16_t> value))
+
     property addr2:
+        """
+        Second address (read-write, :py:class:`~.HWAddress`)
+        """
         def __get__(self):
             return HWAddress(<bytes>((<cppDot11ManagementFrame*> self.ptr).addr2().to_string()))
         def __set__(self, value):
@@ -429,6 +670,9 @@ cdef class Dot11ManagementFrame(Dot11):
             (<cppDot11ManagementFrame*> self.ptr).addr2((<HWAddress> value).ptr[0])
 
     property addr3:
+        """
+        Third address (read-write, :py:class:`~.HWAddress`)
+        """
         def __get__(self):
             return HWAddress(<bytes>((<cppDot11ManagementFrame*> self.ptr).addr3().to_string()))
         def __set__(self, value):
@@ -437,6 +681,9 @@ cdef class Dot11ManagementFrame(Dot11):
             (<cppDot11ManagementFrame*> self.ptr).addr3((<HWAddress> value).ptr[0])
 
     property addr4:
+        """
+        Fourth address (read-write, :py:class:`~.HWAddress`)
+        """
         def __get__(self):
             return HWAddress(<bytes>((<cppDot11ManagementFrame*> self.ptr).addr4().to_string()))
         def __set__(self, value):
@@ -445,6 +692,9 @@ cdef class Dot11ManagementFrame(Dot11):
             (<cppDot11ManagementFrame*> self.ptr).addr4((<HWAddress> value).ptr[0])
 
     property ssid:
+        """
+        SSID field (read-write, `bytes`)
+        """
         def __get__(self):
             try:
                 return <bytes> ((<cppDot11ManagementFrame*> self.ptr).ssid())
@@ -457,6 +707,9 @@ cdef class Dot11ManagementFrame(Dot11):
             (<cppDot11ManagementFrame*> self.ptr).ssid(<string> value)
 
     property rsn_information:
+        """
+        RSN information option (read-write, :py:class:`~.RSNInformation`)
+        """
         def __get__(self):
             cdef cppRSNInformation info
             try:
@@ -467,10 +720,13 @@ cdef class Dot11ManagementFrame(Dot11):
 
         def __set__(self, info):
             if not isinstance(info, RSNInformation):
-                info = RSNInformation(buf=info)
+                info = RSNInformation.from_buffer(info)
             (<cppDot11ManagementFrame*> self.ptr).rsn_information((<RSNInformation> info).ptr[0])
 
     property supported_rates:
+        """
+        Supported rates (read-write, `list of floats`)
+        """
         def __get__(self):
             try:
                 return list((<cppDot11ManagementFrame*> self.ptr).supported_rates())
@@ -481,6 +737,9 @@ cdef class Dot11ManagementFrame(Dot11):
             (<cppDot11ManagementFrame*> self.ptr).supported_rates(rates)
 
     property extended_supported_rates:
+        """
+        Extended supported rates (read-write, `list of floats`)
+        """
         def __get__(self):
             try:
                 return list((<cppDot11ManagementFrame*> self.ptr).extended_supported_rates())
@@ -491,6 +750,9 @@ cdef class Dot11ManagementFrame(Dot11):
             (<cppDot11ManagementFrame*> self.ptr).extended_supported_rates(rates)
 
     property qos_capability:
+        """
+        QoS capability (read-write, `uint8_t`)
+        """
         def __get__(self):
             try:
                 return (<cppDot11ManagementFrame*> self.ptr).qos_capability()
@@ -500,6 +762,9 @@ cdef class Dot11ManagementFrame(Dot11):
             (<cppDot11ManagementFrame*> self.ptr).qos_capability(<uint8_t> int(value))
 
     property power_capability:
+        """
+        Power capability (read-write, `uint8_t`)
+        """
         def __get__(self):
             try:
                 return <tuple>((<cppDot11ManagementFrame*> self.ptr).power_capability())
@@ -509,6 +774,9 @@ cdef class Dot11ManagementFrame(Dot11):
             (<cppDot11ManagementFrame*> self.ptr).power_capability(<uint8_t> int(pair_values[0]), <uint8_t> int(pair_values[1]))
 
     property supported_channels:
+        """
+        Supported channels (read-write, `list of uint8_t`)
+        """
         def __get__(self):
             try:
                 return [(p.first, p.second) for p in (<cppDot11ManagementFrame*> self.ptr).supported_channels()]
@@ -518,6 +786,9 @@ cdef class Dot11ManagementFrame(Dot11):
             (<cppDot11ManagementFrame*> self.ptr).supported_channels(<vector[pair[uint8_t, uint8_t]]> channels)
 
     property request_information:
+        """
+        Request information (read-write, `list of uint8_t`)
+        """
         def __get__(self):
             try:
                 return <list> ((<cppDot11ManagementFrame*> self.ptr).request_information())
@@ -528,6 +799,9 @@ cdef class Dot11ManagementFrame(Dot11):
             (<cppDot11ManagementFrame*> self.ptr).request_information(<vector[uint8_t]> elements)
 
     property fh_parameter_set:
+        """
+        fh paramater set tagged option (read-write, :py:class:`~.fh_params`)
+        """
         def __get__(self):
             cdef cppDot11ManagementFrame.fh_params_set s
             try:
@@ -543,15 +817,21 @@ cdef class Dot11ManagementFrame(Dot11):
             (<cppDot11ManagementFrame*> self.ptr).fh_parameter_set(s)
 
     property ds_parameter_set:
+        """
+        ds paramater set (read-write, `uint8_t`)
+        """
         def __get__(self):
             try:
-                return (<cppDot11ManagementFrame*> self.ptr).ds_parameter_set()
+                return int((<cppDot11ManagementFrame*> self.ptr).ds_parameter_set())
             except OptionNotFound:
                 return None
         def __set__(self, value):
             (<cppDot11ManagementFrame*> self.ptr).ds_parameter_set(<uint8_t> int(value))
 
     property cf_parameter_set:
+        """
+        cf paramater set tagged option (read-write, :py:class:`~.cf_params`)
+        """
         def __get__(self):
             cdef cppDot11ManagementFrame.cf_params_set s
             try:
@@ -567,6 +847,9 @@ cdef class Dot11ManagementFrame(Dot11):
             (<cppDot11ManagementFrame*> self.ptr).cf_parameter_set(s)
 
     property ibss_parameter_set:
+        """
+        ibss parameter (read-write, `uint8_t`)
+        """
         def __get__(self):
             try:
                 return (<cppDot11ManagementFrame*> self.ptr).ibss_parameter_set()
@@ -576,6 +859,9 @@ cdef class Dot11ManagementFrame(Dot11):
             (<cppDot11ManagementFrame*> self.ptr).ibss_parameter_set(<uint16_t> int(value))
 
     property ibss_dfs:
+        """
+        IBSS DFS tagged option (read-write, :py:class:`~.dfs_params`)
+        """
         def __get__(self):
             cdef cppDot11ManagementFrame.ibss_dfs_params p
             try:
@@ -588,8 +874,6 @@ cdef class Dot11ManagementFrame(Dot11):
 
         def __set__(self, value):
             dfs_owner, recovery_interval, channel_map = value
-            if not PyIter_Check(channel_map):
-                raise ValueError("'channel_map' must be an iterable of (uint8, uint8)")
             if not isinstance(dfs_owner, HWAddress):
                 dfs_owner = HWAddress(dfs_owner)
             recovery_interval = int(recovery_interval)
@@ -605,6 +889,9 @@ cdef class Dot11ManagementFrame(Dot11):
             (<cppDot11ManagementFrame*> self.ptr).ibss_dfs(params)
 
     property country:
+        """
+        country tagged option (read-write, :py:class:`~.country_params`)
+        """
         def __get__(self):
             cdef cppDot11ManagementFrame.country_params country_p
             try:
@@ -619,12 +906,6 @@ cdef class Dot11ManagementFrame(Dot11):
 
         def __set__(self, value):
             country_name, first_channel, number_channels, max_transmit_power = value
-            if not PyIter_Check(first_channel):
-                raise ValueError("'first_channel' must be an iterable of uint8")
-            if not PyIter_Check(number_channels):
-                raise ValueError("'number_channels' must be an iterable of uint8")
-            if not PyIter_Check(max_transmit_power):
-                raise ValueError("'max_transmit_power' must be an iterable of uint8")
             cdef vector[uint8_t] first_channel_v = first_channel
             cdef vector[uint8_t] number_channels_v = number_channels
             cdef vector[uint8_t] max_transmit_power_v = max_transmit_power
@@ -634,6 +915,9 @@ cdef class Dot11ManagementFrame(Dot11):
             (<cppDot11ManagementFrame*> self.ptr).country(params)
 
     property fh_parameters:
+        """
+        FH parameters set tagged option (read-write, `(uint8_t, uint8_t)`)
+        """
         def __get__(self):
             cdef pair[uint8_t, uint8_t] apair
             try:
@@ -646,6 +930,9 @@ cdef class Dot11ManagementFrame(Dot11):
             (<cppDot11ManagementFrame*> self.ptr).fh_parameters(<uint8_t> int(first), <uint8_t> int(second))
 
     property fh_pattern_table:
+        """
+        FH pattern table tagged option (read-write, :py:class:`~.fh_pattern`)
+        """
         def __get__(self):
             cdef cppDot11ManagementFrame.fh_pattern_type t
             try:
@@ -657,8 +944,6 @@ cdef class Dot11ManagementFrame(Dot11):
 
         def __set__(self, value):
             flag, number_of_sets, modulus, offset, random_table = value
-            if not PyIter_Check(random_table):
-                raise ValueError("'random_table' must be an iterable of uint8")
             cdef vector[uint8_t] random_table_v = random_table
             cdef cppDot11ManagementFrame.fh_pattern_type t = cppDot11ManagementFrame.fh_pattern_type(
                 <uint8_t> int(flag), <uint8_t> int(number_of_sets), <uint8_t> int(modulus), <uint8_t> int(offset), random_table_v
@@ -666,6 +951,9 @@ cdef class Dot11ManagementFrame(Dot11):
             (<cppDot11ManagementFrame*> self.ptr).fh_pattern_table(t)
 
     property power_constraint:
+        """
+        Power constraint (read-write, `uint8_t`)
+        """
         def __get__(self):
             try:
                 return int((<cppDot11ManagementFrame*> self.ptr).power_constraint())
@@ -676,6 +964,9 @@ cdef class Dot11ManagementFrame(Dot11):
             (<cppDot11ManagementFrame*> self.ptr).power_constraint(<uint8_t>int(value))
 
     property channel_switch:
+        """
+        Channel switch (read-write, :py:class:`~.channel_switch_t`)
+        """
         def __get__(self):
             cdef cppDot11ManagementFrame.channel_switch_type c
             try:
@@ -692,6 +983,9 @@ cdef class Dot11ManagementFrame(Dot11):
             (<cppDot11ManagementFrame*> self.ptr).channel_switch(c)
 
     property quiet:
+        """
+        Quiet tagged option (read-write, :py:class:`~.quiet_t`)
+        """
         def __get__(self):
             cdef cppDot11ManagementFrame.quiet_type q
             try:
@@ -708,6 +1002,9 @@ cdef class Dot11ManagementFrame(Dot11):
             (<cppDot11ManagementFrame*> self.ptr).quiet(q)
 
     property tpc_report:
+        """
+        TPC Report tagged option (read-write, `(uint8_t, uint8_t)`)
+        """
         def __get__(self):
             cdef pair[uint8_t, uint8_t] apair
             try:
@@ -721,6 +1018,9 @@ cdef class Dot11ManagementFrame(Dot11):
             (<cppDot11ManagementFrame*> self.ptr).tpc_report(<uint8_t> int(first), <uint8_t> int(second))
 
     property erp_information:
+        """
+        ERP information (read-write, `uint8_t`)
+        """
         def __get__(self):
             try:
                 return int((<cppDot11ManagementFrame*> self.ptr).erp_information())
@@ -731,22 +1031,28 @@ cdef class Dot11ManagementFrame(Dot11):
             (<cppDot11ManagementFrame*> self.ptr).erp_information(<uint8_t> int(value))
 
     property bss_load:
+        """
+        BSS Load tagged option (read-write, :py:class:`~.bss_load_t`)
+        """
         def __get__(self):
             cdef cppDot11ManagementFrame.bss_load_type bss
             try:
                 bss = (<cppDot11ManagementFrame*> self.ptr).bss_load()
             except OptionNotFound:
                 return None
-            return bss_load_t(int(bss.station_count), int(bss.available_capacity), int(bss.channel_utilization))
+            return bss_load_t(int(bss.station_count), int(bss.channel_utilization), int(bss.available_capacity))
 
         def __set__(self, value):
-            station_count, available_capacity, channel_utilization = value
+            station_count, channel_utilization, available_capacity = value
             cdef cppDot11ManagementFrame.bss_load_type bss = cppDot11ManagementFrame.bss_load_type(
                 <uint16_t> int(station_count), <uint8_t> int(channel_utilization), <uint16_t> int(available_capacity)
             )
             (<cppDot11ManagementFrame*> self.ptr).bss_load(bss)
 
     property tim:
+        """
+        TIM tagged option (read-write, :py:class:`~.tim_t`)
+        """
         def __get__(self):
             cdef cppDot11ManagementFrame.tim_type t
             try:
@@ -754,12 +1060,10 @@ cdef class Dot11ManagementFrame(Dot11):
             except OptionNotFound:
                 return None
             bitmap = <list> t.partial_virtual_bitmap
-            return int(t.dtim_count), int(t.dtim_period), int(t.bitmap_control), bitmap
+            return tim_t(int(t.dtim_count), int(t.dtim_period), int(t.bitmap_control), bitmap)
 
         def __set__(self, value):
             dtim_count, dtim_period, bitmap_control, bitmap = value
-            if not PyIter_Check(bitmap):
-                raise ValueError("'bitmap' must be an iterable of uint8")
             cdef vector[uint8_t] bitmap_v = [int(x) for x in bitmap]
             cdef cppDot11ManagementFrame.tim_type t = cppDot11ManagementFrame.tim_type(
                 <uint8_t> int(dtim_count), <uint8_t> int(dtim_period), <uint8_t> int(bitmap_control), bitmap_v
@@ -767,6 +1071,9 @@ cdef class Dot11ManagementFrame(Dot11):
             (<cppDot11ManagementFrame*> self.ptr).tim(t)
 
     property vendor_specific:
+        """
+        Vendor Specific tagged option (read-write, :py:class:`~.vendor_specific_t`)
+        """
         def __get__(self):
             cdef cppDot11ManagementFrame.vendor_specific_type vendor
             try:
@@ -784,6 +1091,9 @@ cdef class Dot11ManagementFrame(Dot11):
             (<cppDot11ManagementFrame*> self.ptr).vendor_specific(vendor)
 
     property challenge_text:
+        """
+        challenge text option (read-write, `bytes`)
+        """
         def __get__(self):
             try:
                 return <bytes>((<cppDot11ManagementFrame*> self.ptr).challenge_text())
@@ -794,7 +1104,11 @@ cdef class Dot11ManagementFrame(Dot11):
             (<cppDot11ManagementFrame*> self.ptr).challenge_text(<string> bytes(value))
 
 
+
 cdef class Capabilities(object):
+    """
+    Represents the IEEE 802.11 frames's capability information.
+    """
     def __cinit__(self):
         pass
 
@@ -804,7 +1118,23 @@ cdef class Capabilities(object):
     def __dealloc__(self):
         pass
 
+    @staticmethod
+    cdef factory(cppDot11ManagementFrame.capability_information& info):
+        """
+        Make a Capabilities object from a C++ capabilities object.
+
+        Parameters
+        ----------
+        info: cppDot11ManagementFrame.capability_information
+        """
+        obj = Capabilities()
+        (<Capabilities> obj).cap_info = info
+        return obj
+
     property ess:
+        """
+        ess flag (read-write, `bool`)
+        """
         def __get__(self):
             return bool(self.cap_info.ess())
 
@@ -813,6 +1143,9 @@ cdef class Capabilities(object):
             self.cap_info.ess(val)
 
     property ibss:
+        """
+        ibss flag (read-write, `bool`)
+        """
         def __get__(self):
             return bool(self.cap_info.ibss())
 
@@ -821,6 +1154,10 @@ cdef class Capabilities(object):
             self.cap_info.ibss(val)
 
     property cf_poll:
+        """
+        cf_poll flag (read-write, `bool`)
+        """
+
         def __get__(self):
             return bool(self.cap_info.cf_poll())
 
@@ -829,6 +1166,9 @@ cdef class Capabilities(object):
             self.cap_info.cf_poll(val)
 
     property cf_poll_req:
+        """
+        cf_poll_req flag (read-write, `bool`)
+        """
         def __get__(self):
             return bool(self.cap_info.cf_poll_req())
 
@@ -837,6 +1177,9 @@ cdef class Capabilities(object):
             self.cap_info.cf_poll_req(val)
 
     property privacy:
+        """
+        privacy flag (read-write, `bool`)
+        """
         def __get__(self):
             return bool(self.cap_info.privacy())
 
@@ -845,6 +1188,9 @@ cdef class Capabilities(object):
             self.cap_info.privacy(val)
 
     property short_preamble:
+        """
+        short_preamble flag (read-write, `bool`)
+        """
         def __get__(self):
             return bool(self.cap_info.short_preamble())
 
@@ -853,6 +1199,9 @@ cdef class Capabilities(object):
             self.cap_info.short_preamble(val)
 
     property pbcc:
+        """
+        pbcc flag (read-write, `bool`)
+        """
         def __get__(self):
             return bool(self.cap_info.pbcc())
 
@@ -861,6 +1210,9 @@ cdef class Capabilities(object):
             self.cap_info.pbcc(val)
 
     property channel_agility:
+        """
+        channel_agility flag (read-write, `bool`)
+        """
         def __get__(self):
             return bool(self.cap_info.channel_agility())
 
@@ -869,6 +1221,9 @@ cdef class Capabilities(object):
             self.cap_info.channel_agility(val)
 
     property spectrum_mgmt:
+        """
+        spectrum_mgmt flag (read-write, `bool`)
+        """
         def __get__(self):
             return bool(self.cap_info.spectrum_mgmt())
 
@@ -877,6 +1232,9 @@ cdef class Capabilities(object):
             self.cap_info.spectrum_mgmt(val)
 
     property qos:
+        """
+        qos flag (read-write, `bool`)
+        """
         def __get__(self):
             return bool(self.cap_info.qos())
 
@@ -885,6 +1243,9 @@ cdef class Capabilities(object):
             self.cap_info.qos(val)
 
     property sst:
+        """
+        sst flag (read-write, `bool`)
+        """
         def __get__(self):
             return bool(self.cap_info.sst())
 
@@ -893,6 +1254,9 @@ cdef class Capabilities(object):
             self.cap_info.sst(val)
 
     property apsd:
+        """
+        apsd flag (read-write, `bool`)
+        """
         def __get__(self):
             return bool(self.cap_info.apsd())
 
@@ -901,6 +1265,9 @@ cdef class Capabilities(object):
             self.cap_info.apsd(val)
 
     property reserved:
+        """
+        reserved flag (read-write, `bool`)
+        """
         def __get__(self):
             return bool(self.cap_info.reserved())
 
@@ -909,6 +1276,9 @@ cdef class Capabilities(object):
             self.cap_info.reserved(val)
 
     property dsss_ofdm:
+        """
+        dsss_ofdm flag (read-write, `bool`)
+        """
         def __get__(self):
             return bool(self.cap_info.dsss_ofdm())
 
@@ -917,6 +1287,9 @@ cdef class Capabilities(object):
             self.cap_info.dsss_ofdm(val)
 
     property delayed_block_ack:
+        """
+        delayed_block_ack flag (read-write, `bool`)
+        """
         def __get__(self):
             return bool(self.cap_info.delayed_block_ack())
 
@@ -925,6 +1298,9 @@ cdef class Capabilities(object):
             self.cap_info.delayed_block_ack(val)
 
     property immediate_block_ack:
+        """
+        immediate_block_ack flag (read-write, `bool`)
+        """
         def __get__(self):
             return bool(self.cap_info.immediate_block_ack())
 
@@ -932,29 +1308,24 @@ cdef class Capabilities(object):
             cdef cpp_bool val = 1 if value else 0
             self.cap_info.immediate_block_ack(val)
 
+
 cdef class Dot11Disassoc(Dot11ManagementFrame):
+    """
+    802.11 Disassociation frame
+    """
     pdu_flag = PDU.DOT11_DIASSOC
     pdu_type = PDU.DOT11_DIASSOC
 
-    def __cinit__(self, dest=None, src=None, buf=None, _raw=False):
-        if _raw:
-            return
-        if type(self) != Dot11Disassoc:
+    def __cinit__(self, dst_hw_addr=None, src_hw_addr=None, _raw=False):
+        if _raw is True or type(self) != Dot11Disassoc:
             return
 
-        cdef uint8_t* buf_addr
-        cdef uint32_t size
+        if not isinstance(dst_hw_addr, HWAddress):
+            dst_hw_addr = HWAddress(dst_hw_addr)
+        if not isinstance(src_hw_addr, HWAddress):
+            src_hw_addr = HWAddress(src_hw_addr)
 
-        if buf is not None:
-            PDU.prepare_buf_arg(buf, &buf_addr, &size)
-            self.ptr = new cppDot11Disassoc(buf_addr, size)
-        else:
-            if not isinstance(dest, HWAddress):
-                dest = HWAddress(dest)
-            if not isinstance(src, HWAddress):
-                src = HWAddress(src)
-            self.ptr = new cppDot11Disassoc((<HWAddress> dest).ptr[0], (<HWAddress> src).ptr[0])
-
+        self.ptr = new cppDot11Disassoc((<HWAddress> dst_hw_addr).ptr[0], (<HWAddress> src_hw_addr).ptr[0])
         self.base_ptr = <cppPDU*> self.ptr
         self.parent = None
 
@@ -964,39 +1335,58 @@ cdef class Dot11Disassoc(Dot11ManagementFrame):
             del p
         self.ptr = NULL
 
-    def __init__(self, dest=None, src=None, buf=None, _raw=False):
-        Dot11ManagementFrame.__init__(self, dest, src, buf, _raw)
+    def __init__(self, dst_hw_addr=None, src_hw_addr=None):
+        """
+        __init__(dst_hw_addr=None, src_hw_addr=None)
+
+        Parameters
+        ----------
+        dst_hw_addr: :py:class:`~.HWAddress`
+            The destination hardware address
+        src_hw_addr: :py:class:`~.HWAddress`
+            The source hardware address
+        """
+        Dot11ManagementFrame.__init__(self, dst_hw_addr, src_hw_addr)
 
     property reason_code:
+        """
+        reason code field (read-write, `uint16_t`)
+        """
         def __get__(self):
             return int((<cppDot11Disassoc*> self.ptr).reason_code())
 
         def __set__(self, value):
             (<cppDot11Disassoc*> self.ptr).reason_code(<uint16_t> int(value))
 
+    cdef cppPDU* replace_ptr_with_buf(self, uint8_t* buf, int size) except NULL:
+        if self.ptr is not NULL and self.parent is None:
+            del self.ptr
+        self.ptr = new cppDot11Disassoc(<uint8_t*> buf, <uint32_t> size)
+        return self.ptr
+
+    cdef replace_ptr(self, cppPDU* ptr):
+        if self.ptr is not NULL and self.parent is None:
+            del self.ptr
+        self.ptr = <cppDot11Disassoc*> ptr
+
+
 cdef class Dot11AssocRequest(Dot11ManagementFrame):
+    """
+    802.11 Association Request frame
+    """
     pdu_flag = PDU.DOT11_ASSOC_REQ
     pdu_type = PDU.DOT11_ASSOC_REQ
 
-    def __cinit__(self, dest=None, src=None, buf=None, _raw=False):
-        if _raw:
-            return
-        if type(self) != Dot11AssocRequest:
+    def __cinit__(self, dst_hw_addr=None, src_hw_addr=None, _raw=False):
+        if _raw is True or type(self) != Dot11AssocRequest:
             return
 
-        cdef uint8_t* buf_addr
-        cdef uint32_t size
+        if not isinstance(dst_hw_addr, HWAddress):
+            dst_hw_addr = HWAddress(dst_hw_addr)
+        if not isinstance(src_hw_addr, HWAddress):
+            src_hw_addr = HWAddress(src_hw_addr)
 
-        if buf is not None:
-            PDU.prepare_buf_arg(buf, &buf_addr, &size)
-            self.ptr = new cppDot11AssocRequest(buf_addr, size)
-        else:
-            if not isinstance(dest, HWAddress):
-                dest = HWAddress(dest)
-            if not isinstance(src, HWAddress):
-                src = HWAddress(src)
-            self.ptr = new cppDot11AssocRequest((<HWAddress> dest).ptr[0], (<HWAddress> src).ptr[0])
-
+        self.ptr = new cppDot11AssocRequest((<HWAddress> dst_hw_addr).ptr[0], (<HWAddress> src_hw_addr).ptr[0])
         self.base_ptr = <cppPDU*> self.ptr
         self.parent = None
 
@@ -1006,10 +1396,23 @@ cdef class Dot11AssocRequest(Dot11ManagementFrame):
             del p
         self.ptr = NULL
 
-    def __init__(self, dest=None, src=None, buf=None, _raw=False):
-        Dot11ManagementFrame.__init__(self, dest, src, buf, _raw)
+    def __init__(self, dst_hw_addr=None, src_hw_addr=None):
+        """
+        __init__(dst_hw_addr=None, src_hw_addr=None)
+
+        Parameters
+        ----------
+        dst_hw_addr: :py:class:`~.HWAddress`
+            The destination hardware address
+        src_hw_addr: :py:class:`~.HWAddress`
+            The source hardware address
+        """
+        Dot11ManagementFrame.__init__(self, dst_hw_addr, src_hw_addr)
 
     property listen_interval:
+        """
+        listen interval field (read-write, `uint16_t`)
+        """
         def __get__(self):
             return int((<cppDot11AssocRequest*> self.ptr).listen_interval())
 
@@ -1017,33 +1420,41 @@ cdef class Dot11AssocRequest(Dot11ManagementFrame):
             (<cppDot11AssocRequest*> self.ptr).listen_interval(<uint16_t> int(value))
 
     property capabilities:
+        """
+        Capabilities (read-only, :py:class:`~.Capabilities`)
+        """
         def __get__(self):
             return Capabilities.factory((<cppDot11AssocRequest*> self.ptr).capabilities())
 
+    cdef cppPDU* replace_ptr_with_buf(self, uint8_t* buf, int size) except NULL:
+        if self.ptr is not NULL and self.parent is None:
+            del self.ptr
+        self.ptr = new cppDot11AssocRequest(<uint8_t*> buf, <uint32_t> size)
+        return self.ptr
+
+    cdef replace_ptr(self, cppPDU* ptr):
+        if self.ptr is not NULL and self.parent is None:
+            del self.ptr
+        self.ptr = <cppDot11AssocRequest*> ptr
+
 
 cdef class Dot11AssocResponse(Dot11ManagementFrame):
+    """
+    802.11 Association Response frame
+    """
     pdu_flag = PDU.DOT11_ASSOC_RESP
     pdu_type = PDU.DOT11_ASSOC_RESP
 
-    def __cinit__(self, dest=None, src=None, buf=None, _raw=False):
-        if _raw:
-            return
-        if type(self) != Dot11AssocResponse:
+    def __cinit__(self, dst_hw_addr=None, src_hw_addr=None, _raw=False):
+        if _raw is True or type(self) != Dot11AssocResponse:
             return
 
-        cdef uint8_t* buf_addr
-        cdef uint32_t size
+        if not isinstance(dst_hw_addr, HWAddress):
+            dst_hw_addr = HWAddress(dst_hw_addr)
+        if not isinstance(src_hw_addr, HWAddress):
+            src_hw_addr = HWAddress(src_hw_addr)
 
-        if buf is not None:
-            PDU.prepare_buf_arg(buf, &buf_addr, &size)
-            self.ptr = new cppDot11AssocResponse(buf_addr, size)
-        else:
-            if not isinstance(dest, HWAddress):
-                dest = HWAddress(dest)
-            if not isinstance(src, HWAddress):
-                src = HWAddress(src)
-            self.ptr = new cppDot11AssocResponse((<HWAddress> dest).ptr[0], (<HWAddress> src).ptr[0])
-
+        self.ptr = new cppDot11AssocResponse((<HWAddress> dst_hw_addr).ptr[0], (<HWAddress> src_hw_addr).ptr[0])
         self.base_ptr = <cppPDU*> self.ptr
         self.parent = None
 
@@ -1053,10 +1464,23 @@ cdef class Dot11AssocResponse(Dot11ManagementFrame):
             del p
         self.ptr = NULL
 
-    def __init__(self, dest=None, src=None, buf=None, _raw=False):
-        Dot11ManagementFrame.__init__(self, dest, src, buf, _raw)
+    def __init__(self, dst_hw_addr=None, src_hw_addr=None):
+        """
+        __init__(dst_hw_addr=None, src_hw_addr=None)
+
+        Parameters
+        ----------
+        dst_hw_addr: :py:class:`~.HWAddress`
+            The destination hardware address
+        src_hw_addr: :py:class:`~.HWAddress`
+            The source hardware address
+        """
+        Dot11ManagementFrame.__init__(self, dst_hw_addr, src_hw_addr)
 
     property status_code:
+        """
+        status code field (read-write, `uint16_t`)
+        """
         def __get__(self):
             return int((<cppDot11AssocResponse*> self.ptr).status_code())
 
@@ -1064,6 +1488,9 @@ cdef class Dot11AssocResponse(Dot11ManagementFrame):
             (<cppDot11AssocResponse*> self.ptr).status_code(<uint16_t> int(value))
 
     property aid:
+        """
+        AID field (read-write, `uint16_t`)
+        """
         def __get__(self):
             return int((<cppDot11AssocResponse*> self.ptr).aid())
 
@@ -1071,33 +1498,41 @@ cdef class Dot11AssocResponse(Dot11ManagementFrame):
             (<cppDot11AssocResponse*> self.ptr).aid(<uint16_t> int(value))
 
     property capabilities:
+        """
+        Capabilities (read-only, :py:class:`~.Capabilities`)
+        """
         def __get__(self):
             return Capabilities.factory((<cppDot11AssocResponse*> self.ptr).capabilities())
 
+    cdef cppPDU* replace_ptr_with_buf(self, uint8_t* buf, int size) except NULL:
+        if self.ptr is not NULL and self.parent is None:
+            del self.ptr
+        self.ptr = new cppDot11AssocResponse(<uint8_t*> buf, <uint32_t> size)
+        return self.ptr
+
+    cdef replace_ptr(self, cppPDU* ptr):
+        if self.ptr is not NULL and self.parent is None:
+            del self.ptr
+        self.ptr = <cppDot11AssocResponse*> ptr
+
 
 cdef class Dot11ReAssocRequest(Dot11ManagementFrame):
+    """
+    802.11 ReAssociation Request frame
+    """
     pdu_flag = PDU.DOT11_REASSOC_REQ
     pdu_type = PDU.DOT11_REASSOC_REQ
 
-    def __cinit__(self, dest=None, src=None, buf=None, _raw=False):
-        if _raw:
-            return
-        if type(self) != Dot11ReAssocRequest:
+    def __cinit__(self, dst_hw_addr=None, src_hw_addr=None, _raw=False):
+        if _raw is True or type(self) != Dot11ReAssocRequest:
             return
 
-        cdef uint8_t* buf_addr
-        cdef uint32_t size
+        if not isinstance(dst_hw_addr, HWAddress):
+            dst_hw_addr = HWAddress(dst_hw_addr)
+        if not isinstance(src_hw_addr, HWAddress):
+            src_hw_addr = HWAddress(src_hw_addr)
 
-        if buf is not None:
-            PDU.prepare_buf_arg(buf, &buf_addr, &size)
-            self.ptr = new cppDot11ReAssocRequest(buf_addr, size)
-        else:
-            if not isinstance(dest, HWAddress):
-                dest = HWAddress(dest)
-            if not isinstance(src, HWAddress):
-                src = HWAddress(src)
-            self.ptr = new cppDot11ReAssocRequest((<HWAddress> dest).ptr[0], (<HWAddress> src).ptr[0])
-
+        self.ptr = new cppDot11ReAssocRequest((<HWAddress> dst_hw_addr).ptr[0], (<HWAddress> src_hw_addr).ptr[0])
         self.base_ptr = <cppPDU*> self.ptr
         self.parent = None
 
@@ -1107,14 +1542,30 @@ cdef class Dot11ReAssocRequest(Dot11ManagementFrame):
             del p
         self.ptr = NULL
 
-    def __init__(self, dest=None, src=None, buf=None, _raw=False):
-        Dot11ManagementFrame.__init__(self, dest, src, buf, _raw)
+    def __init__(self, dst_hw_addr=None, src_hw_addr=None):
+        """
+        __init__(dst_hw_addr=None, src_hw_addr=None)
+
+        Parameters
+        ----------
+        dst_hw_addr: :py:class:`~.HWAddress`
+            The destination hardware address
+        src_hw_addr: :py:class:`~.HWAddress`
+            The source hardware address
+        """
+        Dot11ManagementFrame.__init__(self, dst_hw_addr, src_hw_addr)
 
     property capabilities:
+        """
+        Capabilities (read-only, :py:class:`~.Capabilities`)
+        """
         def __get__(self):
             return Capabilities.factory((<cppDot11ReAssocRequest*> self.ptr).capabilities())
 
     property listen_interval:
+        """
+        listen interval field (read-write, `uint16_t`)
+        """
         def __get__(self):
             return int((<cppDot11ReAssocRequest*> self.ptr).listen_interval())
 
@@ -1122,6 +1573,9 @@ cdef class Dot11ReAssocRequest(Dot11ManagementFrame):
             (<cppDot11ReAssocRequest*> self.ptr).listen_interval(<uint16_t> int(value))
 
     property current_ap:
+        """
+        current ap field (read-write, :py:class:`~.HWAddress`)
+        """
         def __get__(self):
             return HWAddress(<bytes> ((<cppDot11ReAssocRequest*> self.ptr).current_ap().to_string()))
 
@@ -1130,30 +1584,35 @@ cdef class Dot11ReAssocRequest(Dot11ManagementFrame):
                 value = HWAddress(value)
             (<cppDot11ReAssocRequest*> self.ptr).current_ap((<HWAddress> value).ptr[0])
 
+    cdef cppPDU* replace_ptr_with_buf(self, uint8_t* buf, int size) except NULL:
+        if self.ptr is not NULL and self.parent is None:
+            del self.ptr
+        self.ptr = new cppDot11ReAssocRequest(<uint8_t*> buf, <uint32_t> size)
+        return self.ptr
+
+    cdef replace_ptr(self, cppPDU* ptr):
+        if self.ptr is not NULL and self.parent is None:
+            del self.ptr
+        self.ptr = <cppDot11ReAssocRequest*> ptr
+
 
 cdef class Dot11ReAssocResponse(Dot11ManagementFrame):
+    """
+    802.11 Association Response frame
+    """
     pdu_flag = PDU.DOT11_REASSOC_RESP
     pdu_type = PDU.DOT11_REASSOC_RESP
 
-    def __cinit__(self, dest=None, src=None, buf=None, _raw=False):
-        if _raw:
-            return
-        if type(self) != Dot11ReAssocResponse:
+    def __cinit__(self, dst_hw_addr=None, src_hw_addr=None, _raw=False):
+        if _raw or type(self) != Dot11ReAssocResponse:
             return
 
-        cdef uint8_t* buf_addr
-        cdef uint32_t size
+        if not isinstance(dst_hw_addr, HWAddress):
+            dst_hw_addr = HWAddress(dst_hw_addr)
+        if not isinstance(src_hw_addr, HWAddress):
+            src_hw_addr = HWAddress(src_hw_addr)
 
-        if buf is not None:
-            PDU.prepare_buf_arg(buf, &buf_addr, &size)
-            self.ptr = new cppDot11ReAssocResponse(buf_addr, size)
-        else:
-            if not isinstance(dest, HWAddress):
-                dest = HWAddress(dest)
-            if not isinstance(src, HWAddress):
-                src = HWAddress(src)
-            self.ptr = new cppDot11ReAssocResponse((<HWAddress> dest).ptr[0], (<HWAddress> src).ptr[0])
-
+        self.ptr = new cppDot11ReAssocResponse((<HWAddress> dst_hw_addr).ptr[0], (<HWAddress> src_hw_addr).ptr[0])
         self.base_ptr = <cppPDU*> self.ptr
         self.parent = None
 
@@ -1163,14 +1622,30 @@ cdef class Dot11ReAssocResponse(Dot11ManagementFrame):
             del p
         self.ptr = NULL
 
-    def __init__(self, dest=None, src=None, buf=None, _raw=False):
-        Dot11ManagementFrame.__init__(self, dest, src, buf, _raw)
+    def __init__(self, dst_hw_addr=None, src_hw_addr=None):
+        """
+        __init__(dst_hw_addr=None, src_hw_addr=None)
+
+        Parameters
+        ----------
+        dst_hw_addr: :py:class:`~.HWAddress`
+            The destination hardware address
+        src_hw_addr: :py:class:`~.HWAddress`
+            The source hardware address
+        """
+        Dot11ManagementFrame.__init__(self, dst_hw_addr, src_hw_addr)
 
     property capabilities:
+        """
+        Capabilities (read-only, :py:class:`~.Capabilities`)
+        """
         def __get__(self):
             return Capabilities.factory((<cppDot11ReAssocResponse*> self.ptr).capabilities())
 
     property status_code:
+        """
+        Status code (read-write, `uint16_t`)
+        """
         def __get__(self):
             return int((<cppDot11ReAssocResponse*> self.ptr).status_code())
 
@@ -1178,36 +1653,44 @@ cdef class Dot11ReAssocResponse(Dot11ManagementFrame):
             (<cppDot11ReAssocResponse*> self.ptr).status_code(<uint16_t> int(value))
 
     property aid:
+        """
+        AID field (read-write, `uint16_t`)
+        """
         def __get__(self):
             return int((<cppDot11ReAssocResponse*> self.ptr).aid())
 
         def __set__(self, value):
             (<cppDot11ReAssocResponse*> self.ptr).aid(<uint16_t> int(value))
 
+    cdef cppPDU* replace_ptr_with_buf(self, uint8_t* buf, int size) except NULL:
+        if self.ptr is not NULL and self.parent is None:
+            del self.ptr
+        self.ptr = new cppDot11ReAssocResponse(<uint8_t*> buf, <uint32_t> size)
+        return self.ptr
+
+    cdef replace_ptr(self, cppPDU* ptr):
+        if self.ptr is not NULL and self.parent is None:
+            del self.ptr
+        self.ptr = <cppDot11ReAssocResponse*> ptr
+
 
 cdef class Dot11Authentication(Dot11ManagementFrame):
+    """
+    802.11 Authentication Request frame.
+    """
     pdu_flag = PDU.DOT11_AUTH
     pdu_type = PDU.DOT11_AUTH
 
-    def __cinit__(self, dest=None, src=None, buf=None, _raw=False):
-        if _raw:
-            return
-        if type(self) != Dot11Authentication:
+    def __cinit__(self, dst_hw_addr=None, src_hw_addr=None, _raw=False):
+        if _raw is True or type(self) != Dot11Authentication:
             return
 
-        cdef uint8_t* buf_addr
-        cdef uint32_t size
+        if not isinstance(dst_hw_addr, HWAddress):
+            dst_hw_addr = HWAddress(dst_hw_addr)
+        if not isinstance(src_hw_addr, HWAddress):
+            src_hw_addr = HWAddress(src_hw_addr)
 
-        if buf is not None:
-            PDU.prepare_buf_arg(buf, &buf_addr, &size)
-            self.ptr = new cppDot11Authentication(buf_addr, size)
-        else:
-            if not isinstance(dest, HWAddress):
-                dest = HWAddress(dest)
-            if not isinstance(src, HWAddress):
-                src = HWAddress(src)
-            self.ptr = new cppDot11Authentication((<HWAddress> dest).ptr[0], (<HWAddress> src).ptr[0])
-
+        self.ptr = new cppDot11Authentication((<HWAddress> dst_hw_addr).ptr[0], (<HWAddress> src_hw_addr).ptr[0])
         self.base_ptr = <cppPDU*> self.ptr
         self.parent = None
 
@@ -1217,10 +1700,23 @@ cdef class Dot11Authentication(Dot11ManagementFrame):
             del p
         self.ptr = NULL
 
-    def __init__(self, dest=None, src=None, buf=None, _raw=False):
-        Dot11ManagementFrame.__init__(self, dest, src, buf, _raw)
+    def __init__(self, dst_hw_addr=None, src_hw_addr=None):
+        """
+        __init__(dst_hw_addr=None, src_hw_addr=None)
+
+        Parameters
+        ----------
+        dst_hw_addr: :py:class:`~.HWAddress`
+            The destination hardware address
+        src_hw_addr: :py:class:`~.HWAddress`
+            The source hardware address
+        """
+        Dot11ManagementFrame.__init__(self, dst_hw_addr, src_hw_addr)
 
     property status_code:
+        """
+        Status code (read-write, `uint16_t`)
+        """
         def __get__(self):
             return int((<cppDot11Authentication*> self.ptr).status_code())
 
@@ -1228,6 +1724,9 @@ cdef class Dot11Authentication(Dot11ManagementFrame):
             (<cppDot11Authentication*> self.ptr).status_code(<uint16_t> int(value))
 
     property auth_algorithm:
+        """
+        Authetication Algorithm Number field (read-write, `uint16_t`)
+        """
         def __get__(self):
             return int((<cppDot11Authentication*> self.ptr).auth_algorithm())
 
@@ -1235,36 +1734,44 @@ cdef class Dot11Authentication(Dot11ManagementFrame):
             (<cppDot11Authentication*> self.ptr).auth_algorithm(<uint16_t> int(value))
 
     property auth_seq_number:
+        """
+        Authentication Sequence Number field (read-write, `uint16_t`)
+        """
         def __get__(self):
             return int((<cppDot11Authentication*> self.ptr).auth_seq_number())
 
         def __set__(self, value):
             (<cppDot11Authentication*> self.ptr).auth_seq_number(<uint16_t> int(value))
 
+    cdef cppPDU* replace_ptr_with_buf(self, uint8_t* buf, int size) except NULL:
+        if self.ptr is not NULL and self.parent is None:
+            del self.ptr
+        self.ptr = new cppDot11Authentication(<uint8_t*> buf, <uint32_t> size)
+        return self.ptr
+
+    cdef replace_ptr(self, cppPDU* ptr):
+        if self.ptr is not NULL and self.parent is None:
+            del self.ptr
+        self.ptr = <cppDot11Authentication*> ptr
+
 
 cdef class Dot11Deauthentication(Dot11ManagementFrame):
+    """
+    802.11 Deauthentication frame.
+    """
     pdu_flag = PDU.DOT11_DEAUTH
     pdu_type = PDU.DOT11_DEAUTH
 
-    def __cinit__(self, dest=None, src=None, buf=None, _raw=False):
-        if _raw:
-            return
-        if type(self) != Dot11Deauthentication:
+    def __cinit__(self, dst_hw_addr=None, src_hw_addr=None, _raw=False):
+        if _raw is True or type(self) != Dot11Deauthentication:
             return
 
-        cdef uint8_t* buf_addr
-        cdef uint32_t size
+        if not isinstance(dst_hw_addr, HWAddress):
+            dst_hw_addr = HWAddress(dst_hw_addr)
+        if not isinstance(src_hw_addr, HWAddress):
+            src_hw_addr = HWAddress(src_hw_addr)
 
-        if buf is not None:
-            PDU.prepare_buf_arg(buf, &buf_addr, &size)
-            self.ptr = new cppDot11Deauthentication(buf_addr, size)
-        else:
-            if not isinstance(dest, HWAddress):
-                dest = HWAddress(dest)
-            if not isinstance(src, HWAddress):
-                src = HWAddress(src)
-            self.ptr = new cppDot11Deauthentication((<HWAddress> dest).ptr[0], (<HWAddress> src).ptr[0])
-
+        self.ptr = new cppDot11Deauthentication((<HWAddress> dst_hw_addr).ptr[0], (<HWAddress> src_hw_addr).ptr[0])
         self.base_ptr = <cppPDU*> self.ptr
         self.parent = None
 
@@ -1274,40 +1781,55 @@ cdef class Dot11Deauthentication(Dot11ManagementFrame):
             del p
         self.ptr = NULL
 
-    def __init__(self, dest=None, src=None, buf=None, _raw=False):
-        Dot11ManagementFrame.__init__(self, dest, src, buf, _raw)
+    def __init__(self, dst_hw_addr=None, src_hw_addr=None):
+        """
+        __init__(dst_hw_addr=None, src_hw_addr=None)
+
+        Parameters
+        ----------
+        dst_hw_addr: :py:class:`~.HWAddress`
+            The destination hardware address
+        src_hw_addr: :py:class:`~.HWAddress`
+            The source hardware address
+        """
+        Dot11ManagementFrame.__init__(self, dst_hw_addr, src_hw_addr)
 
     property reason_code:
+        """
+        reason code field (read-write, `uint16_t`)
+        """
         def __get__(self):
             return int((<cppDot11Deauthentication*> self.ptr).reason_code())
 
         def __set__(self, value):
             (<cppDot11Deauthentication*> self.ptr).reason_code(<uint16_t> int(value))
 
+    cdef cppPDU* replace_ptr_with_buf(self, uint8_t* buf, int size) except NULL:
+        if self.ptr is not NULL and self.parent is None:
+            del self.ptr
+        self.ptr = new cppDot11Deauthentication(<uint8_t*> buf, <uint32_t> size)
+        return self.ptr
+
+    cdef replace_ptr(self, cppPDU* ptr):
+        if self.ptr is not NULL and self.parent is None:
+            del self.ptr
+        self.ptr = <cppDot11Deauthentication*> ptr
+
 
 cdef class Dot11Beacon(Dot11ManagementFrame):
     pdu_flag = PDU.DOT11_BEACON
     pdu_type = PDU.DOT11_BEACON
 
-    def __cinit__(self, dest=None, src=None, buf=None, _raw=False):
-        if _raw:
-            return
-        if type(self) != Dot11Beacon:
+    def __cinit__(self, dst_hw_addr=None, src_hw_addr=None, _raw=False):
+        if _raw is True or type(self) != Dot11Beacon:
             return
 
-        cdef uint8_t* buf_addr
-        cdef uint32_t size
+        if not isinstance(dst_hw_addr, HWAddress):
+            dst_hw_addr = HWAddress(dst_hw_addr)
+        if not isinstance(src_hw_addr, HWAddress):
+            src_hw_addr = HWAddress(src_hw_addr)
 
-        if buf is not None:
-            PDU.prepare_buf_arg(buf, &buf_addr, &size)
-            self.ptr = new cppDot11Beacon(buf_addr, size)
-        else:
-            if not isinstance(dest, HWAddress):
-                dest = HWAddress(dest)
-            if not isinstance(src, HWAddress):
-                src = HWAddress(src)
-            self.ptr = new cppDot11Beacon((<HWAddress> dest).ptr[0], (<HWAddress> src).ptr[0])
-
+        self.ptr = new cppDot11Beacon((<HWAddress> dst_hw_addr).ptr[0], (<HWAddress> src_hw_addr).ptr[0])
         self.base_ptr = <cppPDU*> self.ptr
         self.parent = None
 
@@ -1317,10 +1839,23 @@ cdef class Dot11Beacon(Dot11ManagementFrame):
             del p
         self.ptr = NULL
 
-    def __init__(self, dest=None, src=None, buf=None, _raw=False):
-        Dot11ManagementFrame.__init__(self, dest, src, buf, _raw)
+    def __init__(self, dst_hw_addr=None, src_hw_addr=None):
+        """
+        __init__(dst_hw_addr=None, src_hw_addr=None)
+
+        Parameters
+        ----------
+        dst_hw_addr: :py:class:`~.HWAddress`
+            The destination hardware address
+        src_hw_addr: :py:class:`~.HWAddress`
+            The source hardware address
+        """
+        Dot11ManagementFrame.__init__(self, dst_hw_addr, src_hw_addr)
 
     property timestamp:
+        """
+        the timestamp field (read-write, `uint64_t`)
+        """
         def __get__(self):
             return int((<cppDot11Beacon*> self.ptr).timestamp())
 
@@ -1328,6 +1863,9 @@ cdef class Dot11Beacon(Dot11ManagementFrame):
             (<cppDot11Beacon*> self.ptr).timestamp(<uint64_t> int(value))
 
     property interval:
+        """
+        the interval field (read-write, `uint16_t`)
+        """
         def __get__(self):
             return int((<cppDot11Beacon*> self.ptr).interval())
 
@@ -1335,33 +1873,41 @@ cdef class Dot11Beacon(Dot11ManagementFrame):
             (<cppDot11Beacon*> self.ptr).interval(<uint16_t> int(value))
 
     property capabilities:
+        """
+        Capabilities (read-only, :py:class:`~.Capabilities`)
+        """
         def __get__(self):
             return Capabilities.factory((<cppDot11Beacon*> self.ptr).capabilities())
 
+    cdef cppPDU* replace_ptr_with_buf(self, uint8_t* buf, int size) except NULL:
+        if self.ptr is not NULL and self.parent is None:
+            del self.ptr
+        self.ptr = new cppDot11Beacon(<uint8_t*> buf, <uint32_t> size)
+        return self.ptr
+
+    cdef replace_ptr(self, cppPDU* ptr):
+        if self.ptr is not NULL and self.parent is None:
+            del self.ptr
+        self.ptr = <cppDot11Beacon*> ptr
+
 
 cdef class Dot11ProbeRequest(Dot11ManagementFrame):
+    """
+    802.11 Probe Request frame.
+    """
     pdu_flag = PDU.DOT11_PROBE_REQ
     pdu_type = PDU.DOT11_PROBE_REQ
 
-    def __cinit__(self, dest=None, src=None, buf=None, _raw=False):
-        if _raw:
-            return
-        if type(self) != Dot11ProbeRequest:
+    def __cinit__(self, dst_hw_addr=None, src_hw_addr=None, _raw=False):
+        if _raw is True or type(self) != Dot11ProbeRequest:
             return
 
-        cdef uint8_t* buf_addr
-        cdef uint32_t size
+        if not isinstance(dst_hw_addr, HWAddress):
+            dst_hw_addr = HWAddress(dst_hw_addr)
+        if not isinstance(src_hw_addr, HWAddress):
+            src_hw_addr = HWAddress(src_hw_addr)
 
-        if buf is not None:
-            PDU.prepare_buf_arg(buf, &buf_addr, &size)
-            self.ptr = new cppDot11ProbeRequest(buf_addr, size)
-        else:
-            if not isinstance(dest, HWAddress):
-                dest = HWAddress(dest)
-            if not isinstance(src, HWAddress):
-                src = HWAddress(src)
-            self.ptr = new cppDot11ProbeRequest((<HWAddress> dest).ptr[0], (<HWAddress> src).ptr[0])
-
+        self.ptr = new cppDot11ProbeRequest((<HWAddress> dst_hw_addr).ptr[0], (<HWAddress> src_hw_addr).ptr[0])
         self.base_ptr = <cppPDU*> self.ptr
         self.parent = None
 
@@ -1371,33 +1917,48 @@ cdef class Dot11ProbeRequest(Dot11ManagementFrame):
             del p
         self.ptr = NULL
 
-    def __init__(self, dest=None, src=None, buf=None, _raw=False):
-        Dot11ManagementFrame.__init__(self, dest, src, buf, _raw)
+    def __init__(self, dst_hw_addr=None, src_hw_addr=None):
+        """
+        __init__(dst_hw_addr=None, src_hw_addr=None)
+
+        Parameters
+        ----------
+        dst_hw_addr: :py:class:`~.HWAddress`
+            The destination hardware address
+        src_hw_addr: :py:class:`~.HWAddress`
+            The source hardware address
+        """
+        Dot11ManagementFrame.__init__(self, dst_hw_addr, src_hw_addr)
+
+    cdef cppPDU* replace_ptr_with_buf(self, uint8_t* buf, int size) except NULL:
+        if self.ptr is not NULL and self.parent is None:
+            del self.ptr
+        self.ptr = new cppDot11ProbeRequest(<uint8_t*> buf, <uint32_t> size)
+        return self.ptr
+
+    cdef replace_ptr(self, cppPDU* ptr):
+        if self.ptr is not NULL and self.parent is None:
+            del self.ptr
+        self.ptr = <cppDot11ProbeRequest*> ptr
 
 
 cdef class Dot11ProbeResponse(Dot11ManagementFrame):
+    """
+    802.11 Probe Response frame.
+    """
     pdu_flag = PDU.DOT11_PROBE_RESP
     pdu_type = PDU.DOT11_PROBE_RESP
 
-    def __cinit__(self, dest=None, src=None, buf=None, _raw=False):
-        if _raw:
-            return
-        if type(self) != Dot11ProbeResponse:
+    def __cinit__(self, dst_hw_addr=None, src_hw_addr=None, _raw=False):
+        if _raw is True or type(self) != Dot11ProbeResponse:
             return
 
-        cdef uint8_t* buf_addr
-        cdef uint32_t size
+        if not isinstance(dst_hw_addr, HWAddress):
+            dst_hw_addr = HWAddress(dst_hw_addr)
+        if not isinstance(src_hw_addr, HWAddress):
+            src_hw_addr = HWAddress(src_hw_addr)
 
-        if buf is not None:
-            PDU.prepare_buf_arg(buf, &buf_addr, &size)
-            self.ptr = new cppDot11ProbeResponse(buf_addr, size)
-        else:
-            if not isinstance(dest, HWAddress):
-                dest = HWAddress(dest)
-            if not isinstance(src, HWAddress):
-                src = HWAddress(src)
-            self.ptr = new cppDot11ProbeResponse((<HWAddress> dest).ptr[0], (<HWAddress> src).ptr[0])
-
+        self.ptr = new cppDot11ProbeResponse((<HWAddress> dst_hw_addr).ptr[0], (<HWAddress> src_hw_addr).ptr[0])
         self.base_ptr = <cppPDU*> self.ptr
         self.parent = None
 
@@ -1407,10 +1968,23 @@ cdef class Dot11ProbeResponse(Dot11ManagementFrame):
             del p
         self.ptr = NULL
 
-    def __init__(self, dest=None, src=None, buf=None, _raw=False):
-        Dot11ManagementFrame.__init__(self, dest, src, buf, _raw)
+    def __init__(self, dst_hw_addr=None, src_hw_addr=None):
+        """
+        __init__(dst_hw_addr=None, src_hw_addr=None)
+
+        Parameters
+        ----------
+        dst_hw_addr: :py:class:`~.HWAddress`
+            The destination hardware address
+        src_hw_addr: :py:class:`~.HWAddress`
+            The source hardware address
+        """
+        Dot11ManagementFrame.__init__(self, dst_hw_addr, src_hw_addr)
 
     property timestamp:
+        """
+        the timestamp field (read-write, `uint64_t`)
+        """
         def __get__(self):
             return int((<cppDot11ProbeResponse*> self.ptr).timestamp())
 
@@ -1418,6 +1992,9 @@ cdef class Dot11ProbeResponse(Dot11ManagementFrame):
             (<cppDot11ProbeResponse*> self.ptr).timestamp(<uint64_t> int(value))
 
     property interval:
+        """
+        interval field (read-write, `uint16_t`)
+        """
         def __get__(self):
             return int((<cppDot11ProbeResponse*> self.ptr).interval())
 
@@ -1425,31 +2002,39 @@ cdef class Dot11ProbeResponse(Dot11ManagementFrame):
             (<cppDot11ProbeResponse*> self.ptr).interval(<uint16_t> int(value))
 
     property capabilities:
+        """
+        Capabilities (read-only, :py:class:`~.Capabilities`)
+        """
         def __get__(self):
             return Capabilities.factory((<cppDot11ProbeResponse*> self.ptr).capabilities())
 
+    cdef cppPDU* replace_ptr_with_buf(self, uint8_t* buf, int size) except NULL:
+        if self.ptr is not NULL and self.parent is None:
+            del self.ptr
+        self.ptr = new cppDot11ProbeResponse(<uint8_t*> buf, <uint32_t> size)
+        return self.ptr
+
+    cdef replace_ptr(self, cppPDU* ptr):
+        if self.ptr is not NULL and self.parent is None:
+            del self.ptr
+        self.ptr = <cppDot11ProbeResponse*> ptr
+
 
 cdef class Dot11Control(Dot11):
+    """
+    802.11 control frame
+    """
     pdu_flag = PDU.DOT11_CONTROL
     pdu_type = PDU.DOT11_CONTROL
 
-    def __cinit__(self, dest=None, src=None, buf=None, _raw=False):         # src is ignored
-        if _raw:
-            return
-        if type(self) != Dot11Control:
+    def __cinit__(self, dst_hw_addr=None, src_hw_addr=None, _raw=False):         # src is ignored
+        if _raw is True or type(self) != Dot11Control:
             return
 
-        cdef uint8_t* buf_addr
-        cdef uint32_t size
+        if not isinstance(dst_hw_addr, HWAddress):
+            dst_hw_addr = HWAddress(dst_hw_addr)
 
-        if buf is not None:
-            PDU.prepare_buf_arg(buf, &buf_addr, &size)
-            self.ptr = new cppDot11Control(buf_addr, size)
-        else:
-            if not isinstance(dest, HWAddress):
-                dest = HWAddress(dest)
-            self.ptr = new cppDot11Control((<HWAddress> dest).ptr[0])
-
+        self.ptr = new cppDot11Control((<HWAddress> dst_hw_addr).ptr[0])
         self.base_ptr = <cppPDU*> self.ptr
         self.parent = None
 
@@ -1459,33 +2044,48 @@ cdef class Dot11Control(Dot11):
             del p
         self.ptr = NULL
 
-    def __init__(self, dest=None, src=None, buf=None, _raw=False):
-        Dot11.__init__(self, dest, src, buf, _raw)
+    def __init__(self, dst_hw_addr=None, src_hw_addr=None):
+        """
+        __init__(dst_hw_addr=None, src_hw_addr=None)
+
+        Parameters
+        ----------
+        dst_hw_addr: :py:class:`~.HWAddress`
+            The destination hardware address
+        src_hw_addr: any
+            ignored
+        """
+        Dot11.__init__(self, dst_hw_addr, src_hw_addr)
+
+    cdef cppPDU* replace_ptr_with_buf(self, uint8_t* buf, int size) except NULL:
+        if self.ptr is not NULL and self.parent is None:
+            del self.ptr
+        self.ptr = new cppDot11Control(<uint8_t*> buf, <uint32_t> size)
+        return self.ptr
+
+    cdef replace_ptr(self, cppPDU* ptr):
+        if self.ptr is not NULL and self.parent is None:
+            del self.ptr
+        self.ptr = <cppDot11Control*> ptr
 
 
 cdef class Dot11RTS(Dot11Control):
+    """
+    IEEE 802.11 RTS frame.
+    """
     pdu_flag = PDU.DOT11_RTS
     pdu_type = PDU.DOT11_RTS
 
-    def __cinit__(self, dest=None, src=None, buf=None, _raw=False):
-        if _raw:
-            return
-        if type(self) != Dot11RTS:
+    def __cinit__(self, dst_hw_addr=None, src_hw_addr=None, _raw=False):
+        if _raw is True or type(self) != Dot11RTS:
             return
 
-        cdef uint8_t* buf_addr
-        cdef uint32_t size
+        if not isinstance(dst_hw_addr, HWAddress):
+            dst_hw_addr = HWAddress(dst_hw_addr)
+        if not isinstance(src_hw_addr, HWAddress):
+            src_hw_addr = HWAddress(src_hw_addr)
 
-        if buf is not None:
-            PDU.prepare_buf_arg(buf, &buf_addr, &size)
-            self.ptr = new cppDot11RTS(buf_addr, size)
-        else:
-            if not isinstance(dest, HWAddress):
-                dest = HWAddress(dest)
-            if not isinstance(src, HWAddress):
-                src = HWAddress(src)
-            self.ptr = new cppDot11RTS((<HWAddress> dest).ptr[0], (<HWAddress> src).ptr[0])
-
+        self.ptr = new cppDot11RTS((<HWAddress> dst_hw_addr).ptr[0], (<HWAddress> src_hw_addr).ptr[0])
         self.base_ptr = <cppPDU*> self.ptr
         self.parent = None
 
@@ -1495,10 +2095,23 @@ cdef class Dot11RTS(Dot11Control):
             del p
         self.ptr = NULL
 
-    def __init__(self, dest=None, src=None, buf=None, _raw=False):
-        Dot11Control.__init__(self, dest, src, buf, _raw)
+    def __init__(self, dst_hw_addr=None, src_hw_addr=None):
+        """
+        __init__(dst_hw_addr=None, src_hw_addr=None)
+
+        Parameters
+        ----------
+        dst_hw_addr: :py:class:`~.HWAddress`
+            The destination hardware address
+        src_hw_addr: :py:class:`~.HWAddress`
+            The source hardware address
+        """
+        Dot11Control.__init__(self, dst_hw_addr, src_hw_addr)
 
     property target_addr:
+        """
+        target address field (read-write, :py:class:`~.HWAddress`)
+        """
         def __get__(self):
             return HWAddress(<bytes> ((<cppDot11ControlTA*> self.ptr).target_addr().to_string()))
 
@@ -1507,29 +2120,35 @@ cdef class Dot11RTS(Dot11Control):
                 value = HWAddress(value)
             (<cppDot11ControlTA*> self.ptr).target_addr((<HWAddress> value).ptr[0])
 
+    cdef cppPDU* replace_ptr_with_buf(self, uint8_t* buf, int size) except NULL:
+        if self.ptr is not NULL and self.parent is None:
+            del self.ptr
+        self.ptr = new cppDot11RTS(<uint8_t*> buf, <uint32_t> size)
+        return self.ptr
+
+    cdef replace_ptr(self, cppPDU* ptr):
+        if self.ptr is not NULL and self.parent is None:
+            del self.ptr
+        self.ptr = <cppDot11RTS*> ptr
+
+
 cdef class Dot11PSPoll(Dot11Control):
+    """
+    802.11 PS-Poll frame.
+    """
     pdu_flag = PDU.DOT11_PS_POLL
     pdu_type = PDU.DOT11_PS_POLL
 
-    def __cinit__(self, dest=None, src=None, buf=None, _raw=False):
-        if _raw:
-            return
-        if type(self) != Dot11PSPoll:
+    def __cinit__(self, dst_hw_addr=None, src_hw_addr=None, _raw=False):
+        if _raw is True or type(self) != Dot11PSPoll:
             return
 
-        cdef uint8_t* buf_addr
-        cdef uint32_t size
+        if not isinstance(dst_hw_addr, HWAddress):
+            dst_hw_addr = HWAddress(dst_hw_addr)
+        if not isinstance(src_hw_addr, HWAddress):
+            src_hw_addr = HWAddress(src_hw_addr)
 
-        if buf is not None:
-            PDU.prepare_buf_arg(buf, &buf_addr, &size)
-            self.ptr = new cppDot11PSPoll(buf_addr, size)
-        else:
-            if not isinstance(dest, HWAddress):
-                dest = HWAddress(dest)
-            if not isinstance(src, HWAddress):
-                src = HWAddress(src)
-            self.ptr = new cppDot11PSPoll((<HWAddress> dest).ptr[0], (<HWAddress> src).ptr[0])
-
+        self.ptr = new cppDot11PSPoll((<HWAddress> dst_hw_addr).ptr[0], (<HWAddress> src_hw_addr).ptr[0])
         self.base_ptr = <cppPDU*> self.ptr
         self.parent = None
 
@@ -1539,10 +2158,23 @@ cdef class Dot11PSPoll(Dot11Control):
             del p
         self.ptr = NULL
 
-    def __init__(self, dest=None, src=None, buf=None, _raw=False):
-        Dot11Control.__init__(self, dest, src, buf, _raw)
+    def __init__(self, dst_hw_addr=None, src_hw_addr=None):
+        """
+        __init__(dst_hw_addr=None, src_hw_addr=None)
+
+        Parameters
+        ----------
+        dst_hw_addr: :py:class:`~.HWAddress`
+            The destination hardware address
+        src_hw_addr: :py:class:`~.HWAddress`
+            The source hardware address
+        """
+        Dot11Control.__init__(self, dst_hw_addr, src_hw_addr)
 
     property target_addr:
+        """
+        target address field (read-write, :py:class:`~.HWAddress`)
+        """
         def __get__(self):
             return HWAddress(<bytes> ((<cppDot11ControlTA*> self.ptr).target_addr().to_string()))
 
@@ -1551,29 +2183,35 @@ cdef class Dot11PSPoll(Dot11Control):
                 value = HWAddress(value)
             (<cppDot11ControlTA*> self.ptr).target_addr((<HWAddress> value).ptr[0])
 
+    cdef cppPDU* replace_ptr_with_buf(self, uint8_t* buf, int size) except NULL:
+        if self.ptr is not NULL and self.parent is None:
+            del self.ptr
+        self.ptr = new cppDot11PSPoll(<uint8_t*> buf, <uint32_t> size)
+        return self.ptr
+
+    cdef replace_ptr(self, cppPDU* ptr):
+        if self.ptr is not NULL and self.parent is None:
+            del self.ptr
+        self.ptr = <cppDot11PSPoll*> ptr
+
+
 cdef class Dot11CFEnd(Dot11Control):
+    """
+    802.11 CF-End frame.
+    """
     pdu_flag = PDU.DOT11_CF_END
     pdu_type = PDU.DOT11_CF_END
 
-    def __cinit__(self, dest=None, src=None, buf=None, _raw=False):
-        if _raw:
-            return
-        if type(self) != Dot11CFEnd:
+    def __cinit__(self, dst_hw_addr=None, src_hw_addr=None, _raw=False):
+        if _raw is True or type(self) != Dot11CFEnd:
             return
 
-        cdef uint8_t* buf_addr
-        cdef uint32_t size
+        if not isinstance(dst_hw_addr, HWAddress):
+            dst_hw_addr = HWAddress(dst_hw_addr)
+        if not isinstance(src_hw_addr, HWAddress):
+            src_hw_addr = HWAddress(src_hw_addr)
 
-        if buf is not None:
-            PDU.prepare_buf_arg(buf, &buf_addr, &size)
-            self.ptr = new cppDot11CFEnd(buf_addr, size)
-        else:
-            if not isinstance(dest, HWAddress):
-                dest = HWAddress(dest)
-            if not isinstance(src, HWAddress):
-                src = HWAddress(src)
-            self.ptr = new cppDot11CFEnd((<HWAddress> dest).ptr[0], (<HWAddress> src).ptr[0])
-
+        self.ptr = new cppDot11CFEnd((<HWAddress> dst_hw_addr).ptr[0], (<HWAddress> src_hw_addr).ptr[0])
         self.base_ptr = <cppPDU*> self.ptr
         self.parent = None
 
@@ -1583,10 +2221,23 @@ cdef class Dot11CFEnd(Dot11Control):
             del p
         self.ptr = NULL
 
-    def __init__(self, dest=None, src=None, buf=None, _raw=False):
-        Dot11Control.__init__(self, dest, src, buf, _raw)
+    def __init__(self, dst_hw_addr=None, src_hw_addr=None):
+        """
+        __init__(dst_hw_addr=None, src_hw_addr=None)
+
+        Parameters
+        ----------
+        dst_hw_addr: :py:class:`~.HWAddress`
+            The destination hardware address
+        src_hw_addr: :py:class:`~.HWAddress`
+            The source hardware address
+        """
+        Dot11Control.__init__(self, dst_hw_addr, src_hw_addr)
 
     property target_addr:
+        """
+        target address field (read-write, :py:class:`~.HWAddress`)
+        """
         def __get__(self):
             return HWAddress(<bytes> ((<cppDot11ControlTA*> self.ptr).target_addr().to_string()))
 
@@ -1595,29 +2246,35 @@ cdef class Dot11CFEnd(Dot11Control):
                 value = HWAddress(value)
             (<cppDot11ControlTA*> self.ptr).target_addr((<HWAddress> value).ptr[0])
 
+    cdef cppPDU* replace_ptr_with_buf(self, uint8_t* buf, int size) except NULL:
+        if self.ptr is not NULL and self.parent is None:
+            del self.ptr
+        self.ptr = new cppDot11CFEnd(<uint8_t*> buf, <uint32_t> size)
+        return self.ptr
+
+    cdef replace_ptr(self, cppPDU* ptr):
+        if self.ptr is not NULL and self.parent is None:
+            del self.ptr
+        self.ptr = <cppDot11CFEnd*> ptr
+
+
 cdef class Dot11EndCFAck(Dot11Control):
+    """
+    802.11 End-CF-Ack frame.
+    """
     pdu_flag = PDU.DOT11_END_CF_ACK
     pdu_type = PDU.DOT11_END_CF_ACK
 
-    def __cinit__(self, dest=None, src=None, buf=None, _raw=False):
-        if _raw:
-            return
-        if type(self) != Dot11EndCFAck:
+    def __cinit__(self, dst_hw_addr=None, src_hw_addr=None, _raw=False):
+        if _raw is True or type(self) != Dot11EndCFAck:
             return
 
-        cdef uint8_t* buf_addr
-        cdef uint32_t size
+        if not isinstance(dst_hw_addr, HWAddress):
+            dst_hw_addr = HWAddress(dst_hw_addr)
+        if not isinstance(src_hw_addr, HWAddress):
+            src_hw_addr = HWAddress(src_hw_addr)
 
-        if buf is not None:
-            PDU.prepare_buf_arg(buf, &buf_addr, &size)
-            self.ptr = new cppDot11EndCFAck(buf_addr, size)
-        else:
-            if not isinstance(dest, HWAddress):
-                dest = HWAddress(dest)
-            if not isinstance(src, HWAddress):
-                src = HWAddress(src)
-            self.ptr = new cppDot11EndCFAck((<HWAddress> dest).ptr[0], (<HWAddress> src).ptr[0])
-
+        self.ptr = new cppDot11EndCFAck((<HWAddress> dst_hw_addr).ptr[0], (<HWAddress> src_hw_addr).ptr[0])
         self.base_ptr = <cppPDU*> self.ptr
         self.parent = None
 
@@ -1627,10 +2284,23 @@ cdef class Dot11EndCFAck(Dot11Control):
             del p
         self.ptr = NULL
 
-    def __init__(self, dest=None, src=None, buf=None, _raw=False):
-        Dot11Control.__init__(self, dest, src, buf, _raw)
+    def __init__(self, dst_hw_addr=None, src_hw_addr=None):
+        """
+        __init__(dst_hw_addr=None, src_hw_addr=None)
+
+        Parameters
+        ----------
+        dst_hw_addr: :py:class:`~.HWAddress`
+            The destination hardware address
+        src_hw_addr: :py:class:`~.HWAddress`
+            The source hardware address
+        """
+        Dot11Control.__init__(self, dst_hw_addr, src_hw_addr)
 
     property target_addr:
+        """
+        target address field (read-write, :py:class:`~.HWAddress`)
+        """
         def __get__(self):
             return HWAddress(<bytes> ((<cppDot11ControlTA*> self.ptr).target_addr().to_string()))
 
@@ -1639,28 +2309,33 @@ cdef class Dot11EndCFAck(Dot11Control):
                 value = HWAddress(value)
             (<cppDot11ControlTA*> self.ptr).target_addr((<HWAddress> value).ptr[0])
 
+    cdef cppPDU* replace_ptr_with_buf(self, uint8_t* buf, int size) except NULL:
+        if self.ptr is not NULL and self.parent is None:
+            del self.ptr
+        self.ptr = new cppDot11EndCFAck(<uint8_t*> buf, <uint32_t> size)
+        return self.ptr
+
+    cdef replace_ptr(self, cppPDU* ptr):
+        if self.ptr is not NULL and self.parent is None:
+            del self.ptr
+        self.ptr = <cppDot11EndCFAck*> ptr
+
 
 cdef class Dot11Ack(Dot11Control):
+    """
+    802.11 Ack frame.
+    """
     pdu_flag = PDU.DOT11_ACK
     pdu_type = PDU.DOT11_ACK
 
-    def __cinit__(self, dest=None, src=None, buf=None, _raw=False):
-        if _raw:
-            return
-        if type(self) != Dot11Ack:
+    def __cinit__(self, dst_hw_addr=None, src_hw_addr=None, _raw=False):
+        if _raw is True or type(self) != Dot11Ack:
             return
 
-        cdef uint8_t* buf_addr
-        cdef uint32_t size
+        if not isinstance(dst_hw_addr, HWAddress):
+            dst_hw_addr = HWAddress(dst_hw_addr)
 
-        if buf is not None:
-            PDU.prepare_buf_arg(buf, &buf_addr, &size)
-            self.ptr = new cppDot11Ack(buf_addr, size)
-        else:
-            if not isinstance(dest, HWAddress):
-                dest = HWAddress(dest)
-            self.ptr = new cppDot11Ack((<HWAddress> dest).ptr[0])
-
+        self.ptr = new cppDot11Ack((<HWAddress> dst_hw_addr).ptr[0])
         self.base_ptr = <cppPDU*> self.ptr
         self.parent = None
 
@@ -1670,32 +2345,48 @@ cdef class Dot11Ack(Dot11Control):
             del p
         self.ptr = NULL
 
-    def __init__(self, dest=None, src=None, buf=None, _raw=False):
-        Dot11Control.__init__(self, dest, src, buf, _raw)
+    def __init__(self, dst_hw_addr=None, src_hw_addr=None):
+        """
+        __init__(dst_hw_addr=None, src_hw_addr=None)
+
+        Parameters
+        ----------
+        dst_hw_addr: :py:class:`~.HWAddress`
+            The destination hardware address
+        src_hw_addr: any
+            ignored
+        """
+        Dot11Control.__init__(self, dst_hw_addr, src_hw_addr)
+
+    cdef cppPDU* replace_ptr_with_buf(self, uint8_t* buf, int size) except NULL:
+        if self.ptr is not NULL and self.parent is None:
+            del self.ptr
+        self.ptr = new cppDot11Ack(<uint8_t*> buf, <uint32_t> size)
+        return self.ptr
+
+    cdef replace_ptr(self, cppPDU* ptr):
+        if self.ptr is not NULL and self.parent is None:
+            del self.ptr
+        self.ptr = <cppDot11Ack*> ptr
+
 
 cdef class Dot11BlockAckRequest(Dot11Control):
+    """
+    802.11 Block Ack Request frame.
+    """
     pdu_flag = PDU.DOT11_BLOCK_ACK_REQ
     pdu_type = PDU.DOT11_BLOCK_ACK_REQ
 
-    def __cinit__(self, dest=None, src=None, buf=None, _raw=False):
-        if _raw:
-            return
-        if type(self) != Dot11BlockAckRequest:
+    def __cinit__(self, dst_hw_addr=None, src_hw_addr=None, _raw=False):
+        if _raw is True or type(self) != Dot11BlockAckRequest:
             return
 
-        cdef uint8_t* buf_addr
-        cdef uint32_t size
+        if not isinstance(dst_hw_addr, HWAddress):
+            dst_hw_addr = HWAddress(dst_hw_addr)
+        if not isinstance(src_hw_addr, HWAddress):
+            src_hw_addr = HWAddress(src_hw_addr)
 
-        if buf is not None:
-            PDU.prepare_buf_arg(buf, &buf_addr, &size)
-            self.ptr = new cppDot11BlockAckRequest(buf_addr, size)
-        else:
-            if not isinstance(dest, HWAddress):
-                dest = HWAddress(dest)
-            if not isinstance(src, HWAddress):
-                src = HWAddress(src)
-            self.ptr = new cppDot11BlockAckRequest((<HWAddress> dest).ptr[0], (<HWAddress> src).ptr[0])
-
+        self.ptr = new cppDot11BlockAckRequest((<HWAddress> dst_hw_addr).ptr[0], (<HWAddress> src_hw_addr).ptr[0])
         self.base_ptr = <cppPDU*> self.ptr
         self.parent = None
 
@@ -1705,10 +2396,23 @@ cdef class Dot11BlockAckRequest(Dot11Control):
             del p
         self.ptr = NULL
 
-    def __init__(self, dest=None, src=None, buf=None, _raw=False):
-        Dot11Control.__init__(self, dest, src, buf, _raw)
+    def __init__(self, dst_hw_addr=None, src_hw_addr=None):
+        """
+        __init__(dst_hw_addr=None, src_hw_addr=None)
+
+        Parameters
+        ----------
+        dst_hw_addr: :py:class:`~.HWAddress`
+            The destination hardware address
+        src_hw_addr: :py:class:`~.HWAddress`
+            The source hardware address
+        """
+        Dot11Control.__init__(self, dst_hw_addr, src_hw_addr)
 
     property target_addr:
+        """
+        target address field (read-write, :py:class:`~.HWAddress`)
+        """
         def __get__(self):
             return HWAddress(<bytes> ((<cppDot11ControlTA*> self.ptr).target_addr().to_string()))
 
@@ -1718,47 +2422,61 @@ cdef class Dot11BlockAckRequest(Dot11Control):
             (<cppDot11ControlTA*> self.ptr).target_addr((<HWAddress> value).ptr[0])
 
     property bar_control:
+        """
+        bar control field (read-write, `4-bits int`)
+        """
         def __get__(self):
             return int(<uint8_t>((<cppDot11BlockAckRequest*> self.ptr).bar_control()))
         def __set__(self, value):
             (<cppDot11BlockAckRequest*> self.ptr).bar_control(small_uint4(<uint8_t>int(value)))
 
     property start_sequence:
+        """
+        start sequence field (read-write, `12-bits int`)
+        """
         def __get__(self):
             return int(<uint16_t>((<cppDot11BlockAckRequest*> self.ptr).start_sequence()))
         def __set__(self, value):
             (<cppDot11BlockAckRequest*> self.ptr).start_sequence(small_uint12(<uint16_t>int(value)))
 
     property fragment_number:
+        """
+        fragment number field (read-write, `4-bits int`)
+        """
         def __get__(self):
             return int(<uint8_t>((<cppDot11BlockAckRequest*> self.ptr).fragment_number()))
         def __set__(self, value):
             (<cppDot11BlockAckRequest*> self.ptr).fragment_number(small_uint4(<uint8_t>int(value)))
 
+    cdef cppPDU* replace_ptr_with_buf(self, uint8_t* buf, int size) except NULL:
+        if self.ptr is not NULL and self.parent is None:
+            del self.ptr
+        self.ptr = new cppDot11BlockAckRequest(<uint8_t*> buf, <uint32_t> size)
+        return self.ptr
+
+    cdef replace_ptr(self, cppPDU* ptr):
+        if self.ptr is not NULL and self.parent is None:
+            del self.ptr
+        self.ptr = <cppDot11BlockAckRequest*> ptr
+
 
 cdef class Dot11BlockAck(Dot11Control):
+    """
+    802.11 Block Ack frame.
+    """
     pdu_flag = PDU.DOT11_BLOCK_ACK
     pdu_type = PDU.DOT11_BLOCK_ACK
 
-    def __cinit__(self, dest=None, src=None, buf=None, _raw=False):
-        if _raw:
-            return
-        if type(self) != Dot11BlockAck:
+    def __cinit__(self, dst_hw_addr=None, src_hw_addr=None, _raw=False):
+        if _raw is True or type(self) != Dot11BlockAck:
             return
 
-        cdef uint8_t* buf_addr
-        cdef uint32_t size
+        if not isinstance(dst_hw_addr, HWAddress):
+            dst_hw_addr = HWAddress(dst_hw_addr)
+        if not isinstance(src_hw_addr, HWAddress):
+            src_hw_addr = HWAddress(src_hw_addr)
 
-        if buf is not None:
-            PDU.prepare_buf_arg(buf, &buf_addr, &size)
-            self.ptr = new cppDot11BlockAck(buf_addr, size)
-        else:
-            if not isinstance(dest, HWAddress):
-                dest = HWAddress(dest)
-            if not isinstance(src, HWAddress):
-                src = HWAddress(src)
-            self.ptr = new cppDot11BlockAck((<HWAddress> dest).ptr[0], (<HWAddress> src).ptr[0])
-
+        self.ptr = new cppDot11BlockAck((<HWAddress> dst_hw_addr).ptr[0], (<HWAddress> src_hw_addr).ptr[0])
         self.base_ptr = <cppPDU*> self.ptr
         self.parent = None
 
@@ -1768,10 +2486,23 @@ cdef class Dot11BlockAck(Dot11Control):
             del p
         self.ptr = NULL
 
-    def __init__(self, dest=None, src=None, buf=None, _raw=False):
-        Dot11Control.__init__(self, dest, src, buf, _raw)
+    def __init__(self, dst_hw_addr=None, src_hw_addr=None):
+        """
+        __init__(dst_hw_addr=None, src_hw_addr=None)
+
+        Parameters
+        ----------
+        dst_hw_addr: :py:class:`~.HWAddress`
+            The destination hardware address
+        src_hw_addr: :py:class:`~.HWAddress`
+            The source hardware address
+        """
+        Dot11Control.__init__(self, dst_hw_addr, src_hw_addr)
 
     property target_addr:
+        """
+        target address field (read-write, :py:class:`~.HWAddress`)
+        """
         def __get__(self):
             return HWAddress(<bytes> ((<cppDot11ControlTA*> self.ptr).target_addr().to_string()))
 
@@ -1781,28 +2512,53 @@ cdef class Dot11BlockAck(Dot11Control):
             (<cppDot11ControlTA*> self.ptr).target_addr((<HWAddress> value).ptr[0])
 
     property bar_control:
+        """
+        bar control field (read-write, `4-bits int`)
+        """
         def __get__(self):
             return int(<uint8_t>((<cppDot11BlockAck*> self.ptr).bar_control()))
         def __set__(self, value):
             (<cppDot11BlockAck*> self.ptr).bar_control(small_uint4(<uint8_t>int(value)))
 
     property start_sequence:
+        """
+        start sequence field (read-write, `12-bits int`)
+        """
         def __get__(self):
             return int(<uint16_t>((<cppDot11BlockAck*> self.ptr).start_sequence()))
         def __set__(self, value):
             (<cppDot11BlockAck*> self.ptr).start_sequence(small_uint12(<uint16_t>int(value)))
 
     property fragment_number:
+        """
+        fragment number field (read-write, `4-bits int`)
+        """
         def __get__(self):
             return int(<uint8_t>((<cppDot11BlockAck*> self.ptr).fragment_number()))
         def __set__(self, value):
             (<cppDot11BlockAck*> self.ptr).fragment_number(small_uint4(<uint8_t>int(value)))
 
     property bitmap:
+        """
+        the bitmap field (read-write, `bytes (8 bytes long)`)
+        """
         def __get__(self):
             cdef uint8_t* b = <uint8_t*> ((<cppDot11BlockAck*> self.ptr).bitmap())
             return <bytes> b[:dot11_block_ack_bitmap_size]
         def __set__(self, value):
-            value = bytes(value)[:dot11_block_ack_bitmap_size]
+            value = (bytes(value)[:dot11_block_ack_bitmap_size]).ljust(dot11_block_ack_bitmap_size, '\x00')
             (<cppDot11BlockAck*> self.ptr).bitmap(<uint8_t*>(<bytes>value))
+
+    cdef cppPDU* replace_ptr_with_buf(self, uint8_t* buf, int size) except NULL:
+        if self.ptr is not NULL and self.parent is None:
+            del self.ptr
+        self.ptr = new cppDot11BlockAck(<uint8_t*> buf, <uint32_t> size)
+        return self.ptr
+
+    cdef replace_ptr(self, cppPDU* ptr):
+        if self.ptr is not NULL and self.parent is None:
+            del self.ptr
+        self.ptr = <cppDot11BlockAck*> ptr
+
+
 

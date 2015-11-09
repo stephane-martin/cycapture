@@ -16,7 +16,7 @@ cdef extern from "tins/stp.h" namespace "Tins" nogil:
 
     cppclass cppSTP "Tins::STP" (cppPDU):
         cppSTP()
-        cppSTP(const uint8_t *buf, uint32_t total_sz)
+        cppSTP(const uint8_t *buf, uint32_t total_sz) except +custom_exception_handler
 
         uint16_t proto_id() const
         void proto_id(uint16_t new_proto_id)
@@ -61,6 +61,7 @@ cdef class bpdu_id(object):
     cdef cppHWAddress6 _id
 
     cdef bpdu_id_type to_native(self)
+    cpdef equals(self, other)
 
     @staticmethod
     cdef from_native(bpdu_id_type t)
@@ -69,12 +70,3 @@ cdef class bpdu_id(object):
 cdef class STP(PDU):
     cdef cppSTP* ptr
 
-    @staticmethod
-    cdef inline factory(cppPDU* ptr, uint8_t* buf, int size, object parent):
-        if ptr is NULL and buf is NULL:
-            return STP()
-        obj = STP(_raw=True)
-        obj.ptr = new cppSTP(<uint8_t*> buf, <uint32_t> size) if ptr is NULL else <cppSTP*> ptr
-        obj.base_ptr = <cppPDU*> obj.ptr
-        obj.parent = parent
-        return obj

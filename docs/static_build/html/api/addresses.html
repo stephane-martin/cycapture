@@ -51,7 +51,20 @@
           <li class="nav-item nav-item-1"><a href="../api.html" >API documentation</a> &raquo;</li>
           <li class="nav-item nav-item-2"><a href="libtins.html" accesskey="U">libtins bindings</a> &raquo;</li> 
       </ul>
-    </div>  
+    </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>  
 
     <div class="document">
       <div class="documentwrapper">
@@ -643,23 +656,51 @@ if <cite>address</cite> is present, returns the interface that would be used to 
 <p class="first admonition-title">Note</p>
 <p class="last">Give only one parameter, <cite>name</cite> OR <cite>address</cite>.</p>
 </div>
+<dl class="class">
+<dt id="cycapture.libtins.NetworkInterface.NI_addresses_tuple">
+<em class="property">class </em><code class="descname">NI_addresses_tuple</code><span class="sig-paren">(</span><em>address</em>, <em>netmask</em>, <em>broadcast</em>, <em>hardware</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins.NetworkInterface.NI_addresses_tuple" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">tuple</span></code></p>
 <dl class="method">
-<dt id="cycapture.libtins.NetworkInterface.addresses">
-<code class="descname">addresses</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins.NetworkInterface.addresses" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><em>dict</em> --
-the IPv4 address, netmask, broadcast address and hardware addresss associated with this interface.</td>
-</tr>
-</tbody>
-</table>
+<dt id="cycapture.libtins.NetworkInterface.NI_addresses_tuple._asdict">
+<code class="descname">_asdict</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins.NetworkInterface.NI_addresses_tuple._asdict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a new OrderedDict which maps field names to their values</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins.NetworkInterface.NI_addresses_tuple._replace">
+<code class="descname">_replace</code><span class="sig-paren">(</span><em>_self</em>, <em>**kwds</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins.NetworkInterface.NI_addresses_tuple._replace" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a new NI_addresses_tuple object replacing specified fields with new values</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins.NetworkInterface.NI_addresses_tuple.address">
+<code class="descname">address</code><a class="headerlink" href="#cycapture.libtins.NetworkInterface.NI_addresses_tuple.address" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 0</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins.NetworkInterface.NI_addresses_tuple.broadcast">
+<code class="descname">broadcast</code><a class="headerlink" href="#cycapture.libtins.NetworkInterface.NI_addresses_tuple.broadcast" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 2</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins.NetworkInterface.NI_addresses_tuple.hardware">
+<code class="descname">hardware</code><a class="headerlink" href="#cycapture.libtins.NetworkInterface.NI_addresses_tuple.hardware" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 3</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins.NetworkInterface.NI_addresses_tuple.netmask">
+<code class="descname">netmask</code><a class="headerlink" href="#cycapture.libtins.NetworkInterface.NI_addresses_tuple.netmask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 1</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="method">
 <dt id="cycapture.libtins.NetworkInterface.all">
-<code class="descname">all</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins.NetworkInterface.all" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">NetworkInterface.</code><code class="descname">all</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins.NetworkInterface.all" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -677,7 +718,7 @@ a list of all network interfaces</td>
 
 <dl class="method">
 <dt id="cycapture.libtins.NetworkInterface.default">
-<code class="descname">default</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins.NetworkInterface.default" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">NetworkInterface.</code><code class="descname">default</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins.NetworkInterface.default" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -695,7 +736,7 @@ the default interface.</td>
 
 <dl class="method">
 <dt id="cycapture.libtins.NetworkInterface.equals">
-<code class="descname">equals</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins.NetworkInterface.equals" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">NetworkInterface.</code><code class="descname">equals</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins.NetworkInterface.equals" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -712,7 +753,7 @@ Returns True if self equals other</td>
 
 <dl class="method">
 <dt id="cycapture.libtins.NetworkInterface.is_loopback">
-<code class="descname">is_loopback</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins.NetworkInterface.is_loopback" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">NetworkInterface.</code><code class="descname">is_loopback</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins.NetworkInterface.is_loopback" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -725,14 +766,20 @@ True if the interface is a loopback interface.</td>
 </dd></dl>
 
 <dl class="attribute">
+<dt id="cycapture.libtins.NetworkInterface.addresses">
+<code class="descclassname">NetworkInterface.</code><code class="descname">addresses</code><a class="headerlink" href="#cycapture.libtins.NetworkInterface.addresses" title="Permalink to this definition">¶</a></dt>
+<dd><p>the IPv4 address, netmask, broadcast address and hardware addresss associated with this interface.</p>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="cycapture.libtins.NetworkInterface.id">
-<code class="descname">id</code><a class="headerlink" href="#cycapture.libtins.NetworkInterface.id" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">NetworkInterface.</code><code class="descname">id</code><a class="headerlink" href="#cycapture.libtins.NetworkInterface.id" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the interface id (read-only property)</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="cycapture.libtins.NetworkInterface.name">
-<code class="descname">name</code><a class="headerlink" href="#cycapture.libtins.NetworkInterface.name" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">NetworkInterface.</code><code class="descname">name</code><a class="headerlink" href="#cycapture.libtins.NetworkInterface.name" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the interface name (read-only property)</p>
 </dd></dl>
 
@@ -746,7 +793,8 @@ True if the interface is a loopback interface.</td>
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper"><ul class="current">
+        <div class="sphinxsidebarwrapper"><h2><a href="../index.html">Cycapture</a></h2>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../installation.html#prerequisites">Prerequisites</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../installation.html#install-from-sources">Install from sources</a></li>
@@ -765,7 +813,6 @@ True if the interface is a loopback interface.</td>
 <li class="toctree-l3"><a class="reference internal" href="libpcap.html#sniffers">Sniffers</a></li>
 <li class="toctree-l3"><a class="reference internal" href="libpcap.html#packet-writers">Packet writers</a></li>
 <li class="toctree-l3"><a class="reference internal" href="libpcap.html#offline-filter">Offline filter</a></li>
-<li class="toctree-l3"><a class="reference internal" href="libpcap.html#datalink-types">Datalink types</a></li>
 <li class="toctree-l3"><a class="reference internal" href="libpcap.html#utils">Utils</a></li>
 </ul>
 </li>
@@ -786,19 +833,6 @@ True if the interface is a loopback interface.</td>
 </li>
 </ul>
 
-<div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
-    <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
-    </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>

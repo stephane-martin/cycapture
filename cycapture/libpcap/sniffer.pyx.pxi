@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-cdef class Sniffer(object):
+cdef class BaseSniffer(object):
     """
     Sniffer base class
     """
@@ -17,7 +17,7 @@ cdef class Sniffer(object):
             raise ValueError("provide interface OR filename")
 
         if interface is not None:
-            self.interface = bytes(interface)
+            self.interface = bytes(interface)       # supports NetworkInterface objects!
             if len(interface) == 0:
                 raise ValueError("interface can't be empty")
             try:
@@ -37,8 +37,6 @@ cdef class Sniffer(object):
             self._maskp = -1
 
         self._set_pcap_handle()
-
-
 
     def __init__(self, interface=None, filename=None, int read_timeout=5000, int buffer_size=0, int snapshot_length=2000,
                   promisc_mode=False, monitor_mode=False, direction=PCAP_D_INOUT):
@@ -235,9 +233,9 @@ cdef class Sniffer(object):
     property datalink:
         def __get__(self):
             cdef int res
-            with self._activate_if_needed():
+            with self.activate_if_needed():
                 res = pcap_datalink(self._handle)
-            name, description = datalink_val_to_name_description(res)
+            name, description = datalink_to_description(res)
             return res, name, description
 
         def __set__(self, value):
@@ -264,7 +262,7 @@ cdef class Sniffer(object):
         cdef int* l
         results = []
         cdef int n
-        with self._activate_if_needed():
+        with self.activate_if_needed():
             n = pcap_list_datalinks(self._handle, &l)
 
             if n == PCAP_ERROR_NOT_ACTIVATED:
@@ -273,11 +271,11 @@ cdef class Sniffer(object):
                 raise PcapException(<bytes> pcap_geterr(self._handle))
             else:
                 for counter in range(n):
-                    name, description = datalink_val_to_name_description(l[counter])
+                    name, description = datalink_to_description(l[counter])
                     results.append((l[counter], name, description))
                 return results
 
-    cdef _activate_if_needed(self):
+    cdef activate_if_needed(self):
         return ActivationHelper(self)
 
     cdef _pre_activate(self):
@@ -297,7 +295,7 @@ cdef class Sniffer(object):
         self._apply_datalink()
         self._apply_filter()
 
-    cdef _activate(self):
+    cdef activate(self):
         if self.activated:
             return
 
@@ -324,7 +322,7 @@ cdef class ActivationHelper(object):
 
     def __enter__(self):
         if not self.old_status:
-            self.sniffer_obj._activate()
+            self.sniffer_obj.activate()
 
     def __exit__(self, t, value, traceback):
         if not self.old_status:

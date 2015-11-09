@@ -70,13 +70,9 @@ cdef extern from "wrap.h" namespace "Tins" nogil:
     cppHWRange hw_range_from_mask "Tins::WrappedHWRange::from_mask" (const cppHWAddress6 &first, const cppHWAddress6 &mask)
     cppHWRange hw_slashrange "Tins::operator/" (const cppHWAddress6 &addr, int mask)
 
-
-
 ctypedef cppIPv4Range.const_iterator ipv4_range_iterator
 ctypedef cppIPv6Range.const_iterator ipv6_range_iterator
 ctypedef cppHWRange.const_iterator hw_range_iterator
-
-
 
 cdef class IPv4Range(object):
     cdef cppIPv4Range* ptr
