@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 
 cdef class IPSecAH(PDU):
+    """
+    IPSec Authentication Header
+    """
     pdu_flag = PDU.IPSEC_AH
     pdu_type = PDU.IPSEC_AH
 
@@ -21,33 +24,50 @@ cdef class IPSecAH(PDU):
     def __init__(self):
         """
         __init__()
+
+        The ICV field is initialized with four 0 bytes. The length field is initialized appropriately.
         """
 
     property next_header:
+        """
+        Next header field (read-write, `uint8_t`)
+        """
         def __get__(self):
             return int(self.ptr.next_header())
         def __set__(self, value):
             self.ptr.next_header(<uint8_t> int(value))
 
     property length:
+        """
+        Length field (read-write, `uint8_t`)
+        """
         def __get__(self):
             return int(self.ptr.length())
         def __set__(self, value):
             self.ptr.length(<uint8_t> int(value))
 
     property spi:
+        """
+        Security Parameters Index field (read-write, `uint32_t`)
+        """
         def __get__(self):
             return int(self.ptr.spi())
         def __set__(self, value):
             self.ptr.spi(<uint32_t> int(value))
 
     property seq_number:
+        """
+        Sequence number field (read-write, `uint32_t`)
+        """
         def __get__(self):
             return int(self.ptr.seq_number())
         def __set__(self, value):
             self.ptr.seq_number(<uint32_t> int(value))
 
     property icv:
+        """
+        ICV field (read-write, `bytes`)
+        """
         def __get__(self):
             cdef vector[uint8_t] v = self.ptr.icv()
             cdef uint8_t* p = &v[0]
@@ -70,7 +90,11 @@ cdef class IPSecAH(PDU):
             del self.ptr
         self.ptr = <cppIPSecAH*> ptr
 
+
 cdef class IPSecESP(PDU):
+    """
+    IPSEC Encapsulating Security Payload
+    """
     pdu_flag = PDU.IPSEC_ESP
     pdu_type = PDU.IPSEC_ESP
 
@@ -94,12 +118,18 @@ cdef class IPSecESP(PDU):
         """
 
     property spi:
+        """
+        Security Parameters Index field (read-write, `uint32_t`)
+        """
         def __get__(self):
             return int(self.ptr.spi())
         def __set__(self, value):
             self.ptr.spi(<uint32_t> int(value))
 
     property seq_number:
+        """
+        Sequence number field (read-write, `uint32_t`)
+        """
         def __get__(self):
             return int(self.ptr.seq_number())
         def __set__(self, value):
@@ -115,6 +145,7 @@ cdef class IPSecESP(PDU):
         if self.ptr is not NULL and self.parent is None:
             del self.ptr
         self.ptr = <cppIPSecESP*> ptr
+
 
 IPSECAH = IPSecAH
 IPSEC_AH = IPSecAH
