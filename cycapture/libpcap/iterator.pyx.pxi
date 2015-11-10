@@ -2,7 +2,7 @@
 
 cdef class SniffingIterator(object):
     """
-    Helper iterator to get packets from a BlockingSniffer.
+    Helper iterator to get packets from a BlockingSniffer. To be used as a context manager.
     """
 
     def __init__(self, BlockingSniffer sniffer, f=None, int max_p=-1, int cache_size=10000):
@@ -33,6 +33,7 @@ cdef class SniffingIterator(object):
     cpdef start(self):
         """
         start()
+        Start the background sniffing thread that feeds the iterator.
         """
         if not self.thread.is_alive():
             if self.sniffer in BlockingSniffer.active_sniffers.values():
@@ -42,6 +43,7 @@ cdef class SniffingIterator(object):
     cpdef stop(self):
         """
         stop()
+        Stop the background thread.
         """
         if self.thread.is_alive():
             if self.sniffer in BlockingSniffer.active_sniffers.values():

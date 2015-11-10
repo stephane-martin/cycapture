@@ -5,12 +5,39 @@ cdef class BaseSniffer(object):
     Sniffer base class
     """
 
-    def __cinit__(self, interface=None, filename=None, int read_timeout=5000, int buffer_size=0, int snapshot_length=2000,
-                  promisc_mode=False, monitor_mode=False, direction=PCAP_D_INOUT):
-        self._do_cinit(interface, filename, read_timeout, buffer_size, snapshot_length, promisc_mode, monitor_mode,direction)
+    DIRECTION = make_enum('DIRECTION', 'DIRECTION', 'Sniffing direction', {
+        'PCAP_D_INOUT': PCAP_D_INOUT,
+        'PCAP_D_IN': PCAP_D_IN,
+        'PCAP_D_OUT': PCAP_D_OUT
+    })
 
-    cdef _do_cinit(self, interface=None, filename=None, int read_timeout=5000, int buffer_size=0, int snapshot_length=2000,
-                   promisc_mode=False, monitor_mode=False, direction=PCAP_D_INOUT):
+    DLT = make_enum('BaseSniffer_DLT', 'DLT', 'Datalink types', {
+        'DLT_NULL': DLT_NULL,
+        'DLT_EN10MB': DLT_EN10MB,
+        'DLT_EN3MB': DLT_EN3MB,
+        'DLT_AX25': DLT_AX25,
+        'DLT_PRONET': DLT_PRONET,
+        'DLT_CHAOS': DLT_CHAOS,
+        'DLT_IEEE802': DLT_IEEE802,
+        'DLT_ARCNET': DLT_ARCNET,
+        'DLT_SLIP': DLT_SLIP,
+        'DLT_PPP': DLT_PPP,
+        'DLT_FDDI': DLT_FDDI,
+        'DLT_RAW': DLT_RAW,
+        'DLT_IEEE802_11': DLT_IEEE802_11,
+        'DLT_LOOP': DLT_LOOP,
+        'DLT_ENC': DLT_ENC,
+        'DLT_PRISM_HEADER': DLT_PRISM_HEADER,
+        'DLT_AIRONET_HEADER': DLT_AIRONET_HEADER,
+        'DLT_IEEE802_11_RADIO': DLT_IEEE802_11_RADIO,
+        'DLT_IEEE802_11_RADIO_AVS': DLT_IEEE802_11_RADIO_AVS,
+        'DLT_IPV4': DLT_IPV4,
+        'DLT_IPV6': DLT_IPV6
+    })
+
+    def __cinit__(self, interface=None, filename=None, int read_timeout=5000, int buffer_size=0, int snapshot_length=2000,
+                  promisc_mode=False, monitor_mode=False, direction=BaseSniffer.DIRECTION.PCAP_D_INOUT):
+
         if interface is None and filename is None:
             raise ValueError("provide interface or filename")
         elif interface is not None and filename is not None:
@@ -39,20 +66,29 @@ cdef class BaseSniffer(object):
         self._set_pcap_handle()
 
     def __init__(self, interface=None, filename=None, int read_timeout=5000, int buffer_size=0, int snapshot_length=2000,
-                  promisc_mode=False, monitor_mode=False, direction=PCAP_D_INOUT):
+                  promisc_mode=False, monitor_mode=False, direction=BaseSniffer.DIRECTION.PCAP_D_INOUT):
         """
         __init__(interface=None, filename=None, int read_timeout=5000, int buffer_size=0, int snapshot_length=2000, promisc_mode=False, monitor_mode=False, direction=PCAP_D_INOUT)
 
         Parameters
         ----------
-        interface
-        filename
-        read_timeout
-        buffer_size
-        snapshot_length
-        promisc_mode
-        monitor_mode
-        direction
+        interface: bytes
+            which interface to sniff on
+        filename: file or bytes
+            which file to get the packets from
+        read_timeout: int
+            if read_timeout > 0, wait at most read_timeout miliseconds to (batch-) deliver the captured packets
+        buffer_size: int
+            platform buffer size in bytes for captured packets. 0 means 'use system default'.
+        snapshot_length: int
+            only the first snaplen_length bytes of each packet will be captured and provided as packet data
+        promisc_mode: bool
+            a mode in which all packets, even if they are not sent to an address that the adapter recognizes, are provided
+        monitor_mode: bool
+            in monitor mode ("Radio Frequency MONitor"), the interface will supply all frames that it receives, with
+            802.11 headers.
+        direction: :py:class:`~.BaseSniffer.DIRECTION`
+            set direction to capture only  packets received by the machine or only packets sent by the machine
         """
 
         self.read_timeout = read_timeout
@@ -85,6 +121,9 @@ cdef class BaseSniffer(object):
         self.close()
 
     property read_timeout:
+        """
+        PCAP read timeout in miliseconds (`int`)
+        """
         def __get__(self):
             return self._read_timeout
 
@@ -102,6 +141,9 @@ cdef class BaseSniffer(object):
             raise SetTimeoutError('Error setting read timeout')
 
     property buffer_size:
+        """
+        PCAP buffer size in bytes (`int`)
+        """
         def __get__(self):
             return self._buffer_size
 
@@ -119,6 +161,9 @@ cdef class BaseSniffer(object):
             raise SetBufferSizeError("Error setting buffer size")
 
     property snapshot_length:
+        """
+        PCAP snapshot length in bytes (`int`)
+        """
         def __get__(self):
             return self._snapshot_length
 
@@ -136,6 +181,9 @@ cdef class BaseSniffer(object):
             raise SetSnapshotLengthError("Error setting snapshot length")
 
     property promisc_mode:
+        """
+        PCAP promisc mode (`bool`)
+        """
         def __get__(self):
             return self._promisc_mode
 
@@ -150,6 +198,9 @@ cdef class BaseSniffer(object):
             raise SetPromiscModeError("promisc mode could not be set")
 
     property monitor_mode:
+        """
+        PCAP monitoring mode (`bool`)
+        """
         def __get__(self):
             return self._monitor_mode
 
@@ -169,6 +220,9 @@ cdef class BaseSniffer(object):
                     raise SetMonitorModeError("monitor mode could not be set")
 
     property can_set_monitor_mode:
+        """
+        Whether the monitoring mode is available (read-only, `bool`)
+        """
         def __get__(self):
             cdef int res = pcap_can_set_rfmon(self._handle)
             if res == 1:
@@ -187,16 +241,14 @@ cdef class BaseSniffer(object):
                 raise PcapExceptionFactory(res, b"error in can_set_monitor_mode: %s" % res)
 
     property direction:
+        """
+        Capture direction (:py:class:`~.BaseSniffer.DIRECTION`)
+        """
         def __get__(self):
             return self._direction
 
         def __set__(self, value):
-            if isinstance(value, DIRECTION):
-                value = value.value
-            value = int(value)
-            if value not in (PCAP_D_IN, PCAP_D_OUT, PCAP_D_INOUT):
-                value = PCAP_D_INOUT
-            self._direction = value
+            self._direction = BaseSniffer.DIRECTION(value)
 
     cdef _apply_direction(self):
         cdef int res = pcap_setdirection(self._handle, <pcap_direction_t> self._direction)
@@ -204,6 +256,11 @@ cdef class BaseSniffer(object):
             raise SetDirectionError('Error setting direction')
 
     property filter:
+        """
+        PCAP filter (`bytes`)
+
+        .. seealso:: `pcap filter syntax manual page <http://www.tcpdump.org/manpages/pcap-filter.7.html>`_
+        """
         def __get__(self):
             return self._filter
 
@@ -231,6 +288,9 @@ cdef class BaseSniffer(object):
 
 
     property datalink:
+        """
+        PCAP datalink type (:py:class:`~.BaseSniffer.DLT`)
+        """
         def __get__(self):
             cdef int res
             with self.activate_if_needed():
@@ -259,6 +319,14 @@ cdef class BaseSniffer(object):
                 raise PcapException(bytes(pcap_geterr(self._handle)))
 
     cpdef list_datalinks(self):
+        """
+        list_datalinks()
+        List the datalink types supported by the interface.
+
+        Returns
+        -------
+        datalink types: list of (int, bytes, bytes)
+        """
         cdef int* l
         results = []
         cdef int n

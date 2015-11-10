@@ -1,8 +1,12 @@
 # encoding: utf-8
 
 cdef int _normalize_linktype(object linktype) except -1:
-    if isinstance(linktype, DLT):
-        linktype = linktype.value
+    if isinstance(linktype, BaseSniffer.DLT) or isinstance(linktype, int):
+        linktype = BaseSniffer.DLT(linktype)
+    elif isinstance(linktype, bytes):
+        linktype = BaseSniffer.DLT[linktype]
+    elif isinstance(linktype, unicode):
+        linktype = BaseSniffer.DLT[linktype.encode('ascii')]
     elif isinstance(linktype, PDU):
         if linktype.datalink_type == -1:
             raise TypeError("This kind of PDU doesn't have a clear datalink type")
@@ -11,14 +15,8 @@ cdef int _normalize_linktype(object linktype) except -1:
         if linktype.datalink_type == -1:
             raise TypeError("This kind of PDU doesn't have a clear datalink type")
         linktype = linktype.datalink_type
-    elif isinstance(linktype, unicode):
-        linktype = linktype.encode('utf-8')
-    if isinstance(linktype, bytes):
-        try:
-            linktype = DLT.__getattr__(linktype)
-        except AttributeError:
-            raise ValueError("unknown DLT")
-    return int(linktype)
+    else:
+        raise TypeError
 
 
 cdef _check_output(output):

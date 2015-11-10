@@ -34,9 +34,12 @@ cdef class OfflineFilter(object):
 
         Parameters
         ----------
-        filter_string: filter specification
-        linktype: the datalink type of the packets to be filtered
-        snaplen: the snapshot length of the packets to be filtered
+        filter_string: bytes
+            filter specification
+        linktype: :py:class:`~.BaseSniffer.DLT`
+            the datalink type of the packets to be filtered
+        snaplen: int
+            the snapshot length of the packets to be filtered
         """
 
     cdef bint match(self, const uint8_t *pkt, int size) except -1:
@@ -120,6 +123,10 @@ cdef class OfflineFilter(object):
         Parameters
         ----------
         list_of_bufs_or_pdus: sequence of `PDUs or buffers`
+
+        Returns
+        -------
+        generator
         """
         for buf in list_of_bufs_or_pdus:
             try:

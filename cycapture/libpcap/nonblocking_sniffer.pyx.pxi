@@ -93,14 +93,14 @@ cdef class NonBlockingSniffer(BaseSniffer):
     active_sniffers = {}
 
     def __cinit__(self, interface=None, filename=None, int read_timeout=5000, int buffer_size=0, int snapshot_length=2000,
-                  promisc_mode=False, monitor_mode=False, direction=PCAP_D_INOUT):
+                  promisc_mode=False, monitor_mode=False, direction=BaseSniffer.DIRECTION.PCAP_D_INOUT):
         pass
 
     def __dealloc__(self):
         self.close()
 
     def __init__(self, interface=None, filename=None, int read_timeout=5000, int buffer_size=0, int snapshot_length=2000,
-                  promisc_mode=False, monitor_mode=False, direction=PCAP_D_INOUT):
+                  promisc_mode=False, monitor_mode=False, direction=BaseSniffer.DIRECTION.PCAP_D_INOUT):
         """
         __init__(interface=None, filename=None, int read_timeout=5000, int buffer_size=0, int snapshot_length=2000, promisc_mode=False, monitor_mode=False, direction=PCAP_D_INOUT)
 
@@ -113,7 +113,7 @@ cdef class NonBlockingSniffer(BaseSniffer):
         read_timeout: int
             if read_timeout > 0, wait at most read_timeout mseconds to (batch-) deliver the captured packets
         buffer_size: int
-            platform buffer size for captured packets. 0 means 'use system default'.
+            platform buffer size in bytes for captured packets. 0 means 'use system default'.
         snapshot_length: int
             only the first snaplen_length bytes of each packet will be captured and provided as packet data
         promisc_mode: bool
@@ -121,7 +121,7 @@ cdef class NonBlockingSniffer(BaseSniffer):
         monitor_mode: bool
             in monitor mode ("Radio Frequency MONitor"), the interface will supply all frames that it receives, with
             802.11 headers.
-        direction: :py:class:`~.DIRECTION`
+        direction: :py:class:`~.BaseSniffer.DIRECTION`
             set direction to capture only  packets received by the machine or only packets sent by the machine
         """
         BaseSniffer.__init__(self, interface, filename, read_timeout, buffer_size, snapshot_length, promisc_mode, monitor_mode, direction)

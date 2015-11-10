@@ -29,8 +29,6 @@ cdef class BaseSniffer(object):
     cpdef close(self)
     cpdef list_datalinks(self)
 
-    cdef _do_cinit(self, interface=?, filename=?, int read_timeout=?, int buffer_size=?, int snapshot_length=?,
-                   promisc_mode=?, monitor_mode=?, direction=?)
     cdef _set_pcap_handle(self)
     cdef _apply_read_timeout(self)
     cdef _apply_buffer_size(self)
