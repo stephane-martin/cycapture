@@ -15,9 +15,17 @@ Ethernet
 ========
 .. autoclass:: cycapture.libtins._tins.EthernetII
 
+PPPoE
+=====
+.. autoclass:: cycapture.libtins._tins.PPPoE
+
 ARP
 ===
 .. autoclass:: cycapture.libtins._tins.ARP
+
+STP
+===
+.. autoclass:: cycapture.libtins._tins.STP
 
 Loopback
 ========
@@ -45,6 +53,11 @@ IP.SecurityType
 ###############
 .. autoclass:: cycapture.libtins._tins.IPSecurityType
 
+IPSEC
+=====
+.. autoclass:: cycapture.libtins._tins.IPSecAH
+.. autoclass:: cycapture.libtins._tins.IPSecESP
+
 TCP
 ===
 .. autoclass:: cycapture.libtins._tins.TCP
@@ -56,3 +69,7 @@ UDP
 RAW
 ===
 .. autoclass:: cycapture.libtins._tins.RAW
+
+PPI
+===
+.. autoclass:: cycapture.libtins._tins.PPI
