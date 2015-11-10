@@ -1,0 +1,455 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Abstract PDU &mdash; cycapture documentation</title>
+    
+    <link rel="stylesheet" href="../_static/readable.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="cycapture documentation" href="../index.html" />
+    <link rel="up" title="libtins bindings" href="libtins.html" />
+    <link rel="next" title="Concrete PDUs" href="concrete_pdus.html" />
+    <link rel="prev" title="Exceptions" href="exceptions.html" />
+   
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">
+  
+  
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="concrete_pdus.html" title="Concrete PDUs"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="exceptions.html" title="Exceptions"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">cycapture</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../api.html" >API documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="libtins.html" accesskey="U">libtins bindings</a> &raquo;</li> 
+      </ul>
+    </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="abstract-pdu">
+<h1>Abstract PDU<a class="headerlink" href="#abstract-pdu" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="cycapture.libtins._tins.PDU">
+<em class="property">class </em><code class="descname">PDU</code><a class="headerlink" href="#cycapture.libtins._tins.PDU" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Abstract Protocol Data Unit</p>
+<p>To build a PDU from a buffer:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">buf</span> <span class="o">=</span> <span class="p">[</span>
+<span class="gp">... </span>    <span class="mi">170</span><span class="p">,</span> <span class="mi">187</span><span class="p">,</span> <span class="mi">204</span><span class="p">,</span> <span class="mi">221</span><span class="p">,</span> <span class="mi">238</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">138</span><span class="p">,</span> <span class="mi">139</span><span class="p">,</span> <span class="mi">140</span><span class="p">,</span> <span class="mi">141</span><span class="p">,</span> <span class="mi">142</span><span class="p">,</span> <span class="mi">143</span><span class="p">,</span> <span class="mi">208</span><span class="p">,</span> <span class="mi">171</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="mo">00</span><span class="p">,</span> <span class="mo">00</span><span class="p">,</span> <span class="mo">00</span><span class="p">,</span> <span class="mo">00</span><span class="p">,</span> <span class="mo">00</span><span class="p">,</span> <span class="mo">00</span><span class="p">,</span> <span class="mo">00</span><span class="p">,</span> <span class="mo">00</span><span class="p">,</span> <span class="mo">00</span><span class="p">,</span> <span class="mo">00</span><span class="p">,</span> <span class="mo">00</span><span class="p">,</span> <span class="mo">00</span><span class="p">,</span> <span class="mo">00</span><span class="p">,</span> <span class="mo">00</span><span class="p">,</span> <span class="mo">00</span><span class="p">,</span> <span class="mo">00</span><span class="p">,</span> <span class="mo">00</span><span class="p">,</span> <span class="mo">00</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="mo">00</span><span class="p">,</span> <span class="mo">00</span><span class="p">,</span> <span class="mo">00</span><span class="p">,</span> <span class="mo">00</span><span class="p">,</span> <span class="mo">00</span><span class="p">,</span> <span class="mo">00</span><span class="p">,</span> <span class="mo">00</span><span class="p">,</span> <span class="mo">00</span><span class="p">,</span> <span class="mo">00</span><span class="p">,</span> <span class="mo">00</span><span class="p">,</span> <span class="mo">00</span><span class="p">,</span> <span class="mo">00</span><span class="p">,</span> <span class="mo">00</span><span class="p">,</span> <span class="mo">00</span><span class="p">,</span> <span class="mo">00</span><span class="p">,</span> <span class="mo">00</span><span class="p">,</span> <span class="mo">00</span><span class="p">,</span> <span class="mo">00</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="mo">00</span><span class="p">,</span> <span class="mo">00</span><span class="p">,</span> <span class="mo">00</span><span class="p">,</span> <span class="mo">00</span><span class="p">,</span> <span class="mo">00</span><span class="p">,</span> <span class="mo">00</span><span class="p">,</span> <span class="mo">00</span><span class="p">,</span> <span class="mo">00</span><span class="p">,</span> <span class="mo">00</span><span class="p">,</span> <span class="mo">00</span>
+<span class="gp">... </span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">buf</span> <span class="o">=</span> <span class="s">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">chr</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">buf</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pdu</span> <span class="o">=</span> <span class="n">EthernetII</span><span class="o">.</span><span class="n">from_buffer</span><span class="p">(</span><span class="n">buf</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>PDU objects supports equality:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">pdu1</span> <span class="o">=</span> <span class="n">EthernetII</span><span class="o">.</span><span class="n">from_buffer</span><span class="p">(</span><span class="n">buf1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pdu2</span> <span class="o">=</span> <span class="n">EthernetII</span><span class="o">.</span><span class="n">from_buffer</span><span class="p">(</span><span class="n">buf2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">if</span> <span class="n">pdu1</span> <span class="o">==</span> <span class="n">pdu2</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="k">print</span><span class="p">(</span><span class="s">&quot;Equals&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>PDU objects can be copied:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">copy</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pdu1</span> <span class="o">=</span> <span class="n">EthernetII</span><span class="o">.</span><span class="n">from_buffer</span><span class="p">(</span><span class="n">buf1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pdu2</span> <span class="o">=</span> <span class="n">pdu</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pdu3</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">pdu1</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>PDU objects can be pickled:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pickle</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pdu</span> <span class="o">=</span> <span class="n">EthernetII</span><span class="o">.</span><span class="n">from_buffer</span><span class="p">(</span><span class="n">buf1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">pdu</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>PDU can be built by concatenation:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">pdu</span> <span class="o">=</span> <span class="n">EthernetII</span><span class="p">()</span> <span class="o">/</span> <span class="n">IP</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>PDU is abstract:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">cycapture.libtins</span> <span class="kn">import</span> <span class="n">PDU</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pdu</span> <span class="o">=</span> <span class="n">PDU</span><span class="p">()</span>
+<span class="gt">Traceback (most recent call last):</span>
+  File <span class="nb">&quot;&lt;stdin&gt;&quot;</span>, line <span class="m">1</span>, in <span class="n">&lt;module&gt;</span>
+  File <span class="nb">&quot;cycapture/libtins/pdu_pyx.pxi&quot;</span>, line <span class="m">190</span>, in <span class="n">cycapture.libtins._tins.PDU.__cinit__</span>
+    <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+<span class="gr">NotImplementedError</span>
+</pre></div>
+</div>
+<dl class="method">
+<dt id="cycapture.libtins._tins.PDU.copy">
+<code class="descname">copy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins._tins.PDU.copy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Copy (deep-copy) the PDU</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>PDU</strong> (<a class="reference internal" href="#cycapture.libtins._tins.PDU" title="cycapture.libtins._tins.PDU"><code class="xref py py-class docutils literal"><span class="pre">PDU</span></code></a>) --
+the cloned PDU</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins._tins.PDU.copy_inner_pdu">
+<code class="descname">copy_inner_pdu</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins._tins.PDU.copy_inner_pdu" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a copy of the inner PDU, or <code class="docutils literal"><span class="pre">None</span></code> if self has no child</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>PDU</strong> (<a class="reference internal" href="#cycapture.libtins._tins.PDU" title="cycapture.libtins._tins.PDU"><code class="xref py py-class docutils literal"><span class="pre">PDU</span></code></a>) --
+A copy of the inner PDU</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins._tins.PDU.find_pdu">
+<code class="descname">find_pdu</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins._tins.PDU.find_pdu" title="Permalink to this definition">¶</a></dt>
+<dd><p>Search the successive inner PDUs</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>obj</strong> (<em>PDU class</em>)</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>PDU</strong> (<a class="reference internal" href="#cycapture.libtins._tins.PDU" title="cycapture.libtins._tins.PDU"><code class="xref py py-class docutils literal"><span class="pre">PDU</span></code></a>) --
+a copy of the matching inner PDU</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">PDUNotFound</span></code> (<a class="reference internal" href="exceptions.html#cycapture.libtins.PDUNotFound" title="cycapture.libtins.PDUNotFound"><code class="xref py py-class docutils literal"><span class="pre">PDUNotFound</span></code></a>) --
+if no marching PDU is found</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins._tins.PDU.find_pdu_by_type">
+<code class="descname">find_pdu_by_type</code><span class="sig-paren">(</span><em>int t</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins._tins.PDU.find_pdu_by_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Search the successive inner PDUs, by PDU type</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>t</strong> (<em>int</em>) --
+the type of the PDU that you're looking for</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>PDU</strong> (<a class="reference internal" href="#cycapture.libtins._tins.PDU" title="cycapture.libtins._tins.PDU"><code class="xref py py-class docutils literal"><span class="pre">PDU</span></code></a>) --
+a copy of the matching inner PDU</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">PDUNotFound</span></code> (<a class="reference internal" href="exceptions.html#cycapture.libtins.PDUNotFound" title="cycapture.libtins.PDUNotFound"><code class="xref py py-class docutils literal"><span class="pre">PDUNotFound</span></code></a>) --
+if no marching PDU is found</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins._tins.PDU.from_buffer">
+<code class="descname">from_buffer</code><span class="sig-paren">(</span><em>buf</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins._tins.PDU.from_buffer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Factory classmethod, to make a concrete PDU from a buffer</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>buf</strong> (<em>bytes or bytearray or memoryview or cython memoryview</em>)</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>PDU</strong> (<a class="reference internal" href="#cycapture.libtins._tins.PDU" title="cycapture.libtins._tins.PDU"><code class="xref py py-class docutils literal"><span class="pre">PDU</span></code></a>) --
+The new PDU</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">MalformedPacket</span></code> (<a class="reference internal" href="exceptions.html#cycapture.libtins.MalformedPacket" title="cycapture.libtins.MalformedPacket"><code class="xref py py-class docutils literal"><span class="pre">MalformedPacket</span></code></a>) --
+if the given buffer can not be interpreted as an instance of the concrete PDU</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Class method</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins._tins.PDU.get_pdu_type">
+<code class="descname">get_pdu_type</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins._tins.PDU.get_pdu_type" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><em>int</em> --
+The PDU type</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins._tins.PDU.matches_response">
+<code class="descname">matches_response</code><span class="sig-paren">(</span><em>buf</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins._tins.PDU.matches_response" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks if the given buffer can be a valid response to the current PDU</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>buf</strong> (<em>bytes or bytearray or memoryview or cython memoryview</em>)</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><em>bool</em> --
+<code class="docutils literal"><span class="pre">True</span></code> if <cite>buf</cite> is a response to the PDU</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins._tins.PDU.ref_inner_pdu">
+<code class="descname">ref_inner_pdu</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins._tins.PDU.ref_inner_pdu" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a reference to the inner PDU, or <code class="docutils literal"><span class="pre">None</span></code> if self has no child</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>PDU</strong> (<a class="reference internal" href="#cycapture.libtins._tins.PDU" title="cycapture.libtins._tins.PDU"><code class="xref py py-class docutils literal"><span class="pre">PDU</span></code></a>) --
+A reference of the inner PDU</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins._tins.PDU.reference">
+<code class="descname">reference</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins._tins.PDU.reference" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a reference of the current PDU</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>PDU</strong> (<a class="reference internal" href="#cycapture.libtins._tins.PDU" title="cycapture.libtins._tins.PDU"><code class="xref py py-class docutils literal"><span class="pre">PDU</span></code></a>) --
+the reference</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins._tins.PDU.rfind_pdu">
+<code class="descname">rfind_pdu</code><span class="sig-paren">(</span><em>obj</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins._tins.PDU.rfind_pdu" title="Permalink to this definition">¶</a></dt>
+<dd><p>Search the successive inner PDUs</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>obj</strong> (<em>PDU class</em>)</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>PDU</strong> (<a class="reference internal" href="#cycapture.libtins._tins.PDU" title="cycapture.libtins._tins.PDU"><code class="xref py py-class docutils literal"><span class="pre">PDU</span></code></a>) --
+a reference of the matching inner PDU</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">PDUNotFound</span></code> (<a class="reference internal" href="exceptions.html#cycapture.libtins.PDUNotFound" title="cycapture.libtins.PDUNotFound"><code class="xref py py-class docutils literal"><span class="pre">PDUNotFound</span></code></a>) --
+if no marching PDU is found</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins._tins.PDU.rfind_pdu_by_datalink_type">
+<code class="descname">rfind_pdu_by_datalink_type</code><span class="sig-paren">(</span><em>int t</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins._tins.PDU.rfind_pdu_by_datalink_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Search the successive inner PDUs, by datalink type</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>t</strong> (<em>int</em>) --
+the datalink type of the PDU that you're looking for</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>PDU</strong> (<a class="reference internal" href="#cycapture.libtins._tins.PDU" title="cycapture.libtins._tins.PDU"><code class="xref py py-class docutils literal"><span class="pre">PDU</span></code></a>) --
+a reference of the matching inner PDU</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">PDUNotFound</span></code> (<a class="reference internal" href="exceptions.html#cycapture.libtins.PDUNotFound" title="cycapture.libtins.PDUNotFound"><code class="xref py py-class docutils literal"><span class="pre">PDUNotFound</span></code></a>) --
+if no marching PDU is found</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins._tins.PDU.rfind_pdu_by_type">
+<code class="descname">rfind_pdu_by_type</code><span class="sig-paren">(</span><em>int t</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins._tins.PDU.rfind_pdu_by_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Search the successive inner PDUs, by PDU type</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>t</strong> (<em>int</em>) --
+the type of the PDU that you're looking for</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>PDU</strong> (<a class="reference internal" href="#cycapture.libtins._tins.PDU" title="cycapture.libtins._tins.PDU"><code class="xref py py-class docutils literal"><span class="pre">PDU</span></code></a>) --
+a reference of the matching inner PDU</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">PDUNotFound</span></code> (<a class="reference internal" href="exceptions.html#cycapture.libtins.PDUNotFound" title="cycapture.libtins.PDUNotFound"><code class="xref py py-class docutils literal"><span class="pre">PDUNotFound</span></code></a>) --
+if no marching PDU is found</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins._tins.PDU.serialize">
+<code class="descname">serialize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins._tins.PDU.serialize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Serialize the PDU</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><em>bytes</em> --
+the PDU as bytes</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins._tins.PDU.set_inner_pdu">
+<code class="descname">set_inner_pdu</code><span class="sig-paren">(</span><em>obj</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins._tins.PDU.set_inner_pdu" title="Permalink to this definition">¶</a></dt>
+<dd><p>Replace the inner PDU with obj.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last"><code class="docutils literal"><span class="pre">obj</span></code> is cloned before being set as the inner PDU.</p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>obj</strong> (<a class="reference internal" href="#cycapture.libtins._tins.PDU" title="cycapture.libtins._tins.PDU"><code class="xref py py-class docutils literal"><span class="pre">PDU</span></code></a>) --
+the replacement PDU</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.PDU.header_size">
+<code class="descname">header_size</code><a class="headerlink" href="#cycapture.libtins._tins.PDU.header_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the PDU's header size (read-only property)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.PDU.size">
+<code class="descname">size</code><a class="headerlink" href="#cycapture.libtins._tins.PDU.size" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the PDU's size (read-only property)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.PDU.trailer_size">
+<code class="descname">trailer_size</code><a class="headerlink" href="#cycapture.libtins._tins.PDU.trailer_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the PDU's trailer size (read-only property)</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><h2><a href="../index.html">Cycapture</a></h2>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#prerequisites">Prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#install-from-sources">Install from sources</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#install-with-pip">Install with pip</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../authors.html">Credits</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../authors.html#cycapture">cycapture</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../authors.html#libtins">libtins</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../authors.html#contributors">Contributors</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../history.html">History</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API documentation</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="libpcap.html">libpcap bindings</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="libpcap.html#sniffers">Sniffers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="libpcap.html#packet-writers">Packet writers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="libpcap.html#offline-filter">Offline filter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="libpcap.html#utils">Utils</a></li>
+</ul>
+</li>
+<li class="toctree-l2 current"><a class="reference internal" href="libtins.html">libtins bindings</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="addresses.html">Addresses, ranges and interfaces</a></li>
+<li class="toctree-l3"><a class="reference internal" href="exceptions.html">Exceptions</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="">Abstract PDU</a></li>
+<li class="toctree-l3"><a class="reference internal" href="concrete_pdus.html">Concrete PDUs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="radiotap.html">RadioTap and stuff</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dot11.html">IEEE 802.11 and stuff</a></li>
+<li class="toctree-l3"><a class="reference internal" href="derived_pdus.html">Derived PDUs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tcpstream.html">TCP streams</a></li>
+<li class="toctree-l3"><a class="reference internal" href="packetsender.html">Sending packets</a></li>
+<li class="toctree-l3"><a class="reference internal" href="utils.html">Various utils</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+  <div class="footer">
+    &copy; Copyright 2015, Stephane Martin.
+    Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+  </div>
+  
+  </body>
+</html>

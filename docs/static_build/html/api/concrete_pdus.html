@@ -1,0 +1,1200 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Concrete PDUs &mdash; cycapture documentation</title>
+    
+    <link rel="stylesheet" href="../_static/readable.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="cycapture documentation" href="../index.html" />
+    <link rel="up" title="libtins bindings" href="libtins.html" />
+    <link rel="next" title="RadioTap and stuff" href="radiotap.html" />
+    <link rel="prev" title="Abstract PDU" href="abstract_pdu.html" />
+   
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">
+  
+  
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="radiotap.html" title="RadioTap and stuff"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="abstract_pdu.html" title="Abstract PDU"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">cycapture</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../api.html" >API documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="libtins.html" accesskey="U">libtins bindings</a> &raquo;</li> 
+      </ul>
+    </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="concrete-pdus">
+<h1>Concrete PDUs<a class="headerlink" href="#concrete-pdus" title="Permalink to this headline">¶</a></h1>
+<div class="contents local topic" id="contents">
+<ul class="simple">
+<li><a class="reference internal" href="#ieee-802-1q" id="id1">IEEE 802.1q</a></li>
+<li><a class="reference internal" href="#ethernet" id="id2">Ethernet</a></li>
+<li><a class="reference internal" href="#arp" id="id3">ARP</a></li>
+<li><a class="reference internal" href="#loopback" id="id4">Loopback</a></li>
+<li><a class="reference internal" href="#icmp" id="id5">ICMP</a></li>
+<li><a class="reference internal" href="#ipv4" id="id6">IPv4</a><ul>
+<li><a class="reference internal" href="#ip-class" id="id7">IP class</a></li>
+<li><a class="reference internal" href="#ip-helpers" id="id8">IP helpers</a><ul>
+<li><a class="reference internal" href="#ip-optionidentifier" id="id9">IP.OptionIdentifier</a></li>
+<li><a class="reference internal" href="#ip-securitytype" id="id10">IP.SecurityType</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#tcp" id="id11">TCP</a></li>
+<li><a class="reference internal" href="#udp" id="id12">UDP</a></li>
+<li><a class="reference internal" href="#raw" id="id13">RAW</a></li>
+</ul>
+</div>
+<div class="section" id="ieee-802-1q">
+<h2><a class="toc-backref" href="#contents">IEEE 802.1q</a><a class="headerlink" href="#ieee-802-1q" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="cycapture.libtins._tins.Dot1Q">
+<em class="property">class </em><code class="descname">Dot1Q</code><span class="sig-paren">(</span><em>tag_id=0</em>, <em>append_pad=True</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins._tins.Dot1Q" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="abstract_pdu.html#cycapture.libtins._tins.PDU" title="cycapture.libtins._tins.PDU"><code class="xref py py-class docutils literal"><span class="pre">cycapture.libtins._tins.PDU</span></code></a></p>
+<p>IEEE 802.1q PDU class</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>tag_id</strong> (<em>uint16_t</em>) --
+Tag VLAN ID</li>
+<li><strong>append_pad</strong> (<em>bool</em>) --
+flag indicating whether padding will be appended at the end of this packet</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.Dot1Q.append_padding">
+<code class="descname">append_padding</code><a class="headerlink" href="#cycapture.libtins._tins.Dot1Q.append_padding" title="Permalink to this definition">¶</a></dt>
+<dd><p>Flag indicating whether the appropriate padding will be at the end of the packet (read-write, <cite>bool</cite>).</p>
+<p>The flag could be set to <code class="docutils literal"><span class="pre">False</span></code> when two or more contiguous Dot1Q
+PDUs are added to a packet. In that case, only the Dot1Q that is
+closer to the link layer should add a padding at the end.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.Dot1Q.cfi">
+<code class="descname">cfi</code><a class="headerlink" href="#cycapture.libtins._tins.Dot1Q.cfi" title="Permalink to this definition">¶</a></dt>
+<dd><p>Canonical Format Identifie field (read-write, <cite>uint8_t</cite>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.Dot1Q.id">
+<code class="descname">id</code><a class="headerlink" href="#cycapture.libtins._tins.Dot1Q.id" title="Permalink to this definition">¶</a></dt>
+<dd><p>VLAN Id (read-write, <cite>uint16_t</cite>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.Dot1Q.payload_type">
+<code class="descname">payload_type</code><a class="headerlink" href="#cycapture.libtins._tins.Dot1Q.payload_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Payload type field (read-write, <cite>uint16_t</cite>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.Dot1Q.priority">
+<code class="descname">priority</code><a class="headerlink" href="#cycapture.libtins._tins.Dot1Q.priority" title="Permalink to this definition">¶</a></dt>
+<dd><p>Priority field (read-write, <cite>uint8_t</cite>)</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="ethernet">
+<h2><a class="toc-backref" href="#contents">Ethernet</a><a class="headerlink" href="#ethernet" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="cycapture.libtins._tins.EthernetII">
+<em class="property">class </em><code class="descname">EthernetII</code><span class="sig-paren">(</span><em>dst_addr=None</em>, <em>src_addr=None</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins._tins.EthernetII" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="abstract_pdu.html#cycapture.libtins._tins.PDU" title="cycapture.libtins._tins.PDU"><code class="xref py py-class docutils literal"><span class="pre">cycapture.libtins._tins.PDU</span></code></a></p>
+<p>Ethernet packet</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>dst_addr</strong> (bytes or <a class="reference internal" href="addresses.html#cycapture.libtins.HWAddress" title="cycapture.libtins.HWAddress"><code class="xref py py-class docutils literal"><span class="pre">HWAddress</span></code></a>) --
+destination address of the ethernet packet</li>
+<li><strong>src_addr</strong> (bytes or <a class="reference internal" href="addresses.html#cycapture.libtins.HWAddress" title="cycapture.libtins.HWAddress"><code class="xref py py-class docutils literal"><span class="pre">HWAddress</span></code></a>) --
+source address of the ethernet packet</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.EthernetII.dst_addr">
+<code class="descname">dst_addr</code><a class="headerlink" href="#cycapture.libtins._tins.EthernetII.dst_addr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Destination address (read-write property)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.EthernetII.payload_type">
+<code class="descname">payload_type</code><a class="headerlink" href="#cycapture.libtins._tins.EthernetII.payload_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Payload type (<cite>uint16_t</cite>, read-write property)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.EthernetII.src_addr">
+<code class="descname">src_addr</code><a class="headerlink" href="#cycapture.libtins._tins.EthernetII.src_addr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Source address (read-write property)</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="arp">
+<h2><a class="toc-backref" href="#contents">ARP</a><a class="headerlink" href="#arp" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="cycapture.libtins._tins.ARP">
+<em class="property">class </em><code class="descname">ARP</code><span class="sig-paren">(</span><em>target_ip=None</em>, <em>sender_ip=None</em>, <em>target_hw=None</em>, <em>sender_hw=None</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins._tins.ARP" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="abstract_pdu.html#cycapture.libtins._tins.PDU" title="cycapture.libtins._tins.PDU"><code class="xref py py-class docutils literal"><span class="pre">cycapture.libtins._tins.PDU</span></code></a></p>
+<p>ARP packet</p>
+<p>ARP requests and replies can be constructed easily using static methods <a class="reference internal" href="#cycapture.libtins._tins.ARP.make_arp_request" title="cycapture.libtins._tins.ARP.make_arp_request"><code class="xref py py-meth docutils literal"><span class="pre">make_arp_request()</span></code></a> and
+<a class="reference internal" href="#cycapture.libtins._tins.ARP.make_arp_reply" title="cycapture.libtins._tins.ARP.make_arp_reply"><code class="xref py py-meth docutils literal"><span class="pre">make_arp_reply()</span></code></a>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>target_ip</strong> (<a class="reference internal" href="addresses.html#cycapture.libtins.IPv4Address" title="cycapture.libtins.IPv4Address"><code class="xref py py-class docutils literal"><span class="pre">IPv4Address</span></code></a>) --
+target IP address</li>
+<li><strong>sender_ip</strong> (<a class="reference internal" href="addresses.html#cycapture.libtins.IPv4Address" title="cycapture.libtins.IPv4Address"><code class="xref py py-class docutils literal"><span class="pre">IPv4Address</span></code></a>) --
+sender IP address</li>
+<li><strong>target_hw</strong> (<a class="reference internal" href="addresses.html#cycapture.libtins.HWAddress" title="cycapture.libtins.HWAddress"><code class="xref py py-class docutils literal"><span class="pre">HWAddress</span></code></a>) --
+target hardware address</li>
+<li><strong>sender_hw</strong> (<a class="reference internal" href="addresses.html#cycapture.libtins.HWAddress" title="cycapture.libtins.HWAddress"><code class="xref py py-class docutils literal"><span class="pre">HWAddress</span></code></a>) --
+sender hardware address</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="cycapture.libtins._tins.ARP.Flags">
+<em class="property">class </em><code class="descname">Flags</code><a class="headerlink" href="#cycapture.libtins._tins.ARP.Flags" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">enum.IntEnum</span></code></p>
+<p>Indicates the type of ARP packet</p>
+<p>Attributes: <code class="docutils literal"><span class="pre">REQUEST</span></code>, <code class="docutils literal"><span class="pre">REPLY</span></code></p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="cycapture.libtins._tins.ARP.make_arp_reply">
+<em class="property">static </em><code class="descclassname">ARP.</code><code class="descname">make_arp_reply</code><span class="sig-paren">(</span><em>target</em>, <em>sender</em>, <em>hw_tgt=None</em>, <em>hw_snd=None</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins._tins.ARP.make_arp_reply" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates an ARP Reply within an EthernetII PDU.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>target</strong> (<a class="reference internal" href="addresses.html#cycapture.libtins.IPv4Address" title="cycapture.libtins.IPv4Address"><code class="xref py py-class docutils literal"><span class="pre">IPv4Address</span></code></a>) --
+Target IP address</li>
+<li><strong>sender</strong> (<a class="reference internal" href="addresses.html#cycapture.libtins.IPv4Address" title="cycapture.libtins.IPv4Address"><code class="xref py py-class docutils literal"><span class="pre">IPv4Address</span></code></a>) --
+Sender IP address</li>
+<li><strong>hw_tgt</strong> (<a class="reference internal" href="addresses.html#cycapture.libtins.HWAddress" title="cycapture.libtins.HWAddress"><code class="xref py py-class docutils literal"><span class="pre">HWAddress</span></code></a>) --
+Target hardware address</li>
+<li><strong>hw_snd</strong> (<a class="reference internal" href="addresses.html#cycapture.libtins.HWAddress" title="cycapture.libtins.HWAddress"><code class="xref py py-class docutils literal"><span class="pre">HWAddress</span></code></a>) --
+Sender hardware address</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>packet</strong> (<a class="reference internal" href="#cycapture.libtins._tins.EthernetII" title="cycapture.libtins._tins.EthernetII"><code class="xref py py-class docutils literal"><span class="pre">EthernetII</span></code></a>)</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="cycapture.libtins._tins.ARP.make_arp_request">
+<em class="property">static </em><code class="descclassname">ARP.</code><code class="descname">make_arp_request</code><span class="sig-paren">(</span><em>target</em>, <em>sender</em>, <em>hw_snd=None</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins._tins.ARP.make_arp_request" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates an ARP Request within an EthernetII PDU.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>target</strong> (<a class="reference internal" href="addresses.html#cycapture.libtins.IPv4Address" title="cycapture.libtins.IPv4Address"><code class="xref py py-class docutils literal"><span class="pre">IPv4Address</span></code></a>) --
+Target IP address</li>
+<li><strong>sender</strong> (<a class="reference internal" href="addresses.html#cycapture.libtins.IPv4Address" title="cycapture.libtins.IPv4Address"><code class="xref py py-class docutils literal"><span class="pre">IPv4Address</span></code></a>) --
+Sender IP address</li>
+<li><strong>hw_snd</strong> (<a class="reference internal" href="addresses.html#cycapture.libtins.HWAddress" title="cycapture.libtins.HWAddress"><code class="xref py py-class docutils literal"><span class="pre">HWAddress</span></code></a>) --
+Sender hardware address</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>packet</strong> (<a class="reference internal" href="#cycapture.libtins._tins.EthernetII" title="cycapture.libtins._tins.EthernetII"><code class="xref py py-class docutils literal"><span class="pre">EthernetII</span></code></a>)</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.ARP.hw_addr_format">
+<code class="descclassname">ARP.</code><code class="descname">hw_addr_format</code><a class="headerlink" href="#cycapture.libtins._tins.ARP.hw_addr_format" title="Permalink to this definition">¶</a></dt>
+<dd><p>Hardware address format field (read-write, <cite>uint16_t</cite>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.ARP.hw_addr_length">
+<code class="descclassname">ARP.</code><code class="descname">hw_addr_length</code><a class="headerlink" href="#cycapture.libtins._tins.ARP.hw_addr_length" title="Permalink to this definition">¶</a></dt>
+<dd><p>Hardware address length field (read-write, <cite>uint8_t</cite>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.ARP.opcode">
+<code class="descclassname">ARP.</code><code class="descname">opcode</code><a class="headerlink" href="#cycapture.libtins._tins.ARP.opcode" title="Permalink to this definition">¶</a></dt>
+<dd><p>ARP opcode field (<a class="reference internal" href="#cycapture.libtins._tins.ARP.Flags" title="cycapture.libtins._tins.ARP.Flags"><code class="xref py py-class docutils literal"><span class="pre">Flags</span></code></a>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.ARP.prot_addr_format">
+<code class="descclassname">ARP.</code><code class="descname">prot_addr_format</code><a class="headerlink" href="#cycapture.libtins._tins.ARP.prot_addr_format" title="Permalink to this definition">¶</a></dt>
+<dd><p>Protocol address format field (read-write, <cite>uint16_t</cite>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.ARP.prot_addr_length">
+<code class="descclassname">ARP.</code><code class="descname">prot_addr_length</code><a class="headerlink" href="#cycapture.libtins._tins.ARP.prot_addr_length" title="Permalink to this definition">¶</a></dt>
+<dd><p>Protocol address length field (read-write, <cite>uint8_t</cite>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.ARP.sender_hw_addr">
+<code class="descclassname">ARP.</code><code class="descname">sender_hw_addr</code><a class="headerlink" href="#cycapture.libtins._tins.ARP.sender_hw_addr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sender's hardware address (read-write, <a class="reference internal" href="addresses.html#cycapture.libtins.HWAddress" title="cycapture.libtins.HWAddress"><code class="xref py py-class docutils literal"><span class="pre">HWAddress</span></code></a>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.ARP.sender_ip_addr">
+<code class="descclassname">ARP.</code><code class="descname">sender_ip_addr</code><a class="headerlink" href="#cycapture.libtins._tins.ARP.sender_ip_addr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sender's IP address (read-write, <a class="reference internal" href="addresses.html#cycapture.libtins.IPv4Address" title="cycapture.libtins.IPv4Address"><code class="xref py py-class docutils literal"><span class="pre">IPv4Address</span></code></a>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.ARP.target_hw_addr">
+<code class="descclassname">ARP.</code><code class="descname">target_hw_addr</code><a class="headerlink" href="#cycapture.libtins._tins.ARP.target_hw_addr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Target's hardware address (read-write, <a class="reference internal" href="addresses.html#cycapture.libtins.HWAddress" title="cycapture.libtins.HWAddress"><code class="xref py py-class docutils literal"><span class="pre">HWAddress</span></code></a>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.ARP.target_ip_addr">
+<code class="descclassname">ARP.</code><code class="descname">target_ip_addr</code><a class="headerlink" href="#cycapture.libtins._tins.ARP.target_ip_addr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Target's IP address (read-write, <a class="reference internal" href="addresses.html#cycapture.libtins.IPv4Address" title="cycapture.libtins.IPv4Address"><code class="xref py py-class docutils literal"><span class="pre">IPv4Address</span></code></a>)</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="loopback">
+<h2><a class="toc-backref" href="#contents">Loopback</a><a class="headerlink" href="#loopback" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="cycapture.libtins._tins.Loopback">
+<em class="property">class </em><code class="descname">Loopback</code><a class="headerlink" href="#cycapture.libtins._tins.Loopback" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="abstract_pdu.html#cycapture.libtins._tins.PDU" title="cycapture.libtins._tins.PDU"><code class="xref py py-class docutils literal"><span class="pre">cycapture.libtins._tins.PDU</span></code></a></p>
+<p>Loopback PDU</p>
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.Loopback.family">
+<code class="descname">family</code><a class="headerlink" href="#cycapture.libtins._tins.Loopback.family" title="Permalink to this definition">¶</a></dt>
+<dd><p>family identifier (read-write, <cite>uint32_t</cite>)</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="icmp">
+<h2><a class="toc-backref" href="#contents">ICMP</a><a class="headerlink" href="#icmp" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="cycapture.libtins._tins.ICMP">
+<em class="property">class </em><code class="descname">ICMP</code><span class="sig-paren">(</span><em>flag=None</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins._tins.ICMP" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="abstract_pdu.html#cycapture.libtins._tins.PDU" title="cycapture.libtins._tins.PDU"><code class="xref py py-class docutils literal"><span class="pre">cycapture.libtins._tins.PDU</span></code></a></p>
+<p>ICMP packet.</p>
+<p>Instances of this class must be sent over a level 3 PDU.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>flag</strong> (int or <a class="reference internal" href="#cycapture.libtins._tins.ICMP.Flags" title="cycapture.libtins._tins.ICMP.Flags"><code class="xref py py-class docutils literal"><span class="pre">Flags</span></code></a>) --
+The type flag which will be set (<cite>ECHO_REQUEST</cite> if none provided)</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="cycapture.libtins._tins.ICMP.Flags">
+<em class="property">class </em><code class="descname">Flags</code><a class="headerlink" href="#cycapture.libtins._tins.ICMP.Flags" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">enum.IntEnum</span></code></p>
+<p>ICMP flags</p>
+<p>Attributes: <code class="docutils literal"><span class="pre">ECHO_REPLY</span></code>, <code class="docutils literal"><span class="pre">DEST_UNREACHABLE</span></code>, <code class="docutils literal"><span class="pre">SOURCE_QUENCH</span></code>, <code class="docutils literal"><span class="pre">REDIRECT</span></code>, <code class="docutils literal"><span class="pre">ECHO_REQUEST</span></code>, <code class="docutils literal"><span class="pre">TIME_EXCEEDED</span></code>, <code class="docutils literal"><span class="pre">PARAM_PROBLEM</span></code>, <code class="docutils literal"><span class="pre">TIMESTAMP_REQUEST</span></code>, <code class="docutils literal"><span class="pre">TIMESTAMP_REPLY</span></code>, <code class="docutils literal"><span class="pre">INFO_REQUEST</span></code>, <code class="docutils literal"><span class="pre">INFO_REPLY</span></code>, <code class="docutils literal"><span class="pre">ADDRESS_MASK_REQUEST</span></code>, <code class="docutils literal"><span class="pre">ADDRESS_MASK_REPLY</span></code></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins._tins.ICMP.set_dest_unreachable">
+<code class="descclassname">ICMP.</code><code class="descname">set_dest_unreachable</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins._tins.ICMP.set_dest_unreachable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets <cite>destination unreachable</cite> for this PDU.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.ICMP.address_mask">
+<code class="descclassname">ICMP.</code><code class="descname">address_mask</code><a class="headerlink" href="#cycapture.libtins._tins.ICMP.address_mask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Address mask field (read-write, <a class="reference internal" href="addresses.html#cycapture.libtins.IPv4Address" title="cycapture.libtins.IPv4Address"><code class="xref py py-class docutils literal"><span class="pre">IPv4Address</span></code></a>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.ICMP.checksum">
+<code class="descclassname">ICMP.</code><code class="descname">checksum</code><a class="headerlink" href="#cycapture.libtins._tins.ICMP.checksum" title="Permalink to this definition">¶</a></dt>
+<dd><p>The checksum field (read-only)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.ICMP.code">
+<code class="descclassname">ICMP.</code><code class="descname">code</code><a class="headerlink" href="#cycapture.libtins._tins.ICMP.code" title="Permalink to this definition">¶</a></dt>
+<dd><p>Code field (read-write, <cite>uint8_t</cite>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.ICMP.gateway">
+<code class="descclassname">ICMP.</code><code class="descname">gateway</code><a class="headerlink" href="#cycapture.libtins._tins.ICMP.gateway" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gateway field (read-write, <a class="reference internal" href="addresses.html#cycapture.libtins.IPv4Address" title="cycapture.libtins.IPv4Address"><code class="xref py py-class docutils literal"><span class="pre">IPv4Address</span></code></a>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.ICMP.id">
+<code class="descclassname">ICMP.</code><code class="descname">id</code><a class="headerlink" href="#cycapture.libtins._tins.ICMP.id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Id field (read-write, <cite>uint16_t</cite>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.ICMP.mtu">
+<code class="descclassname">ICMP.</code><code class="descname">mtu</code><a class="headerlink" href="#cycapture.libtins._tins.ICMP.mtu" title="Permalink to this definition">¶</a></dt>
+<dd><p>MTU field (read-write, <cite>uint16_t</cite>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.ICMP.original_timestamp">
+<code class="descclassname">ICMP.</code><code class="descname">original_timestamp</code><a class="headerlink" href="#cycapture.libtins._tins.ICMP.original_timestamp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Original timestamp field (read-write, <cite>uint32_t</cite>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.ICMP.pointer">
+<code class="descclassname">ICMP.</code><code class="descname">pointer</code><a class="headerlink" href="#cycapture.libtins._tins.ICMP.pointer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pointer field (read-write, <cite>uint8_t</cite>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.ICMP.receive_timestamp">
+<code class="descclassname">ICMP.</code><code class="descname">receive_timestamp</code><a class="headerlink" href="#cycapture.libtins._tins.ICMP.receive_timestamp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Receive timestamp field (read-write, <cite>uint32_t</cite>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.ICMP.sequence">
+<code class="descclassname">ICMP.</code><code class="descname">sequence</code><a class="headerlink" href="#cycapture.libtins._tins.ICMP.sequence" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sequence field (read-write, <cite>uint16_t</cite>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.ICMP.transmit_timestamp">
+<code class="descclassname">ICMP.</code><code class="descname">transmit_timestamp</code><a class="headerlink" href="#cycapture.libtins._tins.ICMP.transmit_timestamp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transmit timestamp field (read-write, <cite>uint32_t</cite>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.ICMP.type">
+<code class="descclassname">ICMP.</code><code class="descname">type</code><a class="headerlink" href="#cycapture.libtins._tins.ICMP.type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Type field (read-write, <a class="reference internal" href="#cycapture.libtins._tins.ICMP.Flags" title="cycapture.libtins._tins.ICMP.Flags"><code class="xref py py-class docutils literal"><span class="pre">Flags</span></code></a></p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="ipv4">
+<h2><a class="toc-backref" href="#contents">IPv4</a><a class="headerlink" href="#ipv4" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="ip-class">
+<h3><a class="toc-backref" href="#contents">IP class</a><a class="headerlink" href="#ip-class" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="cycapture.libtins._tins.IP">
+<em class="property">class </em><code class="descname">IP</code><span class="sig-paren">(</span><em>dst_addr=None</em>, <em>src_addr=None</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins._tins.IP" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="abstract_pdu.html#cycapture.libtins._tins.PDU" title="cycapture.libtins._tins.PDU"><code class="xref py py-class docutils literal"><span class="pre">cycapture.libtins._tins.PDU</span></code></a></p>
+<p>IP packet</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>dst_addr</strong> (bytes or <a class="reference internal" href="addresses.html#cycapture.libtins.IPv4Address" title="cycapture.libtins.IPv4Address"><code class="xref py py-class docutils literal"><span class="pre">IPv4Address</span></code></a>) --
+IPv4 destination address</li>
+<li><strong>src_addr</strong> (bytes or <a class="reference internal" href="addresses.html#cycapture.libtins.IPv4Address" title="cycapture.libtins.IPv4Address"><code class="xref py py-class docutils literal"><span class="pre">IPv4Address</span></code></a>) --
+IPv4 source address</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="cycapture.libtins._tins.IP.OptionClass">
+<em class="property">class </em><code class="descname">OptionClass</code><a class="headerlink" href="#cycapture.libtins._tins.IP.OptionClass" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">enum.IntEnum</span></code></p>
+<p>Options class for the IP PDU</p>
+<p>Attributes: <code class="docutils literal"><span class="pre">CONTROL</span></code>, <code class="docutils literal"><span class="pre">MEASUREMENT</span></code></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.IP.OptionIdentifier">
+<code class="descclassname">IP.</code><code class="descname">OptionIdentifier</code><a class="headerlink" href="#cycapture.libtins._tins.IP.OptionIdentifier" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <code class="xref py py-class docutils literal"><span class="pre">IPOptionIdentifier</span></code></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="cycapture.libtins._tins.IP.OptionNumber">
+<em class="property">class </em><code class="descclassname">IP.</code><code class="descname">OptionNumber</code><a class="headerlink" href="#cycapture.libtins._tins.IP.OptionNumber" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">enum.IntEnum</span></code></p>
+<p>Options numbers for the IP PDU</p>
+<p>Attributes: <code class="docutils literal"><span class="pre">END</span></code>, <code class="docutils literal"><span class="pre">NOOP</span></code>, <code class="docutils literal"><span class="pre">SEC</span></code>, <code class="docutils literal"><span class="pre">LSSR</span></code>, <code class="docutils literal"><span class="pre">TIMESTAMP</span></code>, <code class="docutils literal"><span class="pre">EXTSEC</span></code>, <code class="docutils literal"><span class="pre">RR</span></code>, <code class="docutils literal"><span class="pre">SID</span></code>, <code class="docutils literal"><span class="pre">SSRR</span></code>, <code class="docutils literal"><span class="pre">MTUPROBE</span></code>, <code class="docutils literal"><span class="pre">MTUREPLY</span></code>, <code class="docutils literal"><span class="pre">EIP</span></code>, <code class="docutils literal"><span class="pre">TR</span></code>, <code class="docutils literal"><span class="pre">ADDEXT</span></code>, <code class="docutils literal"><span class="pre">RTRALT</span></code>, <code class="docutils literal"><span class="pre">SDB</span></code>, <code class="docutils literal"><span class="pre">DPS</span></code>, <code class="docutils literal"><span class="pre">UMP</span></code>, <code class="docutils literal"><span class="pre">QS</span></code></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.IP.SecurityType">
+<code class="descclassname">IP.</code><code class="descname">SecurityType</code><a class="headerlink" href="#cycapture.libtins._tins.IP.SecurityType" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <code class="xref py py-class docutils literal"><span class="pre">IPSecurityType</span></code></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins._tins.IP.add_option">
+<code class="descclassname">IP.</code><code class="descname">add_option</code><span class="sig-paren">(</span><em>identifier</em>, <em>data=None</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins._tins.IP.add_option" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds an IP option.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>identifier</strong> (<a class="reference internal" href="#cycapture.libtins._tins.IPOptionIdentifier" title="cycapture.libtins._tins.IPOptionIdentifier"><code class="xref py py-class docutils literal"><span class="pre">IPOptionIdentifier</span></code></a>) --
+option identifier</li>
+<li><strong>data</strong> (<em>bytes</em>) --
+option data</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins._tins.IP.eol">
+<code class="descclassname">IP.</code><code class="descname">eol</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins._tins.IP.eol" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds an End Of List option.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins._tins.IP.get_lsrr">
+<code class="descclassname">IP.</code><code class="descname">get_lsrr</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins._tins.IP.get_lsrr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Searchs and returns a Loose Source and Record Route option, or <code class="docutils literal"><span class="pre">None</span></code> is the option is not present.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><ul class="simple">
+<li><strong>pointer</strong> (<em>int</em>)</li>
+<li><strong>routes</strong> (<em>list of IPv4Address</em>)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins._tins.IP.get_record_route">
+<code class="descclassname">IP.</code><code class="descname">get_record_route</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins._tins.IP.get_record_route" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the record route option, or <code class="docutils literal"><span class="pre">None</span></code> is the option is not present.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><ul class="simple">
+<li><strong>pointer</strong> (<em>int</em>)</li>
+<li><strong>routes</strong> (<em>list of IPv4Address</em>)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins._tins.IP.get_security">
+<code class="descclassname">IP.</code><code class="descname">get_security</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins._tins.IP.get_security" title="Permalink to this definition">¶</a></dt>
+<dd><p>Searchs and returns a security option, or <code class="docutils literal"><span class="pre">None</span></code> if such option can't be found</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>opt</strong> (<a class="reference internal" href="#cycapture.libtins._tins.IPSecurityType" title="cycapture.libtins._tins.IPSecurityType"><code class="xref py py-class docutils literal"><span class="pre">IPSecurityType</span></code></a>)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins._tins.IP.get_ssrr">
+<code class="descclassname">IP.</code><code class="descname">get_ssrr</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins._tins.IP.get_ssrr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Searchs and returns a Strict Source and Record Route option, or <code class="docutils literal"><span class="pre">None</span></code> if the option is not present.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><ul class="simple">
+<li><strong>pointer</strong> (<em>int</em>)</li>
+<li><strong>routes</strong> (<em>list of IPv4Address</em>)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins._tins.IP.noop">
+<code class="descclassname">IP.</code><code class="descname">noop</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins._tins.IP.noop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds a NOP option.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins._tins.IP.options">
+<code class="descclassname">IP.</code><code class="descname">options</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins._tins.IP.options" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns all the PDU's options.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>opts</strong> (<em>list of dicts</em>)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins._tins.IP.search_option">
+<code class="descclassname">IP.</code><code class="descname">search_option</code><span class="sig-paren">(</span><em>identifier</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins._tins.IP.search_option" title="Permalink to this definition">¶</a></dt>
+<dd><p>Searchs for an option that matchs the given flag. Returns the option data, or <code class="docutils literal"><span class="pre">None</span></code> if such option can't be
+found.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>identifier</strong> (<a class="reference internal" href="#cycapture.libtins._tins.IPOptionIdentifier" title="cycapture.libtins._tins.IPOptionIdentifier"><code class="xref py py-class docutils literal"><span class="pre">IPOptionIdentifier</span></code></a>)</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>opt</strong> (<em>bytes</em>)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins._tins.IP.set_lsrr">
+<code class="descclassname">IP.</code><code class="descname">set_lsrr</code><span class="sig-paren">(</span><em>pointer</em>, <em>routes</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins._tins.IP.set_lsrr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds a Loose Source and Record Route option.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>pointer</strong> (<em>uint8_t</em>)</li>
+<li><strong>routes</strong> (<em>list of IPv4 addresses</em>)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins._tins.IP.set_record_route">
+<code class="descclassname">IP.</code><code class="descname">set_record_route</code><span class="sig-paren">(</span><em>pointer</em>, <em>routes</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins._tins.IP.set_record_route" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds a Record Route option.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>pointer</strong> (<em>uint8_t</em>)</li>
+<li><strong>routes</strong> (<em>list of IPv4 addresses</em>)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins._tins.IP.set_security">
+<code class="descclassname">IP.</code><code class="descname">set_security</code><span class="sig-paren">(</span><em>security_obj</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins._tins.IP.set_security" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds a security option.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>security_obj</strong> (<a class="reference internal" href="#cycapture.libtins._tins.IPSecurityType" title="cycapture.libtins._tins.IPSecurityType"><code class="xref py py-class docutils literal"><span class="pre">IPSecurityType</span></code></a>) --
+the security option</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins._tins.IP.set_ssrr">
+<code class="descclassname">IP.</code><code class="descname">set_ssrr</code><span class="sig-paren">(</span><em>pointer</em>, <em>routes</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins._tins.IP.set_ssrr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds a Strict Source and Record Route option.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>pointer</strong> (<em>uint8_t</em>)</li>
+<li><strong>routes</strong> (<em>list of IPv4 addresses</em>)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.IP.checksum">
+<code class="descclassname">IP.</code><code class="descname">checksum</code><a class="headerlink" href="#cycapture.libtins._tins.IP.checksum" title="Permalink to this definition">¶</a></dt>
+<dd><p>the checksum field (<code class="docutils literal"><span class="pre">uint16_t</span></code>, read-write)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.IP.dst_addr">
+<code class="descclassname">IP.</code><code class="descname">dst_addr</code><a class="headerlink" href="#cycapture.libtins._tins.IP.dst_addr" title="Permalink to this definition">¶</a></dt>
+<dd><p>the destination address field (<code class="docutils literal"><span class="pre">IPv4Address</span></code>, read-write)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.IP.frag_off">
+<code class="descclassname">IP.</code><code class="descname">frag_off</code><a class="headerlink" href="#cycapture.libtins._tins.IP.frag_off" title="Permalink to this definition">¶</a></dt>
+<dd><p>the fragment offset field (<code class="docutils literal"><span class="pre">uint16_t</span></code>, read-write)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.IP.fragmented">
+<code class="descclassname">IP.</code><code class="descname">fragmented</code><a class="headerlink" href="#cycapture.libtins._tins.IP.fragmented" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="docutils literal"><span class="pre">True</span></code> if the IP PDU is fragmented (read-only)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.IP.head_len">
+<code class="descclassname">IP.</code><code class="descname">head_len</code><a class="headerlink" href="#cycapture.libtins._tins.IP.head_len" title="Permalink to this definition">¶</a></dt>
+<dd><p>the header length field (read-only)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.IP.id">
+<code class="descclassname">IP.</code><code class="descname">id</code><a class="headerlink" href="#cycapture.libtins._tins.IP.id" title="Permalink to this definition">¶</a></dt>
+<dd><p>the id field (<code class="docutils literal"><span class="pre">uint16_t</span></code>, read-write)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.IP.protocol">
+<code class="descclassname">IP.</code><code class="descname">protocol</code><a class="headerlink" href="#cycapture.libtins._tins.IP.protocol" title="Permalink to this definition">¶</a></dt>
+<dd><p>the protocol field (<code class="docutils literal"><span class="pre">uint8_t</span></code>, read-write)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.IP.src_addr">
+<code class="descclassname">IP.</code><code class="descname">src_addr</code><a class="headerlink" href="#cycapture.libtins._tins.IP.src_addr" title="Permalink to this definition">¶</a></dt>
+<dd><p>the source address field (<code class="docutils literal"><span class="pre">IPv4Address</span></code>, read-write)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.IP.stream_identifier">
+<code class="descclassname">IP.</code><code class="descname">stream_identifier</code><a class="headerlink" href="#cycapture.libtins._tins.IP.stream_identifier" title="Permalink to this definition">¶</a></dt>
+<dd><p>Stream Identifier option (<code class="docutils literal"><span class="pre">uint16_t</span></code>, read-write)</p>
+<p>The getter returns <code class="docutils literal"><span class="pre">None</span></code> if the option is not set</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.IP.tos">
+<code class="descclassname">IP.</code><code class="descname">tos</code><a class="headerlink" href="#cycapture.libtins._tins.IP.tos" title="Permalink to this definition">¶</a></dt>
+<dd><p>the type of service field (<code class="docutils literal"><span class="pre">uint8_t</span></code>, read-write)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.IP.tot_len">
+<code class="descclassname">IP.</code><code class="descname">tot_len</code><a class="headerlink" href="#cycapture.libtins._tins.IP.tot_len" title="Permalink to this definition">¶</a></dt>
+<dd><p>the total length field (<code class="docutils literal"><span class="pre">uint16_t</span></code>, read-write)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.IP.ttl">
+<code class="descclassname">IP.</code><code class="descname">ttl</code><a class="headerlink" href="#cycapture.libtins._tins.IP.ttl" title="Permalink to this definition">¶</a></dt>
+<dd><p>the time to live field (<code class="docutils literal"><span class="pre">uint8_t</span></code>, read-write)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.IP.version">
+<code class="descclassname">IP.</code><code class="descname">version</code><a class="headerlink" href="#cycapture.libtins._tins.IP.version" title="Permalink to this definition">¶</a></dt>
+<dd><p>the version field (4 bits, read-write)</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="ip-helpers">
+<h3><a class="toc-backref" href="#contents">IP helpers</a><a class="headerlink" href="#ip-helpers" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="ip-optionidentifier">
+<h4><a class="toc-backref" href="#contents">IP.OptionIdentifier</a><a class="headerlink" href="#ip-optionidentifier" title="Permalink to this headline">¶</a></h4>
+<dl class="class">
+<dt id="cycapture.libtins._tins.IPOptionIdentifier">
+<em class="property">class </em><code class="descname">IPOptionIdentifier</code><span class="sig-paren">(</span><em>number</em>, <em>op_class</em>, <em>copied</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins._tins.IPOptionIdentifier" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>The type used to represent an IP option's identifier.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>number</strong> (<em>IP.OptionNumber or uint8_t</em>)</li>
+<li><strong>op_class</strong> (<em>IP.OptionClass or uint8_t</em>)</li>
+<li><strong>copied</strong> (<em>1 or 0</em>)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.IPOptionIdentifier.copied">
+<code class="descname">copied</code><a class="headerlink" href="#cycapture.libtins._tins.IPOptionIdentifier.copied" title="Permalink to this definition">¶</a></dt>
+<dd><p><cite>copied</cite> getter</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.IPOptionIdentifier.number">
+<code class="descname">number</code><a class="headerlink" href="#cycapture.libtins._tins.IPOptionIdentifier.number" title="Permalink to this definition">¶</a></dt>
+<dd><p><cite>number</cite> getter</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.IPOptionIdentifier.op_class">
+<code class="descname">op_class</code><a class="headerlink" href="#cycapture.libtins._tins.IPOptionIdentifier.op_class" title="Permalink to this definition">¶</a></dt>
+<dd><p><cite>op_class</cite> getter</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="ip-securitytype">
+<h4><a class="toc-backref" href="#contents">IP.SecurityType</a><a class="headerlink" href="#ip-securitytype" title="Permalink to this headline">¶</a></h4>
+<dl class="class">
+<dt id="cycapture.libtins._tins.IPSecurityType">
+<em class="property">class </em><code class="descname">IPSecurityType</code><span class="sig-paren">(</span><em>security=0</em>, <em>compartments=0</em>, <em>handling_restrictions=0</em>, <em>transmission_control=0</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins._tins.IPSecurityType" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>The type for the IP security option.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>security</strong> (<em>uint16_t</em>)</li>
+<li><strong>compartments</strong> (<em>uint16_t</em>)</li>
+<li><strong>handling_restrictions</strong> (<em>uint16_t</em>)</li>
+<li><strong>transmission_control</strong> (<em>24 bits integer</em>)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.IPSecurityType.compartments">
+<code class="descname">compartments</code><a class="headerlink" href="#cycapture.libtins._tins.IPSecurityType.compartments" title="Permalink to this definition">¶</a></dt>
+<dd><p><cite>compartments</cite> getter</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.IPSecurityType.handling_restrictions">
+<code class="descname">handling_restrictions</code><a class="headerlink" href="#cycapture.libtins._tins.IPSecurityType.handling_restrictions" title="Permalink to this definition">¶</a></dt>
+<dd><p><cite>handling_restrictions</cite> getter</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.IPSecurityType.security">
+<code class="descname">security</code><a class="headerlink" href="#cycapture.libtins._tins.IPSecurityType.security" title="Permalink to this definition">¶</a></dt>
+<dd><p><cite>security</cite> getter</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.IPSecurityType.transmission_control">
+<code class="descname">transmission_control</code><a class="headerlink" href="#cycapture.libtins._tins.IPSecurityType.transmission_control" title="Permalink to this definition">¶</a></dt>
+<dd><p><cite>transmission_control</cite> getter</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+</div>
+<div class="section" id="tcp">
+<h2><a class="toc-backref" href="#contents">TCP</a><a class="headerlink" href="#tcp" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="cycapture.libtins._tins.TCP">
+<em class="property">class </em><code class="descname">TCP</code><span class="sig-paren">(</span><em>dest=0</em>, <em>src=0</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins._tins.TCP" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="abstract_pdu.html#cycapture.libtins._tins.PDU" title="cycapture.libtins._tins.PDU"><code class="xref py py-class docutils literal"><span class="pre">cycapture.libtins._tins.PDU</span></code></a></p>
+<p>TCP packet</p>
+<p>When sending TCP PDUs, the checksum is calculated automatically every time you send the packet.</p>
+<p>While sniffing, the payload sent in each packet will be wrapped in a RAW PDU:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">cycapture.libtins</span> <span class="kn">import</span> <span class="n">TCP</span><span class="p">,</span> <span class="n">RAW</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">buf</span> <span class="o">=</span> <span class="o">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pdu</span> <span class="o">=</span> <span class="n">TCP</span><span class="o">.</span><span class="n">from_buffer</span><span class="p">(</span><span class="n">buf</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">raw</span> <span class="o">=</span> <span class="n">pdu</span><span class="o">.</span><span class="n">rfind_pdu</span><span class="p">(</span><span class="n">RAW</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">payload</span> <span class="o">=</span> <span class="n">raw</span><span class="o">.</span><span class="n">payload</span>
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>dest</strong> (<em>uint16_t</em>) --
+destination port</li>
+<li><strong>src</strong> (<em>uint16_t</em>) --
+source port</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="cycapture.libtins._tins.TCP.AltChecksums">
+<em class="property">class </em><code class="descname">AltChecksums</code><a class="headerlink" href="#cycapture.libtins._tins.TCP.AltChecksums" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">enum.IntEnum</span></code></p>
+<p>Alternate checksum enum</p>
+<p>Attributes: <code class="docutils literal"><span class="pre">CHK_TCP</span></code>, <code class="docutils literal"><span class="pre">CHK_8FLETCHER</span></code>, <code class="docutils literal"><span class="pre">CHK_16FLETCHER</span></code></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="cycapture.libtins._tins.TCP.Flags">
+<em class="property">class </em><code class="descclassname">TCP.</code><code class="descname">Flags</code><a class="headerlink" href="#cycapture.libtins._tins.TCP.Flags" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">enum.IntEnum</span></code></p>
+<p>Flags supported by the TCP PDU.</p>
+<p>Attributes: <code class="docutils literal"><span class="pre">FIN</span></code>, <code class="docutils literal"><span class="pre">SYN</span></code>, <code class="docutils literal"><span class="pre">RST</span></code>, <code class="docutils literal"><span class="pre">PSH</span></code>, <code class="docutils literal"><span class="pre">ACK</span></code>, <code class="docutils literal"><span class="pre">URG</span></code>, <code class="docutils literal"><span class="pre">ECE</span></code>, <code class="docutils literal"><span class="pre">CWR</span></code></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="cycapture.libtins._tins.TCP.OptionTypes">
+<em class="property">class </em><code class="descclassname">TCP.</code><code class="descname">OptionTypes</code><a class="headerlink" href="#cycapture.libtins._tins.TCP.OptionTypes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">enum.IntEnum</span></code></p>
+<p>Option types supported by TCP PDU</p>
+<p>Attributes: <code class="docutils literal"><span class="pre">EOL</span></code>, <code class="docutils literal"><span class="pre">NOP</span></code>, <code class="docutils literal"><span class="pre">MSS</span></code>, <code class="docutils literal"><span class="pre">WSCALE</span></code>, <code class="docutils literal"><span class="pre">SACK_OK</span></code>, <code class="docutils literal"><span class="pre">SACK</span></code>, <code class="docutils literal"><span class="pre">TSOPT</span></code>, <code class="docutils literal"><span class="pre">ALTCHK</span></code></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins._tins.TCP.get_flag">
+<code class="descclassname">TCP.</code><code class="descname">get_flag</code><span class="sig-paren">(</span><em>flag</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins._tins.TCP.get_flag" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the value of a flag.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>flag</strong> (<a class="reference internal" href="#cycapture.libtins._tins.TCP.Flags" title="cycapture.libtins._tins.TCP.Flags"><code class="xref py py-class docutils literal"><span class="pre">Flags</span></code></a>)</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>flag</strong> (<em>bool</em>)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins._tins.TCP.set_flag">
+<code class="descclassname">TCP.</code><code class="descname">set_flag</code><span class="sig-paren">(</span><em>flag</em>, <em>value</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins._tins.TCP.set_flag" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets a TCP flag value.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>flag</strong> (<a class="reference internal" href="#cycapture.libtins._tins.TCP.Flags" title="cycapture.libtins._tins.TCP.Flags"><code class="xref py py-class docutils literal"><span class="pre">Flags</span></code></a>)</li>
+<li><strong>value</strong> (<em>bool</em>)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.TCP.ack_seq">
+<code class="descclassname">TCP.</code><code class="descname">ack_seq</code><a class="headerlink" href="#cycapture.libtins._tins.TCP.ack_seq" title="Permalink to this definition">¶</a></dt>
+<dd><p>Acknowledge number field (read-write, <cite>uint32_t</cite>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.TCP.checksum">
+<code class="descclassname">TCP.</code><code class="descname">checksum</code><a class="headerlink" href="#cycapture.libtins._tins.TCP.checksum" title="Permalink to this definition">¶</a></dt>
+<dd><p>The checksum field (read-only)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.TCP.data_offset">
+<code class="descclassname">TCP.</code><code class="descname">data_offset</code><a class="headerlink" href="#cycapture.libtins._tins.TCP.data_offset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Data offset field (read-write, <cite>uint8_t</cite>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.TCP.dport">
+<code class="descclassname">TCP.</code><code class="descname">dport</code><a class="headerlink" href="#cycapture.libtins._tins.TCP.dport" title="Permalink to this definition">¶</a></dt>
+<dd><p>Destination port (read-write, <cite>uint16_t</cite>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.TCP.seq">
+<code class="descclassname">TCP.</code><code class="descname">seq</code><a class="headerlink" href="#cycapture.libtins._tins.TCP.seq" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sequence number field (read-write, <cite>uint32_t</cite>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.TCP.sport">
+<code class="descclassname">TCP.</code><code class="descname">sport</code><a class="headerlink" href="#cycapture.libtins._tins.TCP.sport" title="Permalink to this definition">¶</a></dt>
+<dd><p>Source port (read-write, <cite>uint16_t</cite>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.TCP.urg_ptr">
+<code class="descclassname">TCP.</code><code class="descname">urg_ptr</code><a class="headerlink" href="#cycapture.libtins._tins.TCP.urg_ptr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Urgent pointer field (read-write, <cite>uint16_t</cite>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.TCP.window">
+<code class="descclassname">TCP.</code><code class="descname">window</code><a class="headerlink" href="#cycapture.libtins._tins.TCP.window" title="Permalink to this definition">¶</a></dt>
+<dd><p>Window size field (read-write, <cite>uint16_t</cite>)</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="udp">
+<h2><a class="toc-backref" href="#contents">UDP</a><a class="headerlink" href="#udp" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="cycapture.libtins._tins.UDP">
+<em class="property">class </em><code class="descname">UDP</code><span class="sig-paren">(</span><em>dport=0</em>, <em>sport=0</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins._tins.UDP" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="abstract_pdu.html#cycapture.libtins._tins.PDU" title="cycapture.libtins._tins.PDU"><code class="xref py py-class docutils literal"><span class="pre">cycapture.libtins._tins.PDU</span></code></a></p>
+<p>Encapsulate an UDP PDU.</p>
+<p>While sniffing, the payload sent in each packet will be wrapped in a RAW PDU:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">cycapture.libtins</span> <span class="kn">import</span> <span class="n">UDP</span><span class="p">,</span> <span class="n">RAW</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">buf</span> <span class="o">=</span> <span class="o">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pdu</span> <span class="o">=</span> <span class="n">UDP</span><span class="o">.</span><span class="n">from_buffer</span><span class="p">(</span><span class="n">buf</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">raw</span> <span class="o">=</span> <span class="n">pdu</span><span class="o">.</span><span class="n">rfind_pdu</span><span class="p">(</span><span class="n">RAW</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">payload</span> <span class="o">=</span> <span class="n">raw</span><span class="o">.</span><span class="n">payload</span>
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>dport</strong> (<em>uint16_t</em>) --
+destination port</li>
+<li><strong>sport</strong> (<em>uint16_t</em>) --
+source port</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.UDP.checksum">
+<code class="descname">checksum</code><a class="headerlink" href="#cycapture.libtins._tins.UDP.checksum" title="Permalink to this definition">¶</a></dt>
+<dd><p>checksum of the datagram (read-only)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.UDP.dport">
+<code class="descname">dport</code><a class="headerlink" href="#cycapture.libtins._tins.UDP.dport" title="Permalink to this definition">¶</a></dt>
+<dd><p>Destination port (read-write, <cite>uint16_t</cite>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.UDP.length">
+<code class="descname">length</code><a class="headerlink" href="#cycapture.libtins._tins.UDP.length" title="Permalink to this definition">¶</a></dt>
+<dd><p>Length of the datagram (read-write, <cite>uint16_t</cite>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.UDP.sport">
+<code class="descname">sport</code><a class="headerlink" href="#cycapture.libtins._tins.UDP.sport" title="Permalink to this definition">¶</a></dt>
+<dd><p>Source port (read-write, <cite>uint16_t</cite>)</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="raw">
+<h2><a class="toc-backref" href="#contents">RAW</a><a class="headerlink" href="#raw" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="cycapture.libtins._tins.RAW">
+<em class="property">class </em><code class="descname">RAW</code><span class="sig-paren">(</span><em>data=b''</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins._tins.RAW" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="abstract_pdu.html#cycapture.libtins._tins.PDU" title="cycapture.libtins._tins.PDU"><code class="xref py py-class docutils literal"><span class="pre">cycapture.libtins._tins.PDU</span></code></a></p>
+<p>RAW PDU packet.</p>
+<p>This class is a wrapper over a byte array. It can be used to hold
+the payload sent over transport layer protocols (such as TCP or UDP).</p>
+<p>RAW packets can be converted to another PDU using the <cite>to</cite> method:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">cycapture.libtins</span> <span class="kn">import</span> <span class="n">RAW</span><span class="p">,</span> <span class="n">DNS</span><span class="p">,</span> <span class="n">DHCP</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">raw</span> <span class="o">=</span> <span class="n">RAW</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dhcp</span> <span class="o">=</span> <span class="n">raw</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">DHCP</span><span class="p">)</span>     <span class="c"># if we know the payload is in fact a DHCP packet, we can convert</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dns</span> <span class="o">=</span> <span class="n">raw</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">DNS</span><span class="p">)</span>       <span class="c"># if the conversion fails, a MalformedException is raised</span>
+</pre></div>
+</div>
+<p>RAW.matches_response always returns <code class="docutils literal"><span class="pre">True</span></code>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>data</strong> (<em>bytes</em>) --
+the payload that will be copied into the RAW PDU</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="cycapture.libtins._tins.RAW.to">
+<code class="descname">to</code><span class="sig-paren">(</span><em>pdu_class</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins._tins.RAW.to" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert the payload to another concrete PDU (the payload is copied).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>pdu_class</strong> (<em>a concrete PDU</em>)</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>pdu</strong> (<em>an instance of pdu_class</em>)</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">exception</span></code> (<a class="reference internal" href="exceptions.html#cycapture.libtins.MalformedPacket" title="cycapture.libtins.MalformedPacket"><code class="xref py py-class docutils literal"><span class="pre">MalformedPacket</span></code></a>) --
+if the payload can't be parsed to <cite>pdu_class</cite></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.RAW.payload">
+<code class="descname">payload</code><a class="headerlink" href="#cycapture.libtins._tins.RAW.payload" title="Permalink to this definition">¶</a></dt>
+<dd><p>The payload (read-write, <cite>bytes</cite>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.RAW.payload_size">
+<code class="descname">payload_size</code><a class="headerlink" href="#cycapture.libtins._tins.RAW.payload_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>The payload size (read-only)</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><h2><a href="../index.html">Cycapture</a></h2>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#prerequisites">Prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#install-from-sources">Install from sources</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#install-with-pip">Install with pip</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../authors.html">Credits</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../authors.html#cycapture">cycapture</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../authors.html#libtins">libtins</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../authors.html#contributors">Contributors</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../history.html">History</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API documentation</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="libpcap.html">libpcap bindings</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="libpcap.html#sniffers">Sniffers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="libpcap.html#packet-writers">Packet writers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="libpcap.html#offline-filter">Offline filter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="libpcap.html#utils">Utils</a></li>
+</ul>
+</li>
+<li class="toctree-l2 current"><a class="reference internal" href="libtins.html">libtins bindings</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="addresses.html">Addresses, ranges and interfaces</a></li>
+<li class="toctree-l3"><a class="reference internal" href="exceptions.html">Exceptions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="abstract_pdu.html">Abstract PDU</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="">Concrete PDUs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="radiotap.html">RadioTap and stuff</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dot11.html">IEEE 802.11 and stuff</a></li>
+<li class="toctree-l3"><a class="reference internal" href="derived_pdus.html">Derived PDUs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tcpstream.html">TCP streams</a></li>
+<li class="toctree-l3"><a class="reference internal" href="packetsender.html">Sending packets</a></li>
+<li class="toctree-l3"><a class="reference internal" href="utils.html">Various utils</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+  <div class="footer">
+    &copy; Copyright 2015, Stephane Martin.
+    Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+  </div>
+  
+  </body>
+</html>

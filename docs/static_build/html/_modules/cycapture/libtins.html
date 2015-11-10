@@ -1,0 +1,162 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>cycapture.libtins &mdash; cycapture documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/readable.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="cycapture documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" />
+   
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">
+  
+  
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">cycapture</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for cycapture.libtins</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: utf-8 -*-</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">libtins bindings using cython</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c"># specific exceptions (they all inherit from LibtinsException)</span>
+<span class="kn">from</span> <span class="nn">._py_exceptions</span> <span class="kn">import</span> <span class="n">LibtinsException</span><span class="p">,</span> <span class="n">MalformedAddress</span><span class="p">,</span> <span class="n">MalformedPacket</span><span class="p">,</span> <span class="n">MalformedOption</span><span class="p">,</span> <span class="n">OptionNotFound</span>
+<span class="kn">from</span> <span class="nn">._py_exceptions</span> <span class="kn">import</span> <span class="n">OptionPayloadTooLarge</span><span class="p">,</span> <span class="n">FieldNotPresent</span><span class="p">,</span> <span class="n">PDUNotFound</span><span class="p">,</span> <span class="n">InvalidInterface</span><span class="p">,</span> <span class="n">UnknownLinkType</span>
+<span class="kn">from</span> <span class="nn">._py_exceptions</span> <span class="kn">import</span> <span class="n">SocketOpenError</span><span class="p">,</span> <span class="n">SocketCloseError</span><span class="p">,</span> <span class="n">SocketWriteError</span><span class="p">,</span> <span class="n">InvalidSocketType</span><span class="p">,</span> <span class="n">BadTinsCast</span>
+<span class="kn">from</span> <span class="nn">._py_exceptions</span> <span class="kn">import</span> <span class="n">ProtocolDisabled</span><span class="p">,</span> <span class="n">MemoryViewFormat</span>
+
+<span class="c"># addresses and ranges</span>
+<span class="kn">from</span> <span class="nn">._tins</span> <span class="kn">import</span> <span class="n">IPv4Address</span><span class="p">,</span> <span class="n">IPv6Address</span><span class="p">,</span> <span class="n">HWAddress</span><span class="p">,</span> <span class="n">IPv4Range</span><span class="p">,</span> <span class="n">IPv6Range</span><span class="p">,</span> <span class="n">HWRange</span><span class="p">,</span> <span class="n">NetworkInterface</span>
+
+<span class="c"># Abstract PDU and utils</span>
+<span class="kn">from</span> <span class="nn">._tins</span> <span class="kn">import</span> <span class="n">PDU</span><span class="p">,</span> <span class="n">RSNInformation</span><span class="p">,</span> <span class="n">Constants</span><span class="p">,</span> <span class="n">Utils</span><span class="p">,</span> <span class="n">RouteEntry</span>
+
+<span class="c"># Concrete PDUs</span>
+<span class="kn">from</span> <span class="nn">._tins</span> <span class="kn">import</span> <span class="n">IP</span><span class="p">,</span> <span class="n">IPv4</span><span class="p">,</span> <span class="n">IPV4</span><span class="p">,</span> <span class="n">DHCP</span>
+<span class="kn">from</span> <span class="nn">._tins</span> <span class="kn">import</span> <span class="n">Ethernet</span><span class="p">,</span> <span class="n">EthernetII</span><span class="p">,</span> <span class="n">TCP</span><span class="p">,</span> <span class="n">UDP</span><span class="p">,</span> <span class="n">ICMP</span><span class="p">,</span> <span class="n">ARP</span><span class="p">,</span> <span class="n">BootP</span><span class="p">,</span> <span class="n">RadioTap</span><span class="p">,</span> <span class="n">Radiotap</span><span class="p">,</span> <span class="n">Loopback</span><span class="p">,</span> <span class="n">LLC</span>
+<span class="kn">from</span> <span class="nn">._tins</span> <span class="kn">import</span> <span class="n">RC4EAPOL</span><span class="p">,</span> <span class="n">RC4_EAPOL</span><span class="p">,</span> <span class="n">RSNEAPOL</span><span class="p">,</span> <span class="n">RSN_EAPOL</span><span class="p">,</span> <span class="n">SLL</span><span class="p">,</span> <span class="n">PPPoE</span><span class="p">,</span> <span class="n">PPPOE</span><span class="p">,</span> <span class="n">STP</span><span class="p">,</span> <span class="n">PPI</span><span class="p">,</span> <span class="n">SNAP</span><span class="p">,</span> <span class="n">Dot1Q</span><span class="p">,</span> <span class="n">DOT1Q</span>
+<span class="kn">from</span> <span class="nn">._tins</span> <span class="kn">import</span> <span class="n">PKTAP</span><span class="p">,</span> <span class="n">DNS</span><span class="p">,</span> <span class="n">RAW</span><span class="p">,</span> <span class="n">Raw</span><span class="p">,</span> <span class="n">Dot3</span><span class="p">,</span> <span class="n">DOT3</span><span class="p">,</span> <span class="n">IPSecAH</span><span class="p">,</span> <span class="n">IPSECAH</span><span class="p">,</span> <span class="n">IPSEC_AH</span><span class="p">,</span> <span class="n">IPSecESP</span><span class="p">,</span> <span class="n">IPSECESP</span><span class="p">,</span> <span class="n">IPSEC_ESP</span>
+
+<span class="c"># Dot11 stuff</span>
+<span class="kn">from</span> <span class="nn">._tins</span> <span class="kn">import</span> <span class="n">Dot11</span><span class="p">,</span> <span class="n">Dot11Data</span><span class="p">,</span> <span class="n">Dot11QoSData</span><span class="p">,</span> <span class="n">Dot11Disassoc</span><span class="p">,</span> <span class="n">Dot11AssocRequest</span><span class="p">,</span> <span class="n">Dot11AssocResponse</span>
+<span class="kn">from</span> <span class="nn">._tins</span> <span class="kn">import</span> <span class="n">Dot11ReAssocRequest</span><span class="p">,</span> <span class="n">Dot11ReAssocResponse</span><span class="p">,</span> <span class="n">Dot11Authentication</span><span class="p">,</span> <span class="n">Dot11Deauthentication</span>
+<span class="kn">from</span> <span class="nn">._tins</span> <span class="kn">import</span> <span class="n">Dot11Beacon</span><span class="p">,</span> <span class="n">Dot11ProbeRequest</span><span class="p">,</span> <span class="n">Dot11ProbeResponse</span><span class="p">,</span> <span class="n">Dot11Control</span><span class="p">,</span> <span class="n">Dot11RTS</span><span class="p">,</span> <span class="n">Dot11PSPoll</span><span class="p">,</span> <span class="n">Dot11CFEnd</span>
+<span class="kn">from</span> <span class="nn">._tins</span> <span class="kn">import</span> <span class="n">Dot11EndCFAck</span><span class="p">,</span> <span class="n">Dot11Ack</span><span class="p">,</span> <span class="n">Dot11BlockAckRequest</span><span class="p">,</span> <span class="n">Dot11BlockAck</span>
+
+<span class="c"># named tuples helpers</span>
+<span class="kn">from</span> <span class="nn">._tins</span> <span class="kn">import</span> <span class="n">fh_params</span><span class="p">,</span> <span class="n">cf_params</span><span class="p">,</span> <span class="n">dfs_params</span><span class="p">,</span> <span class="n">country_params</span><span class="p">,</span> <span class="n">fh_pattern</span><span class="p">,</span> <span class="n">channel_switch_t</span><span class="p">,</span> <span class="n">quiet_t</span><span class="p">,</span> <span class="n">bss_load_t</span>
+<span class="kn">from</span> <span class="nn">._tins</span> <span class="kn">import</span> <span class="n">tim_t</span><span class="p">,</span> <span class="n">vendor_specific_t</span>
+
+<span class="c"># packet sender</span>
+<span class="kn">from</span> <span class="nn">._tins</span> <span class="kn">import</span> <span class="n">PacketSender</span>
+
+<span class="c"># streams</span>
+<span class="kn">from</span> <span class="nn">._tins</span> <span class="kn">import</span> <span class="n">TCPStream</span><span class="p">,</span> <span class="n">TCPStreamFollower</span>
+<span class="kn">from</span> <span class="nn">._tins</span> <span class="kn">import</span> <span class="n">IPReassembler</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><h2><a href="../../index.html">Cycapture</a></h2>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../installation.html#prerequisites">Prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../installation.html#install-from-sources">Install from sources</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../installation.html#install-with-pip">Install with pip</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../authors.html">Credits</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../authors.html#cycapture">cycapture</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../authors.html#libtins">libtins</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../authors.html#contributors">Contributors</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../history.html">History</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API documentation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../api/libpcap.html">libpcap bindings</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../api/libpcap.html#sniffers">Sniffers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/libpcap.html#packet-writers">Packet writers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/libpcap.html#offline-filter">Offline filter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/libpcap.html#utils">Utils</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/libtins.html">libtins bindings</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../api/addresses.html">Addresses, ranges and interfaces</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/exceptions.html">Exceptions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/abstract_pdu.html">Abstract PDU</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/concrete_pdus.html">Concrete PDUs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/radiotap.html">RadioTap and stuff</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/dot11.html">IEEE 802.11 and stuff</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/derived_pdus.html">Derived PDUs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/tcpstream.html">TCP streams</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/packetsender.html">Sending packets</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/utils.html">Various utils</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+  <div class="footer">
+    &copy; Copyright 2015, Stephane Martin.
+    Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+  </div>
+  
+  </body>
+</html>

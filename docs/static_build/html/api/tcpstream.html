@@ -1,0 +1,265 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>TCP streams &mdash; cycapture documentation</title>
+    
+    <link rel="stylesheet" href="../_static/readable.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="cycapture documentation" href="../index.html" />
+    <link rel="up" title="libtins bindings" href="libtins.html" />
+    <link rel="next" title="Sending packets" href="packetsender.html" />
+    <link rel="prev" title="Derived PDUs" href="derived_pdus.html" />
+   
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">
+  
+  
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="packetsender.html" title="Sending packets"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="derived_pdus.html" title="Derived PDUs"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">cycapture</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../api.html" >API documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="libtins.html" accesskey="U">libtins bindings</a> &raquo;</li> 
+      </ul>
+    </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="tcp-streams">
+<h1>TCP streams<a class="headerlink" href="#tcp-streams" title="Permalink to this headline">¶</a></h1>
+<div class="contents local topic" id="contents">
+<ul class="simple">
+<li><a class="reference internal" href="#tcp-stream-follower" id="id1">TCP stream follower</a></li>
+<li><a class="reference internal" href="#tcp-stream" id="id2">TCP stream</a></li>
+</ul>
+</div>
+<div class="section" id="tcp-stream-follower">
+<h2><a class="toc-backref" href="#contents">TCP stream follower</a><a class="headerlink" href="#tcp-stream-follower" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="cycapture.libtins._tins.TCPStreamFollower">
+<em class="property">class </em><code class="descname">TCPStreamFollower</code><span class="sig-paren">(</span><em>data_callback=None</em>, <em>end_callback=None</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins._tins.TCPStreamFollower" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Reconstruct client and server TCP streams from individual PDUs.</p>
+<p>A <cite>TCPStreamFollower</cite> object will analyze the PDU's that you provide and reconstruct the clients and servers
+TCP streams that it can find.</p>
+<p>When a stream is updated, the python function <cite>data_callback</cite> is called. When a stream is closed, the
+python function <cite>end_callback</cite> is called.</p>
+<p>Callbacks are function that must accept one and only one parameter. The parameter is a <a class="reference internal" href="#cycapture.libtins._tins.TCPStream" title="cycapture.libtins._tins.TCPStream"><code class="xref py py-class docutils literal"><span class="pre">TCPStream</span></code></a>
+object.</p>
+<p class="rubric">Example</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">cycapture.libtins</span> <span class="kn">import</span> <span class="n">TCPStream</span><span class="p">,</span> <span class="n">TCPStreamFollower</span><span class="p">,</span> <span class="n">PDU</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pdus</span> <span class="o">=</span> <span class="n">get_some_pdus</span><span class="p">()</span>        <span class="c"># get PDUs from somewhere (typically from pcap)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span><span class="p">(</span><span class="nb">all</span><span class="p">([</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">pdu</span><span class="p">,</span> <span class="n">PDU</span><span class="p">)</span> <span class="k">for</span> <span class="n">pdu</span> <span class="ow">in</span> <span class="n">pdus</span><span class="p">]))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">updated</span><span class="p">(</span><span class="n">stream</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">assert</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">stream</span><span class="p">,</span> <span class="n">TCPStream</span><span class="p">))</span>
+<span class="gp">... </span>    <span class="k">print</span><span class="p">(</span><span class="s">&quot;Updated stream from {}:{} to {}:{}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+<span class="gp">... </span>        <span class="n">stream</span><span class="o">.</span><span class="n">client_addr</span><span class="p">,</span> <span class="n">stream</span><span class="o">.</span><span class="n">client_port</span><span class="p">,</span> <span class="n">stream</span><span class="o">.</span><span class="n">server_addr</span><span class="p">,</span> <span class="n">stream</span><span class="o">.</span><span class="n">server_port</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">follower</span> <span class="o">=</span> <span class="n">TCPStreamFollower</span><span class="p">(</span><span class="n">updated</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>         <span class="c"># we don&#39;t monitor closed streams</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">follower</span><span class="o">.</span><span class="n">feed</span><span class="p">(</span><span class="n">pdus</span><span class="p">)</span>
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>data_callback</strong> (<em>function</em>) --
+the python callback to call when a stream is updated</li>
+<li><strong>end_callback</strong> (<em>function</em>) --
+the python callback to call when a stream is finished</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="cycapture.libtins._tins.TCPStreamFollower.feed">
+<code class="descname">feed</code><span class="sig-paren">(</span><em>pdu_iterator</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins._tins.TCPStreamFollower.feed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Follow TCP streams found in PDUs from <cite>pdu_iterator</cite> and call the appropriate</p>
+<p>If <cite>pdu_iterator</cite> contains objects that are not PDUs, they will be ignored.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>pdu_iterator</strong> (a <cite>PDU</cite>, or a <cite>list of PDU</cite> or any iterator that gives <cite>PDU</cite>)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="tcp-stream">
+<h2><a class="toc-backref" href="#contents">TCP stream</a><a class="headerlink" href="#tcp-stream" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="cycapture.libtins._tins.TCPStream">
+<em class="property">class </em><code class="descname">TCPStream</code><span class="sig-paren">(</span><em>client_addr</em>, <em>server_addr</em>, <em>client_port</em>, <em>server_port</em>, <em>ident</em>, <em>finished</em>, <em>client_payload</em>, <em>server_payload</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins._tins.TCPStream" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>TCP stream encapsulation.</p>
+<p>TCPStream objects are not meant to be made directly by the user. Instead, they are built by libtins and provided
+to TCPStreamFollower callbacks when a TCP stream is updated or closed.</p>
+<dl class="attribute">
+<dt id="TCPStream.client_addr">
+<code class="descname">client_addr</code><a class="headerlink" href="#TCPStream.client_addr" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference internal" href="addresses.html#cycapture.libtins.IPv4Address" title="cycapture.libtins.IPv4Address"><code class="xref py py-class docutils literal"><span class="pre">IPv4Address</span></code></a> or <code class="docutils literal"><span class="pre">None</span></code></p>
+<p>TCP client address</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="TCPStream.server_addr">
+<code class="descname">server_addr</code><a class="headerlink" href="#TCPStream.server_addr" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference internal" href="addresses.html#cycapture.libtins.IPv4Address" title="cycapture.libtins.IPv4Address"><code class="xref py py-class docutils literal"><span class="pre">IPv4Address</span></code></a> or <code class="docutils literal"><span class="pre">None</span></code></p>
+<p>TCP server address</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="TCPStream.client_port">
+<code class="descname">client_port</code><a class="headerlink" href="#TCPStream.client_port" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>int</em></p>
+<p>TCP client port</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="TCPStream.server_port">
+<code class="descname">server_port</code><a class="headerlink" href="#TCPStream.server_port" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>int</em></p>
+<p>TCP server port</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="TCPStream.identifier">
+<code class="descname">identifier</code><a class="headerlink" href="#TCPStream.identifier" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>int</em></p>
+<p>TCP identifier</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="TCPStream.finished">
+<code class="descname">finished</code><a class="headerlink" href="#TCPStream.finished" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>bool</em></p>
+<p>True if the stream has been closed</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="TCPStream.client_payload">
+<code class="descname">client_payload</code><a class="headerlink" href="#TCPStream.client_payload" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>bytes</em></p>
+<p>What has been sent by the client so far</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="TCPStream.server_payload">
+<code class="descname">server_payload</code><a class="headerlink" href="#TCPStream.server_payload" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>bytes</em></p>
+<p>What has been sent by the server so far</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><h2><a href="../index.html">Cycapture</a></h2>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#prerequisites">Prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#install-from-sources">Install from sources</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#install-with-pip">Install with pip</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../authors.html">Credits</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../authors.html#cycapture">cycapture</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../authors.html#libtins">libtins</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../authors.html#contributors">Contributors</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../history.html">History</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API documentation</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="libpcap.html">libpcap bindings</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="libpcap.html#sniffers">Sniffers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="libpcap.html#packet-writers">Packet writers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="libpcap.html#offline-filter">Offline filter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="libpcap.html#utils">Utils</a></li>
+</ul>
+</li>
+<li class="toctree-l2 current"><a class="reference internal" href="libtins.html">libtins bindings</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="addresses.html">Addresses, ranges and interfaces</a></li>
+<li class="toctree-l3"><a class="reference internal" href="exceptions.html">Exceptions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="abstract_pdu.html">Abstract PDU</a></li>
+<li class="toctree-l3"><a class="reference internal" href="concrete_pdus.html">Concrete PDUs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="radiotap.html">RadioTap and stuff</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dot11.html">IEEE 802.11 and stuff</a></li>
+<li class="toctree-l3"><a class="reference internal" href="derived_pdus.html">Derived PDUs</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="">TCP streams</a></li>
+<li class="toctree-l3"><a class="reference internal" href="packetsender.html">Sending packets</a></li>
+<li class="toctree-l3"><a class="reference internal" href="utils.html">Various utils</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+  <div class="footer">
+    &copy; Copyright 2015, Stephane Martin.
+    Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+  </div>
+  
+  </body>
+</html>

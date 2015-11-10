@@ -1,0 +1,402 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>RadioTap and stuff &mdash; cycapture documentation</title>
+    
+    <link rel="stylesheet" href="../_static/readable.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="cycapture documentation" href="../index.html" />
+    <link rel="up" title="libtins bindings" href="libtins.html" />
+    <link rel="next" title="IEEE 802.11 and stuff" href="dot11.html" />
+    <link rel="prev" title="Concrete PDUs" href="concrete_pdus.html" />
+   
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">
+  
+  
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="dot11.html" title="IEEE 802.11 and stuff"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="concrete_pdus.html" title="Concrete PDUs"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">cycapture</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../api.html" >API documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="libtins.html" accesskey="U">libtins bindings</a> &raquo;</li> 
+      </ul>
+    </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="radiotap-and-stuff">
+<h1>RadioTap and stuff<a class="headerlink" href="#radiotap-and-stuff" title="Permalink to this headline">¶</a></h1>
+<div class="contents local topic" id="contents">
+<ul class="simple">
+<li><a class="reference internal" href="#radiotap" id="id1">RadioTap</a></li>
+<li><a class="reference internal" href="#llc" id="id2">LLC</a></li>
+<li><a class="reference internal" href="#snap" id="id3">SNAP</a></li>
+<li><a class="reference internal" href="#ieee-802-3" id="id4">IEEE 802.3</a></li>
+</ul>
+</div>
+<div class="section" id="radiotap">
+<h2><a class="toc-backref" href="#contents">RadioTap</a><a class="headerlink" href="#radiotap" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="cycapture.libtins._tins.RadioTap">
+<em class="property">class </em><code class="descname">RadioTap</code><a class="headerlink" href="#cycapture.libtins._tins.RadioTap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="abstract_pdu.html#cycapture.libtins._tins.PDU" title="cycapture.libtins._tins.PDU"><code class="xref py py-class docutils literal"><span class="pre">cycapture.libtins._tins.PDU</span></code></a></p>
+<p>RadioTap packet</p>
+<dl class="class">
+<dt id="cycapture.libtins._tins.RadioTap.ChannelType">
+<em class="property">class </em><code class="descname">ChannelType</code><a class="headerlink" href="#cycapture.libtins._tins.RadioTap.ChannelType" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">enum.IntEnum</span></code></p>
+<p>Enumeration of the different channel types. See <cite>RadioTap.channel</cite>.</p>
+<p>Attributes: <code class="docutils literal"><span class="pre">TURBO</span></code>, <code class="docutils literal"><span class="pre">CCK</span></code>, <code class="docutils literal"><span class="pre">OFDM</span></code>, <code class="docutils literal"><span class="pre">TWO_GZ</span></code>, <code class="docutils literal"><span class="pre">FIVE_GZ</span></code>, <code class="docutils literal"><span class="pre">PASSIVE</span></code>, <code class="docutils literal"><span class="pre">DYN_CCK_OFDM</span></code>, <code class="docutils literal"><span class="pre">GFSK</span></code></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="cycapture.libtins._tins.RadioTap.FrameFlags">
+<em class="property">class </em><code class="descclassname">RadioTap.</code><code class="descname">FrameFlags</code><a class="headerlink" href="#cycapture.libtins._tins.RadioTap.FrameFlags" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">enum.IntEnum</span></code></p>
+<p>Flags used in the <cite>RadioTap.flags</cite> property</p>
+<p>Attributes: <code class="docutils literal"><span class="pre">CFP</span></code>, <code class="docutils literal"><span class="pre">PREAMBLE</span></code>, <code class="docutils literal"><span class="pre">WEP</span></code>, <code class="docutils literal"><span class="pre">FRAGMENTATION</span></code>, <code class="docutils literal"><span class="pre">FCS</span></code>, <code class="docutils literal"><span class="pre">PADDING</span></code>, <code class="docutils literal"><span class="pre">FAILED_FCS</span></code>, <code class="docutils literal"><span class="pre">SHORT_GI</span></code></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="cycapture.libtins._tins.RadioTap.PresentFlags">
+<em class="property">class </em><code class="descclassname">RadioTap.</code><code class="descname">PresentFlags</code><a class="headerlink" href="#cycapture.libtins._tins.RadioTap.PresentFlags" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">enum.IntEnum</span></code></p>
+<p>Flags used in the <cite>RadioTap.present</cite> property</p>
+<p>Attributes: <code class="docutils literal"><span class="pre">TSTF</span></code>, <code class="docutils literal"><span class="pre">FLAGS</span></code>, <code class="docutils literal"><span class="pre">RATE</span></code>, <code class="docutils literal"><span class="pre">CHANNEL</span></code>, <code class="docutils literal"><span class="pre">FHSS</span></code>, <code class="docutils literal"><span class="pre">DBM_SIGNAL</span></code>, <code class="docutils literal"><span class="pre">DBM_NOISE</span></code>, <code class="docutils literal"><span class="pre">LOCK_QUALITY</span></code>, <code class="docutils literal"><span class="pre">TX_ATTENUATION</span></code>, <code class="docutils literal"><span class="pre">DB_TX_ATTENUATION</span></code>, <code class="docutils literal"><span class="pre">DBM_TX_ATTENUATION</span></code>, <code class="docutils literal"><span class="pre">ANTENNA</span></code>, <code class="docutils literal"><span class="pre">DB_SIGNAL</span></code>, <code class="docutils literal"><span class="pre">DB_NOISE</span></code>, <code class="docutils literal"><span class="pre">RX_FLAGS</span></code>, <code class="docutils literal"><span class="pre">TX_FLAGS</span></code>, <code class="docutils literal"><span class="pre">DATA_RETRIES</span></code>, <code class="docutils literal"><span class="pre">CHANNEL_PLUS</span></code>, <code class="docutils literal"><span class="pre">MCS</span></code></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins._tins.RadioTap.channel">
+<code class="descclassname">RadioTap.</code><code class="descname">channel</code><span class="sig-paren">(</span><em>self</em>, <em>new_freq</em>, <em>new_type</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins._tins.RadioTap.channel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Setter for the channel frequency and type field</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>new_freq</strong> (<em>uint16_t</em>) --
+The new channel frequency</li>
+<li><strong>new_type</strong> (<em>uint16_t</em>) --
+The new channel type (you can OR the <cite>ChannelType</cite> values)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.RadioTap.mcs">
+<code class="descclassname">RadioTap.</code><code class="descname">mcs</code><a class="headerlink" href="#cycapture.libtins._tins.RadioTap.mcs" title="Permalink to this definition">¶</a></dt>
+<dd><p>the MCS field (read-write, <code class="docutils literal"><span class="pre">uint8_t</span></code>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.RadioTap.present">
+<code class="descclassname">RadioTap.</code><code class="descname">present</code><a class="headerlink" href="#cycapture.libtins._tins.RadioTap.present" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return which fields are set. You can mask this value using the PresentFlags enum. (read-only property)</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="llc">
+<h2><a class="toc-backref" href="#contents">LLC</a><a class="headerlink" href="#llc" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="cycapture.libtins._tins.LLC">
+<em class="property">class </em><code class="descname">LLC</code><span class="sig-paren">(</span><em>dsap=0</em>, <em>ssap=0</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins._tins.LLC" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="abstract_pdu.html#cycapture.libtins._tins.PDU" title="cycapture.libtins._tins.PDU"><code class="xref py py-class docutils literal"><span class="pre">cycapture.libtins._tins.PDU</span></code></a></p>
+<p>LLC frame (IEEE 802.2)</p>
+<p>Constructs an instance of LLC, setting the dsap and ssap.</p>
+<p>The control field is set to 0.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>dsap</strong> (<em>int</em>) --
+The dsap value</li>
+<li><strong>ssap</strong> (<em>int</em>) --
+The ssap value</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="cycapture.libtins._tins.LLC.Format">
+<em class="property">class </em><code class="descname">Format</code><a class="headerlink" href="#cycapture.libtins._tins.LLC.Format" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">enum.IntEnum</span></code></p>
+<p>LLC Format flags</p>
+<p>Attributes: <code class="docutils literal"><span class="pre">INFORMATION</span></code>, <code class="docutils literal"><span class="pre">SUPERVISORY</span></code>, <code class="docutils literal"><span class="pre">UNNUMBERED</span></code></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="cycapture.libtins._tins.LLC.ModifierFunctions">
+<em class="property">class </em><code class="descclassname">LLC.</code><code class="descname">ModifierFunctions</code><a class="headerlink" href="#cycapture.libtins._tins.LLC.ModifierFunctions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">enum.IntEnum</span></code></p>
+<p>LLC Modifier functions</p>
+<p>Attributes: <code class="docutils literal"><span class="pre">UI</span></code>, <code class="docutils literal"><span class="pre">DISC</span></code>, <code class="docutils literal"><span class="pre">UA</span></code>, <code class="docutils literal"><span class="pre">TEST</span></code>, <code class="docutils literal"><span class="pre">FRMR</span></code>, <code class="docutils literal"><span class="pre">DM</span></code>, <code class="docutils literal"><span class="pre">XID</span></code>, <code class="docutils literal"><span class="pre">SABME</span></code></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="cycapture.libtins._tins.LLC.SupervisoryFunctions">
+<em class="property">class </em><code class="descclassname">LLC.</code><code class="descname">SupervisoryFunctions</code><a class="headerlink" href="#cycapture.libtins._tins.LLC.SupervisoryFunctions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">enum.IntEnum</span></code></p>
+<p>LLC Supervisory functions</p>
+<p>Attributes: <code class="docutils literal"><span class="pre">RECEIVE_READY</span></code>, <code class="docutils literal"><span class="pre">RECEIVE_NOT_READY</span></code>, <code class="docutils literal"><span class="pre">REJECT</span></code></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.LLC.dsap">
+<code class="descclassname">LLC.</code><code class="descname">dsap</code><a class="headerlink" href="#cycapture.libtins._tins.LLC.dsap" title="Permalink to this definition">¶</a></dt>
+<dd><p>dsap field (read-write, <cite>uint8_t</cite>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.LLC.group">
+<code class="descclassname">LLC.</code><code class="descname">group</code><a class="headerlink" href="#cycapture.libtins._tins.LLC.group" title="Permalink to this definition">¶</a></dt>
+<dd><p>group destination bit (read-write, <cite>bool</cite>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.LLC.modifier_function">
+<code class="descclassname">LLC.</code><code class="descname">modifier_function</code><a class="headerlink" href="#cycapture.libtins._tins.LLC.modifier_function" title="Permalink to this definition">¶</a></dt>
+<dd><p>modifier function field (read-write, <a class="reference internal" href="#cycapture.libtins._tins.LLC.ModifierFunctions" title="cycapture.libtins._tins.LLC.ModifierFunctions"><code class="xref py py-class docutils literal"><span class="pre">ModifierFunctions</span></code></a>; only applied if format is UNNUMBERED)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.LLC.poll_final">
+<code class="descclassname">LLC.</code><code class="descname">poll_final</code><a class="headerlink" href="#cycapture.libtins._tins.LLC.poll_final" title="Permalink to this definition">¶</a></dt>
+<dd><p>poll/final flag (read-write, <cite>bool</cite>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.LLC.receive_seq_number">
+<code class="descclassname">LLC.</code><code class="descname">receive_seq_number</code><a class="headerlink" href="#cycapture.libtins._tins.LLC.receive_seq_number" title="Permalink to this definition">¶</a></dt>
+<dd><p>sender receive sequence number (read-write, <cite>uint8_t</cite>; only applied if format is INFORMATION or SUPERVISORY)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.LLC.response">
+<code class="descclassname">LLC.</code><code class="descname">response</code><a class="headerlink" href="#cycapture.libtins._tins.LLC.response" title="Permalink to this definition">¶</a></dt>
+<dd><p>response bit (read-write, <cite>bool</cite>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.LLC.send_seq_number">
+<code class="descclassname">LLC.</code><code class="descname">send_seq_number</code><a class="headerlink" href="#cycapture.libtins._tins.LLC.send_seq_number" title="Permalink to this definition">¶</a></dt>
+<dd><p>sender send sequence number (read-write, <cite>uint8_t</cite>; only applied if format is INFORMATION)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.LLC.ssap">
+<code class="descclassname">LLC.</code><code class="descname">ssap</code><a class="headerlink" href="#cycapture.libtins._tins.LLC.ssap" title="Permalink to this definition">¶</a></dt>
+<dd><p>ssap field (read-write, <cite>uint8_t</cite>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.LLC.supervisory_function">
+<code class="descclassname">LLC.</code><code class="descname">supervisory_function</code><a class="headerlink" href="#cycapture.libtins._tins.LLC.supervisory_function" title="Permalink to this definition">¶</a></dt>
+<dd><p>supervisory function (read-write, <a class="reference internal" href="#cycapture.libtins._tins.LLC.SupervisoryFunctions" title="cycapture.libtins._tins.LLC.SupervisoryFunctions"><code class="xref py py-class docutils literal"><span class="pre">SupervisoryFunctions</span></code></a>; only applied if format is SUPERVISORY)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.LLC.type">
+<code class="descclassname">LLC.</code><code class="descname">type</code><a class="headerlink" href="#cycapture.libtins._tins.LLC.type" title="Permalink to this definition">¶</a></dt>
+<dd><p>LLC frame format type (read-write, <a class="reference internal" href="#cycapture.libtins._tins.LLC.Format" title="cycapture.libtins._tins.LLC.Format"><code class="xref py py-class docutils literal"><span class="pre">Format</span></code></a>)</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="snap">
+<h2><a class="toc-backref" href="#contents">SNAP</a><a class="headerlink" href="#snap" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="cycapture.libtins._tins.SNAP">
+<em class="property">class </em><code class="descname">SNAP</code><a class="headerlink" href="#cycapture.libtins._tins.SNAP" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="abstract_pdu.html#cycapture.libtins._tins.PDU" title="cycapture.libtins._tins.PDU"><code class="xref py py-class docutils literal"><span class="pre">cycapture.libtins._tins.PDU</span></code></a></p>
+<p>SNAP frame.</p>
+<p>Note that this PDU contains the 802.3 LLC structure + SNAP frame. So far only unnumbered information structure is
+supported.</p>
+<p>The constructor sets the <cite>dsap</cite> and <cite>ssap</cite> fields to <code class="docutils literal"><span class="pre">0xaa</span></code>, and the <cite>id</cite> field to <code class="docutils literal"><span class="pre">3</span></code>.</p>
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.SNAP.control">
+<code class="descname">control</code><a class="headerlink" href="#cycapture.libtins._tins.SNAP.control" title="Permalink to this definition">¶</a></dt>
+<dd><p>Control field (read-write, <cite>uint8_t</cite>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.SNAP.dsap">
+<code class="descname">dsap</code><a class="headerlink" href="#cycapture.libtins._tins.SNAP.dsap" title="Permalink to this definition">¶</a></dt>
+<dd><p>DSAP field (read-only)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.SNAP.eth_type">
+<code class="descname">eth_type</code><a class="headerlink" href="#cycapture.libtins._tins.SNAP.eth_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Ethernet Type field (read-write, <cite>uint16_t</cite>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.SNAP.org_code">
+<code class="descname">org_code</code><a class="headerlink" href="#cycapture.libtins._tins.SNAP.org_code" title="Permalink to this definition">¶</a></dt>
+<dd><p>Organization Code field (read-write, <cite>24 bits int</cite>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.SNAP.ssap">
+<code class="descname">ssap</code><a class="headerlink" href="#cycapture.libtins._tins.SNAP.ssap" title="Permalink to this definition">¶</a></dt>
+<dd><p>SSAP field (read-only)</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="ieee-802-3">
+<h2><a class="toc-backref" href="#contents">IEEE 802.3</a><a class="headerlink" href="#ieee-802-3" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="cycapture.libtins._tins.Dot3">
+<em class="property">class </em><code class="descname">Dot3</code><span class="sig-paren">(</span><em>dst_addr=None</em>, <em>src_addr=None</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins._tins.Dot3" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="abstract_pdu.html#cycapture.libtins._tins.PDU" title="cycapture.libtins._tins.PDU"><code class="xref py py-class docutils literal"><span class="pre">cycapture.libtins._tins.PDU</span></code></a></p>
+<p>Dot3 (IEEE 802.3) packet</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>dst_addr</strong> (<cite>bytes</cite> or <a class="reference internal" href="addresses.html#cycapture.libtins.HWAddress" title="cycapture.libtins.HWAddress"><code class="xref py py-class docutils literal"><span class="pre">HWAddress</span></code></a>) --
+The destination hardware address</li>
+<li><strong>src_addr</strong> (<cite>bytes</cite> or <a class="reference internal" href="addresses.html#cycapture.libtins.HWAddress" title="cycapture.libtins.HWAddress"><code class="xref py py-class docutils literal"><span class="pre">HWAddress</span></code></a>) --
+The source hardware address</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.Dot3.dst_addr">
+<code class="descname">dst_addr</code><a class="headerlink" href="#cycapture.libtins._tins.Dot3.dst_addr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Destination address (read-write, <a class="reference internal" href="addresses.html#cycapture.libtins.HWAddress" title="cycapture.libtins.HWAddress"><code class="xref py py-class docutils literal"><span class="pre">HWAddress</span></code></a>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.Dot3.length">
+<code class="descname">length</code><a class="headerlink" href="#cycapture.libtins._tins.Dot3.length" title="Permalink to this definition">¶</a></dt>
+<dd><p>Length field (read-write, <cite>uint16_t</cite>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.Dot3.src_addr">
+<code class="descname">src_addr</code><a class="headerlink" href="#cycapture.libtins._tins.Dot3.src_addr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Source address (read-write, <a class="reference internal" href="addresses.html#cycapture.libtins.HWAddress" title="cycapture.libtins.HWAddress"><code class="xref py py-class docutils literal"><span class="pre">HWAddress</span></code></a>)</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><h2><a href="../index.html">Cycapture</a></h2>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#prerequisites">Prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#install-from-sources">Install from sources</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#install-with-pip">Install with pip</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../authors.html">Credits</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../authors.html#cycapture">cycapture</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../authors.html#libtins">libtins</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../authors.html#contributors">Contributors</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../history.html">History</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API documentation</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="libpcap.html">libpcap bindings</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="libpcap.html#sniffers">Sniffers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="libpcap.html#packet-writers">Packet writers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="libpcap.html#offline-filter">Offline filter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="libpcap.html#utils">Utils</a></li>
+</ul>
+</li>
+<li class="toctree-l2 current"><a class="reference internal" href="libtins.html">libtins bindings</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="addresses.html">Addresses, ranges and interfaces</a></li>
+<li class="toctree-l3"><a class="reference internal" href="exceptions.html">Exceptions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="abstract_pdu.html">Abstract PDU</a></li>
+<li class="toctree-l3"><a class="reference internal" href="concrete_pdus.html">Concrete PDUs</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="">RadioTap and stuff</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dot11.html">IEEE 802.11 and stuff</a></li>
+<li class="toctree-l3"><a class="reference internal" href="derived_pdus.html">Derived PDUs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tcpstream.html">TCP streams</a></li>
+<li class="toctree-l3"><a class="reference internal" href="packetsender.html">Sending packets</a></li>
+<li class="toctree-l3"><a class="reference internal" href="utils.html">Various utils</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+  <div class="footer">
+    &copy; Copyright 2015, Stephane Martin.
+    Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+  </div>
+  
+  </body>
+</html>

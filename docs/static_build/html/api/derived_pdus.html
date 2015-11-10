@@ -1,0 +1,839 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Derived PDUs &mdash; cycapture documentation</title>
+    
+    <link rel="stylesheet" href="../_static/readable.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="cycapture documentation" href="../index.html" />
+    <link rel="up" title="libtins bindings" href="libtins.html" />
+    <link rel="next" title="TCP streams" href="tcpstream.html" />
+    <link rel="prev" title="IEEE 802.11 and stuff" href="dot11.html" />
+   
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">
+  
+  
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="tcpstream.html" title="TCP streams"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="dot11.html" title="IEEE 802.11 and stuff"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">cycapture</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../api.html" >API documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="libtins.html" accesskey="U">libtins bindings</a> &raquo;</li> 
+      </ul>
+    </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="derived-pdus">
+<h1>Derived PDUs<a class="headerlink" href="#derived-pdus" title="Permalink to this headline">¶</a></h1>
+<div class="contents local topic" id="contents">
+<ul class="simple">
+<li><a class="reference internal" href="#dns-pdu" id="id1">DNS PDU</a><ul>
+<li><a class="reference internal" href="#dns-class" id="id2">DNS class</a></li>
+<li><a class="reference internal" href="#dns-helpers" id="id3">DNS helpers</a><ul>
+<li><a class="reference internal" href="#dns-query-class" id="id4">DNS.Query class</a></li>
+<li><a class="reference internal" href="#dns-resource-class" id="id5">DNS.Resource class</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#dhcp-and-bootp-pdu" id="id6">DHCP and BootP PDU</a><ul>
+<li><a class="reference internal" href="#dhcp" id="id7">DHCP</a></li>
+<li><a class="reference internal" href="#bootp" id="id8">BootP</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="dns-pdu">
+<h2><a class="toc-backref" href="#contents">DNS PDU</a><a class="headerlink" href="#dns-pdu" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="dns-class">
+<h3><a class="toc-backref" href="#contents">DNS class</a><a class="headerlink" href="#dns-class" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="cycapture.libtins._tins.DNS">
+<em class="property">class </em><code class="descname">DNS</code><a class="headerlink" href="#cycapture.libtins._tins.DNS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="abstract_pdu.html#cycapture.libtins._tins.PDU" title="cycapture.libtins._tins.PDU"><code class="xref py py-class docutils literal"><span class="pre">cycapture.libtins._tins.PDU</span></code></a></p>
+<p>DNS Protocol Data Unit</p>
+<p>Constructor: <code class="docutils literal"><span class="pre">DNS()</span></code></p>
+<dl class="class">
+<dt id="cycapture.libtins._tins.DNS.QRType">
+<em class="property">class </em><code class="descname">QRType</code><a class="headerlink" href="#cycapture.libtins._tins.DNS.QRType" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">enum.IntEnum</span></code></p>
+<p>Enum used to tell if the DNS PDU is DNS query or a DNS response</p>
+<p>Attributes: <code class="docutils literal"><span class="pre">QUERY</span></code>, <code class="docutils literal"><span class="pre">RESPONSE</span></code></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.DNS.Query">
+<code class="descclassname">DNS.</code><code class="descname">Query</code><a class="headerlink" href="#cycapture.libtins._tins.DNS.Query" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <code class="xref py py-class docutils literal"><span class="pre">DNS_Query</span></code></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="cycapture.libtins._tins.DNS.QueryClass">
+<em class="property">class </em><code class="descclassname">DNS.</code><code class="descname">QueryClass</code><a class="headerlink" href="#cycapture.libtins._tins.DNS.QueryClass" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">enum.IntEnum</span></code></p>
+<p>Classes of DNS queries</p>
+<p>Attributes: <code class="docutils literal"><span class="pre">IN</span></code>, <code class="docutils literal"><span class="pre">CH</span></code>, <code class="docutils literal"><span class="pre">HS</span></code>, <code class="docutils literal"><span class="pre">ANY</span></code></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="cycapture.libtins._tins.DNS.QueryType">
+<em class="property">class </em><code class="descclassname">DNS.</code><code class="descname">QueryType</code><a class="headerlink" href="#cycapture.libtins._tins.DNS.QueryType" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">enum.IntEnum</span></code></p>
+<p>Types of DNS queries</p>
+<p>Attributes: <code class="docutils literal"><span class="pre">A</span></code>, <code class="docutils literal"><span class="pre">NS</span></code>, <code class="docutils literal"><span class="pre">MD</span></code>, <code class="docutils literal"><span class="pre">MF</span></code>, <code class="docutils literal"><span class="pre">CNAME</span></code>, <code class="docutils literal"><span class="pre">SOA</span></code>, <code class="docutils literal"><span class="pre">MB</span></code>, <code class="docutils literal"><span class="pre">MG</span></code>, <code class="docutils literal"><span class="pre">MR</span></code>, <code class="docutils literal"><span class="pre">NULL_R</span></code>, <code class="docutils literal"><span class="pre">WKS</span></code>, <code class="docutils literal"><span class="pre">PTR</span></code>, <code class="docutils literal"><span class="pre">HINFO</span></code>, <code class="docutils literal"><span class="pre">MINFO</span></code>, <code class="docutils literal"><span class="pre">MX</span></code>, <code class="docutils literal"><span class="pre">TXT</span></code>, <code class="docutils literal"><span class="pre">RP</span></code>, <code class="docutils literal"><span class="pre">AFSDB</span></code>, <code class="docutils literal"><span class="pre">X25</span></code>, <code class="docutils literal"><span class="pre">ISDN</span></code>, <code class="docutils literal"><span class="pre">RT</span></code>, <code class="docutils literal"><span class="pre">NSAP</span></code>, <code class="docutils literal"><span class="pre">NSAP_PTR</span></code>, <code class="docutils literal"><span class="pre">SIG</span></code>, <code class="docutils literal"><span class="pre">KEY</span></code>, <code class="docutils literal"><span class="pre">PX</span></code>, <code class="docutils literal"><span class="pre">GPOS</span></code>, <code class="docutils literal"><span class="pre">AAAA</span></code>, <code class="docutils literal"><span class="pre">LOC</span></code>, <code class="docutils literal"><span class="pre">NXT</span></code>, <code class="docutils literal"><span class="pre">EID</span></code>, <code class="docutils literal"><span class="pre">NIMLOC</span></code>, <code class="docutils literal"><span class="pre">SRV</span></code>, <code class="docutils literal"><span class="pre">ATMA</span></code>, <code class="docutils literal"><span class="pre">NAPTR</span></code>, <code class="docutils literal"><span class="pre">KX</span></code>, <code class="docutils literal"><span class="pre">CERT</span></code>, <code class="docutils literal"><span class="pre">A6</span></code>, <code class="docutils literal"><span class="pre">DNAM</span></code>, <code class="docutils literal"><span class="pre">SINK</span></code>, <code class="docutils literal"><span class="pre">OPT</span></code>, <code class="docutils literal"><span class="pre">APL</span></code>, <code class="docutils literal"><span class="pre">DS</span></code>, <code class="docutils literal"><span class="pre">SSHFP</span></code>, <code class="docutils literal"><span class="pre">IPSECKEY</span></code>, <code class="docutils literal"><span class="pre">RRSIG</span></code>, <code class="docutils literal"><span class="pre">NSEC</span></code>, <code class="docutils literal"><span class="pre">DNSKEY</span></code>, <code class="docutils literal"><span class="pre">DHCID</span></code>, <code class="docutils literal"><span class="pre">NSEC3</span></code>, <code class="docutils literal"><span class="pre">NSEC3PARAM</span></code></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.DNS.Resource">
+<code class="descclassname">DNS.</code><code class="descname">Resource</code><a class="headerlink" href="#cycapture.libtins._tins.DNS.Resource" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <code class="xref py py-class docutils literal"><span class="pre">DNS_Resource</span></code></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins._tins.DNS.add_additional">
+<code class="descclassname">DNS.</code><code class="descname">add_additional</code><span class="sig-paren">(</span><em>additional</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins._tins.DNS.add_additional" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add an additional resource record.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>additional</strong> (<a class="reference internal" href="#cycapture.libtins._tins.DNS_Resource" title="cycapture.libtins._tins.DNS_Resource"><code class="xref py py-class docutils literal"><span class="pre">DNS_Resource</span></code></a>) --
+the record to be added</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins._tins.DNS.add_answer">
+<code class="descclassname">DNS.</code><code class="descname">add_answer</code><span class="sig-paren">(</span><em>answer</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins._tins.DNS.add_answer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add an answer resource record.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>answer</strong> (<a class="reference internal" href="#cycapture.libtins._tins.DNS_Resource" title="cycapture.libtins._tins.DNS_Resource"><code class="xref py py-class docutils literal"><span class="pre">DNS_Resource</span></code></a>) --
+the answer to be added</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins._tins.DNS.add_authority">
+<code class="descclassname">DNS.</code><code class="descname">add_authority</code><span class="sig-paren">(</span><em>authority</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins._tins.DNS.add_authority" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add an authority resource record.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>authority</strong> (<a class="reference internal" href="#cycapture.libtins._tins.DNS_Resource" title="cycapture.libtins._tins.DNS_Resource"><code class="xref py py-class docutils literal"><span class="pre">DNS_Resource</span></code></a>) --
+the authority record to be added</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins._tins.DNS.add_query">
+<code class="descclassname">DNS.</code><code class="descname">add_query</code><span class="sig-paren">(</span><em>q</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins._tins.DNS.add_query" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a query to perform.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>q</strong> (<a class="reference internal" href="#cycapture.libtins._tins.DNS_Query" title="cycapture.libtins._tins.DNS_Query"><code class="xref py py-class docutils literal"><span class="pre">DNS_Query</span></code></a>) --
+the query to be added</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins._tins.DNS.additional_count">
+<code class="descclassname">DNS.</code><code class="descname">additional_count</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins._tins.DNS.additional_count" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><em>int</em> --
+Returns the number of additional records</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins._tins.DNS.answers_count">
+<code class="descclassname">DNS.</code><code class="descname">answers_count</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins._tins.DNS.answers_count" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><em>int</em> --
+Returns the number of answers</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins._tins.DNS.authority_count">
+<code class="descclassname">DNS.</code><code class="descname">authority_count</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins._tins.DNS.authority_count" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><em>int</em> --
+Returns the number of authority records</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins._tins.DNS.get_additionals">
+<code class="descclassname">DNS.</code><code class="descname">get_additionals</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins._tins.DNS.get_additionals" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>additional</strong> (list of <a class="reference internal" href="#cycapture.libtins._tins.DNS_Resource" title="cycapture.libtins._tins.DNS_Resource"><code class="xref py py-class docutils literal"><span class="pre">DNS_Resource</span></code></a>) --
+the list of DNS additional records contained in the DNS PDU</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins._tins.DNS.get_answers">
+<code class="descclassname">DNS.</code><code class="descname">get_answers</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins._tins.DNS.get_answers" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>answers</strong> (list of <a class="reference internal" href="#cycapture.libtins._tins.DNS_Resource" title="cycapture.libtins._tins.DNS_Resource"><code class="xref py py-class docutils literal"><span class="pre">DNS_Resource</span></code></a>) --
+the list of DNS answers contained in the DNS PDU</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins._tins.DNS.get_authorities">
+<code class="descclassname">DNS.</code><code class="descname">get_authorities</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins._tins.DNS.get_authorities" title="Permalink to this definition">¶</a></dt>
+<dd><p>authority()</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>authority</strong> (list of <a class="reference internal" href="#cycapture.libtins._tins.DNS_Resource" title="cycapture.libtins._tins.DNS_Resource"><code class="xref py py-class docutils literal"><span class="pre">DNS_Resource</span></code></a>) --
+the list of DNS authority records contained in the DNS PDU</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins._tins.DNS.get_queries">
+<code class="descclassname">DNS.</code><code class="descname">get_queries</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins._tins.DNS.get_queries" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>queries</strong> (list of <a class="reference internal" href="#cycapture.libtins._tins.DNS_Query" title="cycapture.libtins._tins.DNS_Query"><code class="xref py py-class docutils literal"><span class="pre">DNS_Query</span></code></a>) --
+the list of DNS queries contained in the DNS PDU</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins._tins.DNS.queries_count">
+<code class="descclassname">DNS.</code><code class="descname">queries_count</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins._tins.DNS.queries_count" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><em>int</em> --
+Returns the number of queries</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins._tins.DNS.questions_count">
+<code class="descclassname">DNS.</code><code class="descname">questions_count</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins._tins.DNS.questions_count" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><em>int</em> --
+Returns the number of queries</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.DNS.authenticated_data">
+<code class="descclassname">DNS.</code><code class="descname">authenticated_data</code><a class="headerlink" href="#cycapture.libtins._tins.DNS.authenticated_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>authenticated data field (read-write property).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.DNS.authoritative_answer">
+<code class="descclassname">DNS.</code><code class="descname">authoritative_answer</code><a class="headerlink" href="#cycapture.libtins._tins.DNS.authoritative_answer" title="Permalink to this definition">¶</a></dt>
+<dd><p>authoritative answer field (read-write property).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.DNS.checking_disabled">
+<code class="descclassname">DNS.</code><code class="descname">checking_disabled</code><a class="headerlink" href="#cycapture.libtins._tins.DNS.checking_disabled" title="Permalink to this definition">¶</a></dt>
+<dd><p>checking disabled field (read-write property).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.DNS.id">
+<code class="descclassname">DNS.</code><code class="descname">id</code><a class="headerlink" href="#cycapture.libtins._tins.DNS.id" title="Permalink to this definition">¶</a></dt>
+<dd><p>id field (read-write property)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.DNS.opcode">
+<code class="descclassname">DNS.</code><code class="descname">opcode</code><a class="headerlink" href="#cycapture.libtins._tins.DNS.opcode" title="Permalink to this definition">¶</a></dt>
+<dd><p>opcode field (read-write property).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.DNS.qrtype">
+<code class="descclassname">DNS.</code><code class="descname">qrtype</code><a class="headerlink" href="#cycapture.libtins._tins.DNS.qrtype" title="Permalink to this definition">¶</a></dt>
+<dd><p>type field (read-write property).</p>
+<p>Can be <code class="docutils literal"><span class="pre">DNS.QRType.Query</span></code> or <code class="docutils literal"><span class="pre">DNS.QRType.Response</span></code>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.DNS.rcode">
+<code class="descclassname">DNS.</code><code class="descname">rcode</code><a class="headerlink" href="#cycapture.libtins._tins.DNS.rcode" title="Permalink to this definition">¶</a></dt>
+<dd><p>rcode field (read-write property).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.DNS.recursion_available">
+<code class="descclassname">DNS.</code><code class="descname">recursion_available</code><a class="headerlink" href="#cycapture.libtins._tins.DNS.recursion_available" title="Permalink to this definition">¶</a></dt>
+<dd><p>recursion available field (read-write property).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.DNS.recursion_desired">
+<code class="descclassname">DNS.</code><code class="descname">recursion_desired</code><a class="headerlink" href="#cycapture.libtins._tins.DNS.recursion_desired" title="Permalink to this definition">¶</a></dt>
+<dd><p>recursion desired field (read-write property).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.DNS.truncated">
+<code class="descclassname">DNS.</code><code class="descname">truncated</code><a class="headerlink" href="#cycapture.libtins._tins.DNS.truncated" title="Permalink to this definition">¶</a></dt>
+<dd><p>truncated field (read-write property).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.DNS.z">
+<code class="descclassname">DNS.</code><code class="descname">z</code><a class="headerlink" href="#cycapture.libtins._tins.DNS.z" title="Permalink to this definition">¶</a></dt>
+<dd><p>z field (read-write property).</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="dns-helpers">
+<h3><a class="toc-backref" href="#contents">DNS helpers</a><a class="headerlink" href="#dns-helpers" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="dns-query-class">
+<h4><a class="toc-backref" href="#contents">DNS.Query class</a><a class="headerlink" href="#dns-query-class" title="Permalink to this headline">¶</a></h4>
+<dl class="class">
+<dt id="cycapture.libtins._tins.DNS_Query">
+<em class="property">class </em><code class="descname">DNS_Query</code><span class="sig-paren">(</span><em>name=None</em>, <em>query_type=None</em>, <em>query_class=None</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins._tins.DNS_Query" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Encapsulate a DNS query</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<em>bytes</em>) --
+domain name</li>
+<li><strong>query_type</strong> (<em>int</em>) --
+query type</li>
+<li><strong>query_class</strong> (<em>int</em>) --
+query class</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.DNS_Query.name">
+<code class="descname">name</code><a class="headerlink" href="#cycapture.libtins._tins.DNS_Query.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Domain name (read-only property)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.DNS_Query.query_class">
+<code class="descname">query_class</code><a class="headerlink" href="#cycapture.libtins._tins.DNS_Query.query_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>Query class (read-only property)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.DNS_Query.query_type">
+<code class="descname">query_type</code><a class="headerlink" href="#cycapture.libtins._tins.DNS_Query.query_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Query type (read-only property)</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="dns-resource-class">
+<h4><a class="toc-backref" href="#contents">DNS.Resource class</a><a class="headerlink" href="#dns-resource-class" title="Permalink to this headline">¶</a></h4>
+<dl class="class">
+<dt id="cycapture.libtins._tins.DNS_Resource">
+<em class="property">class </em><code class="descname">DNS_Resource</code><span class="sig-paren">(</span><em>name=None</em>, <em>data=None</em>, <em>query_type=None</em>, <em>query_class=None</em>, <em>ttl=None</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins._tins.DNS_Resource" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Encapsulate a DNS resource</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<em>bytes</em>) --
+The domain name for which this record provides an answer.</li>
+<li><strong>data</strong> (<em>bytes</em>) --
+The resource's payload</li>
+<li><strong>query_type</strong> (<em>int</em>) --
+record type</li>
+<li><strong>query_class</strong> (<em>int</em>) --
+record class</li>
+<li><strong>ttl</strong> (<em>int</em>) --
+record TTL</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The data will be encoded properly by the DNS class before being added to this packet. That means that if the
+type is A or AAAA, it will be properly encoded as an IPv4 or IPv6 address. The same happens for records that
+contain domain names, such as NS or CNAME. This data will be encoded using DNS domain name encoding.</p>
+</div>
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.DNS_Resource.data">
+<code class="descname">data</code><a class="headerlink" href="#cycapture.libtins._tins.DNS_Resource.data" title="Permalink to this definition">¶</a></dt>
+<dd><p>This resource's payload (read-only property)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.DNS_Resource.name">
+<code class="descname">name</code><a class="headerlink" href="#cycapture.libtins._tins.DNS_Resource.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Domain name (read-only property)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.DNS_Resource.query_class">
+<code class="descname">query_class</code><a class="headerlink" href="#cycapture.libtins._tins.DNS_Resource.query_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>Record class (read-only property)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.DNS_Resource.query_type">
+<code class="descname">query_type</code><a class="headerlink" href="#cycapture.libtins._tins.DNS_Resource.query_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Record type (read-only property)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.DNS_Resource.ttl">
+<code class="descname">ttl</code><a class="headerlink" href="#cycapture.libtins._tins.DNS_Resource.ttl" title="Permalink to this definition">¶</a></dt>
+<dd><p>Record TTL (read-only property)</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+</div>
+<div class="section" id="dhcp-and-bootp-pdu">
+<h2><a class="toc-backref" href="#contents">DHCP and BootP PDU</a><a class="headerlink" href="#dhcp-and-bootp-pdu" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="dhcp">
+<h3><a class="toc-backref" href="#contents">DHCP</a><a class="headerlink" href="#dhcp" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="cycapture.libtins._tins.DHCP">
+<em class="property">class </em><code class="descname">DHCP</code><a class="headerlink" href="#cycapture.libtins._tins.DHCP" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#cycapture.libtins._tins.BootP" title="cycapture.libtins._tins.BootP"><code class="xref py py-class docutils literal"><span class="pre">cycapture.libtins._tins.BootP</span></code></a></p>
+<p>DHCP packet</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">When adding options, the <cite>End</cite> option is not added automatically, so you should add it yourself.</p>
+</div>
+<dl class="class">
+<dt id="cycapture.libtins._tins.DHCP.Flags">
+<em class="property">class </em><code class="descname">Flags</code><a class="headerlink" href="#cycapture.libtins._tins.DHCP.Flags" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">enum.IntEnum</span></code></p>
+<p>DHCP flags</p>
+<p>Attributes: <code class="docutils literal"><span class="pre">DISCOVER</span></code>, <code class="docutils literal"><span class="pre">OFFER</span></code>, <code class="docutils literal"><span class="pre">REQUEST</span></code>, <code class="docutils literal"><span class="pre">DECLINE</span></code>, <code class="docutils literal"><span class="pre">ACK</span></code>, <code class="docutils literal"><span class="pre">NAK</span></code>, <code class="docutils literal"><span class="pre">RELEASE</span></code>, <code class="docutils literal"><span class="pre">INFORM</span></code></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="cycapture.libtins._tins.DHCP.OptionTypes">
+<em class="property">class </em><code class="descclassname">DHCP.</code><code class="descname">OptionTypes</code><a class="headerlink" href="#cycapture.libtins._tins.DHCP.OptionTypes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">enum.IntEnum</span></code></p>
+<p>DHCP options</p>
+<p>Attributes: <code class="docutils literal"><span class="pre">PAD</span></code>, <code class="docutils literal"><span class="pre">SUBNET_MASK</span></code>, <code class="docutils literal"><span class="pre">TIME_OFFSET</span></code>, <code class="docutils literal"><span class="pre">ROUTERS</span></code>, <code class="docutils literal"><span class="pre">TIME_SERVERS</span></code>, <code class="docutils literal"><span class="pre">NAME_SERVERS</span></code>, <code class="docutils literal"><span class="pre">DOMAIN_NAME_SERVERS</span></code>, <code class="docutils literal"><span class="pre">LOG_SERVERS</span></code>, <code class="docutils literal"><span class="pre">COOKIE_SERVERS</span></code>, <code class="docutils literal"><span class="pre">LPR_SERVERS</span></code>, <code class="docutils literal"><span class="pre">IMPRESS_SERVERS</span></code>, <code class="docutils literal"><span class="pre">RESOURCE_LOCATION_SERVERS</span></code>, <code class="docutils literal"><span class="pre">HOST_NAME</span></code>, <code class="docutils literal"><span class="pre">BOOT_SIZE</span></code>, <code class="docutils literal"><span class="pre">MERIT_DUMP</span></code>, <code class="docutils literal"><span class="pre">DOMAIN_NAME</span></code>, <code class="docutils literal"><span class="pre">SWAP_SERVER</span></code>, <code class="docutils literal"><span class="pre">ROOT_PATH</span></code>, <code class="docutils literal"><span class="pre">EXTENSIONS_PATH</span></code>, <code class="docutils literal"><span class="pre">IP_FORWARDING</span></code>, <code class="docutils literal"><span class="pre">NON_LOCAL_SOURCE_ROUTING</span></code>, <code class="docutils literal"><span class="pre">POLICY_FILTER</span></code>, <code class="docutils literal"><span class="pre">MAX_DGRAM_REASSEMBLY</span></code>, <code class="docutils literal"><span class="pre">DEFAULT_IP_TTL</span></code>, <code class="docutils literal"><span class="pre">PATH_MTU_AGING_TIMEOUT</span></code>, <code class="docutils literal"><span class="pre">PATH_MTU_PLATEAU_TABLE</span></code>, <code class="docutils literal"><span class="pre">INTERFACE_MTU</span></code>, <code class="docutils literal"><span class="pre">ALL_SUBNETS_LOCAL</span></code>, <code class="docutils literal"><span class="pre">BROADCAST_ADDRESS</span></code>, <code class="docutils literal"><span class="pre">PERFORM_MASK_DISCOVERY</span></code>, <code class="docutils literal"><span class="pre">MASK_SUPPLIER</span></code>, <code class="docutils literal"><span class="pre">ROUTER_DISCOVERY</span></code>, <code class="docutils literal"><span class="pre">ROUTER_SOLICITATION_ADDRESS</span></code>, <code class="docutils literal"><span class="pre">STATIC_ROUTES</span></code>, <code class="docutils literal"><span class="pre">TRAILER_ENCAPSULATION</span></code>, <code class="docutils literal"><span class="pre">ARP_CACHE_TIMEOUT</span></code>, <code class="docutils literal"><span class="pre">IEEE802_3_ENCAPSULATION</span></code>, <code class="docutils literal"><span class="pre">DEFAULT_TCP_TTL</span></code>, <code class="docutils literal"><span class="pre">TCP_KEEPALIVE_INTERVAL</span></code>, <code class="docutils literal"><span class="pre">TCP_KEEPALIVE_GARBAGE</span></code>, <code class="docutils literal"><span class="pre">NIS_DOMAIN</span></code>, <code class="docutils literal"><span class="pre">NIS_SERVERS</span></code>, <code class="docutils literal"><span class="pre">NTP_SERVERS</span></code>, <code class="docutils literal"><span class="pre">VENDOR_ENCAPSULATED_OPTIONS</span></code>, <code class="docutils literal"><span class="pre">NETBIOS_NAME_SERVERS</span></code>, <code class="docutils literal"><span class="pre">NETBIOS_DD_SERVER</span></code>, <code class="docutils literal"><span class="pre">NETBIOS_NODE_TYPE</span></code>, <code class="docutils literal"><span class="pre">NETBIOS_SCOPE</span></code>, <code class="docutils literal"><span class="pre">FONT_SERVERS</span></code>, <code class="docutils literal"><span class="pre">X_DISPLAY_MANAGER</span></code>, <code class="docutils literal"><span class="pre">DHCP_REQUESTED_ADDRESS</span></code>, <code class="docutils literal"><span class="pre">DHCP_LEASE_TIME</span></code>, <code class="docutils literal"><span class="pre">DHCP_OPTION_OVERLOAD</span></code>, <code class="docutils literal"><span class="pre">DHCP_MESSAGE_TYPE</span></code>, <code class="docutils literal"><span class="pre">DHCP_SERVER_IDENTIFIER</span></code>, <code class="docutils literal"><span class="pre">DHCP_PARAMETER_REQUEST_LIST</span></code>, <code class="docutils literal"><span class="pre">DHCP_MESSAGE</span></code>, <code class="docutils literal"><span class="pre">DHCP_MAX_MESSAGE_SIZE</span></code>, <code class="docutils literal"><span class="pre">DHCP_RENEWAL_TIME</span></code>, <code class="docutils literal"><span class="pre">DHCP_REBINDING_TIME</span></code>, <code class="docutils literal"><span class="pre">VENDOR_CLASS_IDENTIFIER</span></code>, <code class="docutils literal"><span class="pre">DHCP_CLIENT_IDENTIFIER</span></code>, <code class="docutils literal"><span class="pre">NWIP_DOMAIN_NAME</span></code>, <code class="docutils literal"><span class="pre">NWIP_SUBOPTIONS</span></code>, <code class="docutils literal"><span class="pre">USER_CLASS</span></code>, <code class="docutils literal"><span class="pre">FQDN</span></code>, <code class="docutils literal"><span class="pre">DHCP_AGENT_OPTIONS</span></code>, <code class="docutils literal"><span class="pre">SUBNET_SELECTION</span></code>, <code class="docutils literal"><span class="pre">AUTHENTICATE</span></code>, <code class="docutils literal"><span class="pre">END</span></code></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins._tins.DHCP.add_option">
+<code class="descclassname">DHCP.</code><code class="descname">add_option</code><span class="sig-paren">(</span><em>identifier</em>, <em>data=None</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins._tins.DHCP.add_option" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add an option</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>identifier</strong> (<a class="reference internal" href="#cycapture.libtins._tins.DHCP.OptionTypes" title="cycapture.libtins._tins.DHCP.OptionTypes"><code class="xref py py-class docutils literal"><span class="pre">OptionTypes</span></code></a>) --
+option type</li>
+<li><strong>data</strong> (<code class="docutils literal"><span class="pre">None</span></code> or <cite>bytes</cite>) --
+option data</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins._tins.DHCP.end">
+<code class="descclassname">DHCP.</code><code class="descname">end</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins._tins.DHCP.end" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds an end option to the option list.</p>
+<p>The END option is not added automatically. You should explicitly
+add it at the end of the DHCP options to be standard-compliant.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins._tins.DHCP.options">
+<code class="descclassname">DHCP.</code><code class="descname">options</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins._tins.DHCP.options" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the list of current options.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>options</strong> (list of 2-uple (option type <cite>int</cite>, data <cite>bytes</cite>))</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cycapture.libtins._tins.DHCP.search_option">
+<code class="descclassname">DHCP.</code><code class="descname">search_option</code><span class="sig-paren">(</span><em>identifier</em><span class="sig-paren">)</span><a class="headerlink" href="#cycapture.libtins._tins.DHCP.search_option" title="Permalink to this definition">¶</a></dt>
+<dd><p>Search for an option by type</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>identifier</strong> (<a class="reference internal" href="#cycapture.libtins._tins.DHCP.OptionTypes" title="cycapture.libtins._tins.DHCP.OptionTypes"><code class="xref py py-class docutils literal"><span class="pre">OptionTypes</span></code></a>)</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>data</strong> (<code class="docutils literal"><span class="pre">None</span></code> (option is not present) or <code class="docutils literal"><span class="pre">b''</span></code> (option is present, no data) or some <cite>bytes</cite> (option data))</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.DHCP.broadcast">
+<code class="descclassname">DHCP.</code><code class="descname">broadcast</code><a class="headerlink" href="#cycapture.libtins._tins.DHCP.broadcast" title="Permalink to this definition">¶</a></dt>
+<dd><p>Broadcast option (read-write, <a class="reference internal" href="addresses.html#cycapture.libtins.IPv4Address" title="cycapture.libtins.IPv4Address"><code class="xref py py-class docutils literal"><span class="pre">IPv4Address</span></code></a>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.DHCP.domain_name">
+<code class="descclassname">DHCP.</code><code class="descname">domain_name</code><a class="headerlink" href="#cycapture.libtins._tins.DHCP.domain_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Domain name option (read-write, <cite>bytes</cite>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.DHCP.domain_name_servers">
+<code class="descclassname">DHCP.</code><code class="descname">domain_name_servers</code><a class="headerlink" href="#cycapture.libtins._tins.DHCP.domain_name_servers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Domain name servers option (read-write, list of <a class="reference internal" href="addresses.html#cycapture.libtins.IPv4Address" title="cycapture.libtins.IPv4Address"><code class="xref py py-class docutils literal"><span class="pre">IPv4Address</span></code></a>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.DHCP.hostname">
+<code class="descclassname">DHCP.</code><code class="descname">hostname</code><a class="headerlink" href="#cycapture.libtins._tins.DHCP.hostname" title="Permalink to this definition">¶</a></dt>
+<dd><p>Hostname option (read-write, <cite>bytes</cite>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.DHCP.lease_time">
+<code class="descclassname">DHCP.</code><code class="descname">lease_time</code><a class="headerlink" href="#cycapture.libtins._tins.DHCP.lease_time" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lease time option (read-write, <cite>uint32_t</cite>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.DHCP.rebind_time">
+<code class="descclassname">DHCP.</code><code class="descname">rebind_time</code><a class="headerlink" href="#cycapture.libtins._tins.DHCP.rebind_time" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rebind time option (read-write, <cite>uint32_t</cite>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.DHCP.renewal_time">
+<code class="descclassname">DHCP.</code><code class="descname">renewal_time</code><a class="headerlink" href="#cycapture.libtins._tins.DHCP.renewal_time" title="Permalink to this definition">¶</a></dt>
+<dd><p>Renewal time option (read-write, <cite>uint32_t</cite>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.DHCP.requested_ip">
+<code class="descclassname">DHCP.</code><code class="descname">requested_ip</code><a class="headerlink" href="#cycapture.libtins._tins.DHCP.requested_ip" title="Permalink to this definition">¶</a></dt>
+<dd><p>Requested IP option (read-write, <a class="reference internal" href="addresses.html#cycapture.libtins.IPv4Address" title="cycapture.libtins.IPv4Address"><code class="xref py py-class docutils literal"><span class="pre">IPv4Address</span></code></a>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.DHCP.routers">
+<code class="descclassname">DHCP.</code><code class="descname">routers</code><a class="headerlink" href="#cycapture.libtins._tins.DHCP.routers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Routers option (read-write, list of <a class="reference internal" href="addresses.html#cycapture.libtins.IPv4Address" title="cycapture.libtins.IPv4Address"><code class="xref py py-class docutils literal"><span class="pre">IPv4Address</span></code></a>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.DHCP.server_identifier">
+<code class="descclassname">DHCP.</code><code class="descname">server_identifier</code><a class="headerlink" href="#cycapture.libtins._tins.DHCP.server_identifier" title="Permalink to this definition">¶</a></dt>
+<dd><p>Server identifier option (read-write, <a class="reference internal" href="addresses.html#cycapture.libtins.IPv4Address" title="cycapture.libtins.IPv4Address"><code class="xref py py-class docutils literal"><span class="pre">IPv4Address</span></code></a>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.DHCP.subnet_mask">
+<code class="descclassname">DHCP.</code><code class="descname">subnet_mask</code><a class="headerlink" href="#cycapture.libtins._tins.DHCP.subnet_mask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Subnet mask option (read-write, <a class="reference internal" href="addresses.html#cycapture.libtins.IPv4Address" title="cycapture.libtins.IPv4Address"><code class="xref py py-class docutils literal"><span class="pre">IPv4Address</span></code></a>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.DHCP.type">
+<code class="descclassname">DHCP.</code><code class="descname">type</code><a class="headerlink" href="#cycapture.libtins._tins.DHCP.type" title="Permalink to this definition">¶</a></dt>
+<dd><p>DHCP type option (read-write, <a class="reference internal" href="#cycapture.libtins._tins.DHCP.Flags" title="cycapture.libtins._tins.DHCP.Flags"><code class="xref py py-class docutils literal"><span class="pre">Flags</span></code></a>)</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="bootp">
+<h3><a class="toc-backref" href="#contents">BootP</a><a class="headerlink" href="#bootp" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="cycapture.libtins._tins.BootP">
+<em class="property">class </em><code class="descname">BootP</code><a class="headerlink" href="#cycapture.libtins._tins.BootP" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="abstract_pdu.html#cycapture.libtins._tins.PDU" title="cycapture.libtins._tins.PDU"><code class="xref py py-class docutils literal"><span class="pre">cycapture.libtins._tins.PDU</span></code></a></p>
+<p>BootP packet</p>
+<dl class="class">
+<dt id="cycapture.libtins._tins.BootP.OpCodes">
+<em class="property">class </em><code class="descname">OpCodes</code><a class="headerlink" href="#cycapture.libtins._tins.BootP.OpCodes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">enum.IntEnum</span></code></p>
+<p>The different opcodes BootP messages</p>
+<p>Attributes: <code class="docutils literal"><span class="pre">BOOTREQUEST</span></code>, <code class="docutils literal"><span class="pre">BOOTREPLY</span></code></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.BootP.chaddr">
+<code class="descclassname">BootP.</code><code class="descname">chaddr</code><a class="headerlink" href="#cycapture.libtins._tins.BootP.chaddr" title="Permalink to this definition">¶</a></dt>
+<dd><p>chaddr field (read-write, <cite>bytes</cite> like <code class="docutils literal"><span class="pre">b&quot;00:01:02:03:04:05:06:07:08:09:10:11:12:13:14:ff&quot;</span></code>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.BootP.ciaddr">
+<code class="descclassname">BootP.</code><code class="descname">ciaddr</code><a class="headerlink" href="#cycapture.libtins._tins.BootP.ciaddr" title="Permalink to this definition">¶</a></dt>
+<dd><p>ciaddr field (read-write, <a class="reference internal" href="addresses.html#cycapture.libtins.IPv4Address" title="cycapture.libtins.IPv4Address"><code class="xref py py-class docutils literal"><span class="pre">IPv4Address</span></code></a>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.BootP.file">
+<code class="descclassname">BootP.</code><code class="descname">file</code><a class="headerlink" href="#cycapture.libtins._tins.BootP.file" title="Permalink to this definition">¶</a></dt>
+<dd><p>file field (read-write, <cite>bytes</cite> with length &lt;= 128)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.BootP.giaddr">
+<code class="descclassname">BootP.</code><code class="descname">giaddr</code><a class="headerlink" href="#cycapture.libtins._tins.BootP.giaddr" title="Permalink to this definition">¶</a></dt>
+<dd><p>giaddr field (read-write, <a class="reference internal" href="addresses.html#cycapture.libtins.IPv4Address" title="cycapture.libtins.IPv4Address"><code class="xref py py-class docutils literal"><span class="pre">IPv4Address</span></code></a>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.BootP.hlen">
+<code class="descclassname">BootP.</code><code class="descname">hlen</code><a class="headerlink" href="#cycapture.libtins._tins.BootP.hlen" title="Permalink to this definition">¶</a></dt>
+<dd><p>hlen field (read-write, <cite>uint8_t</cite>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.BootP.hops">
+<code class="descclassname">BootP.</code><code class="descname">hops</code><a class="headerlink" href="#cycapture.libtins._tins.BootP.hops" title="Permalink to this definition">¶</a></dt>
+<dd><p>hops field (read-write, <cite>uint8_t</cite>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.BootP.htype">
+<code class="descclassname">BootP.</code><code class="descname">htype</code><a class="headerlink" href="#cycapture.libtins._tins.BootP.htype" title="Permalink to this definition">¶</a></dt>
+<dd><p>htype field (read-write, <cite>uint8_t</cite>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.BootP.opcode">
+<code class="descclassname">BootP.</code><code class="descname">opcode</code><a class="headerlink" href="#cycapture.libtins._tins.BootP.opcode" title="Permalink to this definition">¶</a></dt>
+<dd><p>OpCode field (read-write, <cite>uint8_t</cite>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.BootP.padding">
+<code class="descclassname">BootP.</code><code class="descname">padding</code><a class="headerlink" href="#cycapture.libtins._tins.BootP.padding" title="Permalink to this definition">¶</a></dt>
+<dd><p>padding field (read-write, <cite>uint16_t</cite>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.BootP.secs">
+<code class="descclassname">BootP.</code><code class="descname">secs</code><a class="headerlink" href="#cycapture.libtins._tins.BootP.secs" title="Permalink to this definition">¶</a></dt>
+<dd><p>secs field (read-write, <cite>uint16_t</cite>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.BootP.siaddr">
+<code class="descclassname">BootP.</code><code class="descname">siaddr</code><a class="headerlink" href="#cycapture.libtins._tins.BootP.siaddr" title="Permalink to this definition">¶</a></dt>
+<dd><p>siaddr field (read-write, <a class="reference internal" href="addresses.html#cycapture.libtins.IPv4Address" title="cycapture.libtins.IPv4Address"><code class="xref py py-class docutils literal"><span class="pre">IPv4Address</span></code></a>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.BootP.sname">
+<code class="descclassname">BootP.</code><code class="descname">sname</code><a class="headerlink" href="#cycapture.libtins._tins.BootP.sname" title="Permalink to this definition">¶</a></dt>
+<dd><p>sname field (read-write, <cite>bytes</cite> with length &lt;= 64)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.BootP.vend">
+<code class="descclassname">BootP.</code><code class="descname">vend</code><a class="headerlink" href="#cycapture.libtins._tins.BootP.vend" title="Permalink to this definition">¶</a></dt>
+<dd><p>vend field (read-write, <cite>bytes</cite>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.BootP.xid">
+<code class="descclassname">BootP.</code><code class="descname">xid</code><a class="headerlink" href="#cycapture.libtins._tins.BootP.xid" title="Permalink to this definition">¶</a></dt>
+<dd><p>xid field (read-write, <cite>uint32_t</cite>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cycapture.libtins._tins.BootP.yiaddr">
+<code class="descclassname">BootP.</code><code class="descname">yiaddr</code><a class="headerlink" href="#cycapture.libtins._tins.BootP.yiaddr" title="Permalink to this definition">¶</a></dt>
+<dd><p>yiaddr field (read-write, <a class="reference internal" href="addresses.html#cycapture.libtins.IPv4Address" title="cycapture.libtins.IPv4Address"><code class="xref py py-class docutils literal"><span class="pre">IPv4Address</span></code></a>)</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><h2><a href="../index.html">Cycapture</a></h2>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#prerequisites">Prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#install-from-sources">Install from sources</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#install-with-pip">Install with pip</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../authors.html">Credits</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../authors.html#cycapture">cycapture</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../authors.html#libtins">libtins</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../authors.html#contributors">Contributors</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../history.html">History</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API documentation</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="libpcap.html">libpcap bindings</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="libpcap.html#sniffers">Sniffers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="libpcap.html#packet-writers">Packet writers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="libpcap.html#offline-filter">Offline filter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="libpcap.html#utils">Utils</a></li>
+</ul>
+</li>
+<li class="toctree-l2 current"><a class="reference internal" href="libtins.html">libtins bindings</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="addresses.html">Addresses, ranges and interfaces</a></li>
+<li class="toctree-l3"><a class="reference internal" href="exceptions.html">Exceptions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="abstract_pdu.html">Abstract PDU</a></li>
+<li class="toctree-l3"><a class="reference internal" href="concrete_pdus.html">Concrete PDUs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="radiotap.html">RadioTap and stuff</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dot11.html">IEEE 802.11 and stuff</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="">Derived PDUs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tcpstream.html">TCP streams</a></li>
+<li class="toctree-l3"><a class="reference internal" href="packetsender.html">Sending packets</a></li>
+<li class="toctree-l3"><a class="reference internal" href="utils.html">Various utils</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+  <div class="footer">
+    &copy; Copyright 2015, Stephane Martin.
+    Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+  </div>
+  
+  </body>
+</html>
