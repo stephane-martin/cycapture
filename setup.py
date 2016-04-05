@@ -111,7 +111,7 @@ class LibpcapDep(Dependency):
         self._library_dirs = [join(self._install_dir, 'lib')]
 
         if IS_LINUX:
-            self._extra_link_args = ["-Wl,-rpath,'$ORIGIN'"]
+            self._extra_link_args = ["-Wl,-rpath,$ORIGIN/"]
 
             shutil.copy(
                 join(self._install_dir, 'lib', 'libpcap.so.1'),
@@ -193,21 +193,36 @@ class LibtinsDep(Dependency):
                 join(self.src_dir, 'build', 'lib', 'libtins.3.2.dylib'),
                 join(self.thisdir, 'cycapture', 'libtins')
             )
+
             os.symlink(
                 join(self.thisdir, 'cycapture', 'libtins', 'libtins.3.2.dylib'),
                 join(self.thisdir, 'cycapture', 'libtins', 'libtins.dylib')
             )
+
+            shutil.copy(
+                join(self.thisdir, 'cycapture', 'libpcap', 'libpcap.dylib'),
+                join(self.thisdir, 'cycapture', 'libtins')
+            )
+
             self._extra_link_args = ["-Wl,-rpath", "-Wl,@loader_path/"]
+
         if IS_LINUX:
             shutil.copy(
                 join(self.src_dir, 'build', 'lib', 'libtins.so.3.2'),
                 join(self.thisdir, 'cycapture', 'libtins')
             )
+
             os.symlink(
                 join(self.thisdir, 'cycapture', 'libtins', 'libtins.so.3.2'),
                 join(self.thisdir, 'cycapture', 'libtins', 'libtins.so')
             )
-            self._extra_link_args = ["-Wl,-rpath,'$ORIGIN'"]
+
+            shutil.copy(
+                join(self.thisdir, 'cycapture', 'libpcap', 'libpcap.so.1'),
+                join(self.thisdir, 'cycapture', 'libtins')
+            )
+
+            self._extra_link_args = ["-Wl,-rpath,$ORIGIN/"]
 
 
 
