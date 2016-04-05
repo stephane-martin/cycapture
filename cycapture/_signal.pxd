@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+DEF ON_WINDOWS = UNAME_SYSNAME == "Windows"
+
 cdef extern from "signal.h" nogil:
     ctypedef struct siginfo_t:
         int si_signo

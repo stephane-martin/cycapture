@@ -451,7 +451,7 @@ static const char *__pyx_f[] = {
 /*--- Type declarations ---*/
 struct __pyx_obj_9cycapture_7_signal_Sigaction;
 
-/* "cycapture/_signal.pxd":12
+/* "cycapture/_signal.pxd":14
  *         int si_status
  * 
  * ctypedef void (*sighandler_t)(int s) nogil                                      # normal signal handler             # <<<<<<<<<<<<<<
@@ -460,7 +460,7 @@ struct __pyx_obj_9cycapture_7_signal_Sigaction;
  */
 typedef void (*__pyx_t_9cycapture_7_signal_sighandler_t)(int);
 
-/* "cycapture/_signal.pxd":13
+/* "cycapture/_signal.pxd":15
  * 
  * ctypedef void (*sighandler_t)(int s) nogil                                      # normal signal handler
  * ctypedef void (*sigaction_handler_t)(int s, siginfo_t* info, void* unused)      # sigaction signal handler             # <<<<<<<<<<<<<<
@@ -469,7 +469,7 @@ typedef void (*__pyx_t_9cycapture_7_signal_sighandler_t)(int);
  */
 typedef void (*__pyx_t_9cycapture_7_signal_sigaction_handler_t)(int, siginfo_t *, void *);
 
-/* "cycapture/_signal.pxd":98
+/* "cycapture/_signal.pxd":100
  * cdef int set_sigaction(int signum, void (*sa_sigaction)(int, siginfo_t*, void*)) nogil
  * 
  * cdef class Sigaction(object):             # <<<<<<<<<<<<<<
