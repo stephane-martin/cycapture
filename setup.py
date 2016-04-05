@@ -336,6 +336,7 @@ def run_setup():
         author_email='stephane.martin_github@vesperal.eu',
         url='https://github.com/stephane-martin/cycapture',
         packages=find_packages(exclude=['tests']),
+        package_data={'': ['libtins.*', 'libpcap.*']},
         setup_requires=[
             'setuptools_git', 'setuptools', 'twine', 'wheel', 'nose'
         ],
