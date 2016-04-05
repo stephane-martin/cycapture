@@ -72,9 +72,21 @@ cdef class BlockingSniffer(BaseSniffer):
         ask_stop()
         Ask the current running sniffer to stop. Can be called from any thread.
         """
-        if self.parent_thread is not None:
-            if self.parent_thread.kill(SIGUSR1) != 0:
-                raise RuntimeError("BlockingSniffer.stop (sending SIGUSR1) failed")
+        cdef thread_pcap_node* n
+        IF ON_WINDOWS:
+            # no signal on windows...
+            if self.parent_thread is not None:
+                n = registry_pcap_get_node(hash(self.parent_thread))
+                if n is not NULL:
+                    n.asked_to_stop = 1
+            if self._handle is not NULL:
+                pcap_breakloop(self._handle)
+
+        ELSE:
+            # send SIGUSR1 to the appropriate thread
+            if self.parent_thread is not None:
+                if self.parent_thread.kill(SIGUSR1) != 0:
+                    raise RuntimeError("BlockingSniffer.stop (sending SIGUSR1) failed")
 
     def sniff_and_export(self, fname_or_file_object, int max_p=-1):
         """
@@ -152,7 +164,7 @@ cdef class BlockingSniffer(BaseSniffer):
         """
         return SniffingIterator(self, f, max_p, cache_size)
 
-    cpdef sniff_callback(self, f, int set_signal_mask=1, int max_p=-1):
+    cpdef sniff_callback(self, f, int max_p=-1):
         """
         sniff_callback(f, int set_signal_mask=1, int max_p=-1)
         Start to sniff packets and call a given callback for each packet.
@@ -161,8 +173,6 @@ cdef class BlockingSniffer(BaseSniffer):
         ----------
         f: function
             callback function
-        set_signal_mask: bool
-            should a signal mask be applied on the listening thread to block unwanted signals
         max_p: int
             minimum number of packets to sniff. -1 for unlimited.
 
@@ -191,12 +201,11 @@ cdef class BlockingSniffer(BaseSniffer):
 
         cdef char* error_msg = NULL
         cdef char* error_msg_source = NULL
-        cdef thread_pcap_node* node
         # keep a reference to the callback so that the python_callback_ptr stays valid
         self.python_callback = f
         self.python_callback_ptr = <unsigned char *> (<void*> self.python_callback)
 
-        if set_signal_mask:
+        IF not ON_WINDOWS:
             block_sig_except(SIGUSR1)
 
         self.total = 0
@@ -221,6 +230,7 @@ cdef class BlockingSniffer(BaseSniffer):
                             break
                         else:
                             self.total += counted
+                            self.update_stats()
 
                         if 0 < self.max_p <= self.total:
                             registry_pcap_set_stopping()
@@ -234,9 +244,9 @@ cdef class BlockingSniffer(BaseSniffer):
             free(error_msg)
             raise PcapExceptionFactory(counted, msg, default=SniffingError)
 
-    cpdef sniff_and_store(self, container, f=None, int set_signal_mask=1, int max_p=-1):
+    cpdef sniff_and_store(self, container, f=None, int max_p=-1):
         """
-        sniff_and_store(container, f=None, int set_signal_mask=1, int max_p=-1)
+        sniff_and_store(container, f=None, int max_p=-1)
         Start sniffing and store the packets in a container object.
 
         Parameters
@@ -245,8 +255,6 @@ cdef class BlockingSniffer(BaseSniffer):
             a python container, such as a deque, that supports method ``append`` or ``put_nowait``
         f: function or None
             if provided, the function `f` will be applied to each capture packet before it is stored
-        set_signal_mask: bool
-            should a signal mask be applied on the listening thread to block unwanted signals
         max_p: int
             minimum number of packets to capture. -1 for unlimited.
 
@@ -290,8 +298,7 @@ cdef class BlockingSniffer(BaseSniffer):
         else:
             store = BlockingSniffer.store_packet_node_in_seq_with_f
 
-
-        if set_signal_mask:
+        IF not ON_WINDOWS:
             block_sig_except(SIGUSR1)
 
         self.total = 0
@@ -328,6 +335,7 @@ cdef class BlockingSniffer(BaseSniffer):
                         break
                     else:
                         self.total += counted
+                        self.update_stats()
 
                     if 0 < self.max_p <= self.total:
                         registry_pcap_set_stopping()
@@ -352,27 +360,24 @@ cdef class BlockingSniffer(BaseSniffer):
         self.parent_thread = PThread()
         self.active_sniffers[pthread_hash()] = self
 
-        # set signal handler
-        cdef Sigaction new_sigaction = Sigaction()
-        new_sigaction.set_sigaction_handler(sigaction_handler)
-        self.old_sigaction = new_sigaction.set_for_signum(SIGUSR1)
-        set_sig_interrupt(SIGUSR1)
+        IF not ON_WINDOWS:
+            # set signal handler
+            cdef Sigaction new_sigaction = Sigaction()
+            new_sigaction.set_sigaction_handler(sigaction_handler)
+            self.old_sigaction = new_sigaction.set_for_signum(SIGUSR1)
+            set_sig_interrupt(SIGUSR1)
 
     cdef unregister(self):
-        # unset signal handler
-        if self.old_sigaction is not None:
-            self.old_sigaction.set_for_signum(SIGUSR1)
-            self.old_sigaction = None
-            set_sig_interrupt(SIGUSR1)
+        IF not ON_WINDOWS:
+            # unset signal handler
+            if self.old_sigaction is not None:
+                self.old_sigaction.set_for_signum(SIGUSR1)
+                self.old_sigaction = None
+                set_sig_interrupt(SIGUSR1)
 
         registry_pcap_unset()        # can raise exc
         cdef uint32_t ident = pthread_hash()
         if ident in self.active_sniffers:
             del self.active_sniffers[ident]
         self.parent_thread = None
-
-
-
-
-
 

@@ -5,13 +5,14 @@ from .._pthreadwrap cimport create_error_check_lock, pthread_mutex_lock, pthread
 # noinspection PyUnresolvedReferences
 from .._pthreadwrap cimport PThread
 
-# noinspection PyUnresolvedReferences
-from .._signal cimport block_sig_except, set_sig_interrupt, unset_sig_interrupt, set_sigaction
-from .._signal cimport SIGUSR1
-from .._signal cimport siginfo_t
-from .._signal cimport Sigaction
+IF not ON_WINDOWS:
+    # noinspection PyUnresolvedReferences
+    from .._signal cimport block_sig_except, set_sig_interrupt, unset_sig_interrupt, set_sigaction
+    from .._signal cimport SIGUSR1
+    from .._signal cimport siginfo_t
+    from .._signal cimport Sigaction
 
-cdef void sigaction_handler(int signum, siginfo_t* info, void* unused) nogil
+    cdef void sigaction_handler(int signum, siginfo_t* info, void* unused) nogil
 
 cdef class BlockingSniffer(BaseSniffer):
     cdef unsigned char* python_callback_ptr
@@ -19,10 +20,9 @@ cdef class BlockingSniffer(BaseSniffer):
     cdef PThread parent_thread
     cdef Sigaction old_sigaction
 
-    cpdef sniff_and_store(self, container, f=?, int set_signal_mask=?, int max_p=?)
-    cpdef sniff_callback(self, f, int set_signal_mask=?, int max_p=?)
+    cpdef sniff_and_store(self, container, f=?, int max_p=?)
+    cpdef sniff_callback(self, f, int max_p=?)
     cpdef ask_stop(self)
-
     cdef register(self)
     cdef unregister(self)
 
