@@ -21,7 +21,7 @@ here = abspath(dirname(__file__))
 
 
 IS_MACOSX = platform.system().lower().strip() == "darwin"
-# todo: fix windows
+IS_LINUX = platform.system().lower().strip() == "linux"
 IS_WINDOWS = platform.system().lower().strip() == "XXXX"
 disutils_sysconfig = distutils.sysconfig.get_config_vars()
 
@@ -109,21 +109,30 @@ class LibpcapDep(Dependency):
             subprocess.call(shlex.split("make install"))
         self._include_dirs = [join(self._install_dir, 'include')]
         self._library_dirs = [join(self._install_dir, 'lib')]
-        try:
-            shutil.copy(
-                join(self._install_dir, 'lib', 'libpcap.dylib'),
-                join(self.thisdir, 'cycapture', 'libpcap')
-            )
-        except:
+
+        if IS_LINUX:
+            self._extra_link_args = ["-Wl,-rpath,'$ORIGIN'"]
+
             shutil.copy(
                 join(self._install_dir, 'lib', 'libpcap.so.1'),
                 join(self.thisdir, 'cycapture', 'libpcap')
             )
+
             os.symlink(
                 join(self.thisdir, 'cycapture', 'libpcap', 'libpcap.so.1'),
                 join(self.thisdir, 'cycapture', 'libpcap', 'libpcap.so')
             )
+
+        if IS_MACOSX:
+            self._extra_link_args = ["-Wl,-rpath", "-Wl,@loader_path/"]
+
+            shutil.copy(
+                join(self._install_dir, 'lib', 'libpcap.dylib'),
+                join(self.thisdir, 'cycapture', 'libpcap')
+            )
+
         os.chdir(old_dir)
+
 
 
 class LibtinsDep(Dependency):
@@ -179,7 +188,7 @@ class LibtinsDep(Dependency):
             except OSError:
                 pass
 
-        try:
+        if IS_MACOSX:
             shutil.copy(
                 join(self.src_dir, 'build', 'lib', 'libtins.3.2.dylib'),
                 join(self.thisdir, 'cycapture', 'libtins')
@@ -188,25 +197,19 @@ class LibtinsDep(Dependency):
                 join(self.thisdir, 'cycapture', 'libtins', 'libtins.3.2.dylib'),
                 join(self.thisdir, 'cycapture', 'libtins', 'libtins.dylib')
             )
-        except:
-            try:
-                shutil.copy(
-                    join(self.src_dir, 'build', 'lib', 'libtins.3.2.so'),
-                    join(self.thisdir, 'cycapture', 'libtins')
-                )
-                os.symlink(
-                    join(self.thisdir, 'cycapture', 'libtins', 'libtins.3.2.so'),
-                    join(self.thisdir, 'cycapture', 'libtins', 'libtins.so')
-                )
-            except:
-                shutil.copy(
-                    join(self.src_dir, 'build', 'lib', 'libtins.so.3.2'),
-                    join(self.thisdir, 'cycapture', 'libtins')
-                )
-                os.symlink(
-                    join(self.thisdir, 'cycapture', 'libtins', 'libtins.so.3.2'),
-                    join(self.thisdir, 'cycapture', 'libtins', 'libtins.so')
-                )
+            self._extra_link_args = ["-Wl,-rpath", "-Wl,@loader_path/"]
+        if IS_LINUX:
+            shutil.copy(
+                join(self.src_dir, 'build', 'lib', 'libtins.so.3.2'),
+                join(self.thisdir, 'cycapture', 'libtins')
+            )
+            os.symlink(
+                join(self.thisdir, 'cycapture', 'libtins', 'libtins.so.3.2'),
+                join(self.thisdir, 'cycapture', 'libtins', 'libtins.so')
+            )
+            self._extra_link_args = ["-Wl,-rpath,'$ORIGIN'"]
+
+
 
         self._include_dirs = [
             join(self.src_dir, 'include'),
@@ -216,9 +219,7 @@ class LibtinsDep(Dependency):
             join(self.thisdir, 'cycapture', 'libtins'),
             join(self.thisdir, 'cycapture', 'libpcap')
         ]
-        if IS_MACOSX:
-            # all python extensions that are linked against libtins will have a proper rpath
-            self._extra_link_args = ["-Wl,-rpath", "-Wl,@loader_path/"]
+
 
 if IS_MACOSX:
     python_config_vars = sysconfig.get_config_vars()
