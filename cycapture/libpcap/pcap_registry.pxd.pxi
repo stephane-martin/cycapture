@@ -10,7 +10,7 @@ ctypedef struct thread_pcap_node:
     int asked_to_stop
     pcap_t* handle
 
-cdef thread_pcap_node* registry_pcap_get_node() nogil
+cdef thread_pcap_node* registry_pcap_get_node(uint32_t h=?) nogil
 cdef int registry_pcap_has() nogil
 cdef registry_pcap_set(pcap_t* handle)
 cdef registry_pcap_unset()

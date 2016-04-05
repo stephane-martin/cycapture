@@ -4,7 +4,6 @@ lock = create_error_check_lock()
 cdef list_head registry_pcap
 INIT_LIST_HEAD(&registry_pcap)
 
-
 cdef void registry_pcap_set_stopping() nogil:
     cdef thread_pcap_node* current = registry_pcap_get_node()
     if current is not NULL:
@@ -20,13 +19,16 @@ cdef int registry_pcap_has_stopping() nogil:
         return 1
     return current.asked_to_stop
 
-cdef thread_pcap_node* registry_pcap_get_node() nogil:
+cdef thread_pcap_node* registry_pcap_get_node(uint32_t h=0) nogil:
     """
     Returns the pcap_handle for the current thread.
     """
     global registry_pcap
-
-    cdef uint32_t thread = pthread_hash()
+    cdef uint32_t thread
+    if h == 0:
+        thread = pthread_hash()
+    else:
+        thread = h
     cdef list_head* cursor = registry_pcap.next
     cdef thread_pcap_node* node
     while cursor != &registry_pcap:
