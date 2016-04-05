@@ -116,8 +116,12 @@ class LibpcapDep(Dependency):
             )
         except:
             shutil.copy(
-                join(self._install_dir, 'lib', 'libpcap.so'),
+                join(self._install_dir, 'lib', 'libpcap.so.1'),
                 join(self.thisdir, 'cycapture', 'libpcap')
+            )
+            os.symlink(
+                join(self.thisdir, 'cycapture', 'libpcap', 'libpcap.so.1'),
+                join(self.thisdir, 'cycapture', 'libpcap', 'libpcap.so')
             )
         os.chdir(old_dir)
 
