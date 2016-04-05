@@ -18,7 +18,6 @@ cdef extern from "pcap/bpf.h":
         DLT_IEEE802_11_RADIO_AVS, DLT_IPV4, DLT_IPV6
 
 
-
 cdef extern from "pcap/pcap.h":
     ctypedef struct pcap_t:
         pass
@@ -31,6 +30,16 @@ cdef extern from "pcap/pcap.h":
         long tv_sec
         int tv_usec
 
+    struct pcap_pkthdr:
+        timeval ts
+        unsigned int caplen
+        unsigned int len
+
+    struct pcap_stat:
+        uint32_t ps_recv
+        uint32_t ps_drop
+        uint32_t ps_ifdrop
+
     # struct pcap_addr:
     #     pcap_addr* next
     #     sockaddr* addr
@@ -38,11 +47,6 @@ cdef extern from "pcap/pcap.h":
     #     sockaddr* broadaddr
     #     sockaddr* dstaddr
     # ctypedef pcap_addr pcap_addr_t
-
-    struct pcap_pkthdr:
-        timeval ts
-        unsigned int caplen
-        unsigned int len
 
     # struct pcap_if:
     #     pcap_if* next
@@ -73,12 +77,10 @@ cdef extern from "pcap/pcap.h":
         PCAP_TSTAMP_PRECISION_MICRO, PCAP_TSTAMP_PRECISION_NANO, PCAP_TSTAMP_HOST, PCAP_TSTAMP_HOST_LOWPREC
         PCAP_TSTAMP_HOST_HIPREC, PCAP_TSTAMP_ADAPTER, PCAP_TSTAMP_ADAPTER_UNSYNCED
 
-
 ctypedef pcap_pkthdr pcap_pkthdr_t
 ctypedef bpf_program bpf_program_t
 # noinspection PyUnresolvedReferences
 ctypedef void (*pcap_handler) (unsigned char*, const pcap_pkthdr_t*, const unsigned char*)
-
 
 cdef extern from "pcap/pcap.h" nogil:
     pcap_t *pcap_create(const char*, char*)
@@ -117,7 +119,8 @@ cdef extern from "pcap/pcap.h" nogil:
     const char* pcap_datalink_val_to_description(int)
     int pcap_major_version(pcap_t*)
     int pcap_minor_version(pcap_t*)
-    int pcap_get_selectable_fd(pcap_t*)
+    IF not ON_WINDOWS:
+        int pcap_get_selectable_fd(pcap_t*)
     const char* pcap_lib_version()
     char* pcap_lookupdev(char *errbuf)
     # int pcap_findalldevs(pcap_if_t** alldevsp, char* errbuf)
@@ -129,6 +132,8 @@ cdef extern from "pcap/pcap.h" nogil:
     void pcap_freecode(bpf_program*)
     int pcap_setfilter(pcap_t *p, bpf_program *fp)
     int pcap_offline_filter(const bpf_program *fp, const pcap_pkthdr *h, const unsigned char *pkt)
+
+    int	pcap_stats(pcap_t*, pcap_stat*)
 
     pcap_t* pcap_open_dead(int linktype, int snaplen)
     pcap_dumper_t* pcap_dump_open(pcap_t* p, const char* fname)
