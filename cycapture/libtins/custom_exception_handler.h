@@ -2,7 +2,7 @@
 #define libtins_custom_exception_handler
 
 namespace Tins {
-    void custom_exception_handler();
+    void my_custom_exception_handler();
 }
 
 #endif

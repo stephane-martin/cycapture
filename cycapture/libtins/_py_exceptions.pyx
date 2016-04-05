@@ -101,3 +101,8 @@ cdef public PyObject* py_protocol_disabled = <PyObject*>ProtocolDisabled
 
 class MemoryViewFormat(LibtinsException, ValueError):
     pass
+
+
+cdef void custom_exception_handler():
+    my_custom_exception_handler()
+

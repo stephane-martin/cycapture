@@ -21,6 +21,8 @@ cdef public PyObject* py_bad_tins_cast
 cdef public PyObject* py_protocol_disabled
 
 cdef extern from "custom_exception_handler.h" namespace "Tins":
-    cdef void custom_exception_handler()
+    cdef void my_custom_exception_handler()
+
+cdef void custom_exception_handler()
 
 # cdef object MemoryViewFormat

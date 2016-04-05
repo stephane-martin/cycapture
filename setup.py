@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 import distutils.core
@@ -9,13 +8,12 @@ import sysconfig
 import sys
 import shutil
 import subprocess
-import urllib
-import tarfile
-from os.path import dirname, abspath, join, commonprefix, exists
+from os.path import dirname, abspath, join, exists
 import distutils.sysconfig
 import platform
 
-def info(s):
+
+def _info(s):
     sys.stderr.write(s + "\n")
 
 on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
@@ -23,7 +21,10 @@ here = abspath(dirname(__file__))
 
 
 IS_MACOSX = platform.system().lower().strip() == "darwin"
+# todo: fix windows
+IS_WINDOWS = platform.system().lower().strip() == "XXXX"
 disutils_sysconfig = distutils.sysconfig.get_config_vars()
+
 if IS_MACOSX:
     # don't build useless i386 architecture
     disutils_sysconfig['LDSHARED'] = disutils_sysconfig['LDSHARED'].replace('-arch i386', '')
@@ -34,10 +35,10 @@ if IS_MACOSX:
 
 class Dependency(object):
     def __init__(self):
-        self.name = ""
+        self.name = None
         self.static = True
         self.thisdir = abspath(dirname(__file__))
-        self.external_dir = join(self.thisdir, 'external')
+        self.external_dir = join(self.thisdir, 'includes')
         if not exists(self.external_dir):
             os.mkdir(self.external_dir)
         self._include_dirs = None
@@ -46,11 +47,8 @@ class Dependency(object):
         self._install_dir = None
         self._extra_link_args = None
 
-    def download(self):
-        pass
-
     def build(self):
-        pass
+        raise NotImplementedError()
 
     def extra_compile_args(self):
         return []
@@ -87,25 +85,12 @@ class Dependency(object):
         ext.extra_link_args.extend(self.extra_link_args())
 
 
-
-
 class LibpcapDep(Dependency):
     def __init__(self):
         super(LibpcapDep, self).__init__()
-        self.name = "pcap"
         self.src_dir = join(self.external_dir, "libpcap")
-        self.name = ''
-        self.download()
+        self.name = 'pcap'
         self.build()
-
-
-    def download(self):
-        if not exists(self.src_dir):
-            info("Fetching libpcap from github in %s\n" % self.external_dir)
-            old_dir = os.getcwd()
-            os.chdir(self.external_dir)
-            subprocess.call(shlex.split("git clone -b libpcap-1.7 --single-branch https://github.com/the-tcpdump-group/libpcap.git"))
-            os.chdir(old_dir)
 
     def build(self):
         old_dir = os.getcwd()
@@ -113,60 +98,28 @@ class LibpcapDep(Dependency):
         os.chdir(self.src_dir)
         if exists('Makefile'):
             subprocess.call(shlex.split("make clean"))
-        if self.static:
-            if not exists(join(self._install_dir, 'lib', 'libpcap.a')):
-                info("Building libpcap as a static library\n")
-                subprocess.call(shlex.split("./configure --enable-shared=no --prefix='%s'" % self._install_dir))
-                subprocess.call("make")
-                subprocess.call(shlex.split("make install"))
-            else:
-                info("Skipping libpcap build (already have libpcap.a)")
-            self._include_dirs = [join(self._install_dir, 'include')]
-            self._extra_objects = [join(self._install_dir, 'lib', 'libpcap.a')]
-        else:
-            if not exists(
-                    join(self._install_dir, 'lib', 'libpcap.dylib')
-            ) and not exists(
-                join(self._install_dir, 'lib', 'libpcap.so')
-            ):
-                info("Building libpcap as a shared library\n")
-                subprocess.call(shlex.split("./configure --prefix='%s'" % self._install_dir))
-                subprocess.call("make")
-                subprocess.call(shlex.split("make install"))
-            self._include_dirs = [join(self._install_dir, 'include')]
-            self._library_dirs = [join(self._install_dir, 'lib')]
-            try:
-                shutil.copy(
-                    join(self._install_dir, 'lib', 'libpcap.dylib'),
-                    join(self.thisdir, 'cycapture', 'libpcap')
-                )
-            except:
-                shutil.copy(
-                    join(self._install_dir, 'lib', 'libpcap.so'),
-                    join(self.thisdir, 'cycapture', 'libpcap')
-                )
+        if not exists(
+            join(self._install_dir, 'lib', 'libpcap.dylib')
+        ) and not exists(
+            join(self._install_dir, 'lib', 'libpcap.so')
+        ):
+            _info("Building libpcap as a shared library\n")
+            subprocess.call(shlex.split("./configure --prefix='%s'" % self._install_dir))
+            subprocess.call("make")
+            subprocess.call(shlex.split("make install"))
+        self._include_dirs = [join(self._install_dir, 'include')]
+        self._library_dirs = [join(self._install_dir, 'lib')]
+        try:
+            shutil.copy(
+                join(self._install_dir, 'lib', 'libpcap.dylib'),
+                join(self.thisdir, 'cycapture', 'libpcap')
+            )
+        except:
+            shutil.copy(
+                join(self._install_dir, 'lib', 'libpcap.so'),
+                join(self.thisdir, 'cycapture', 'libpcap')
+            )
         os.chdir(old_dir)
-
-    @classmethod
-    def find_shared_libpcap(cls, prefix=None):
-        dirs = ['/usr', '/usr/local', '/opt', sys.prefix]
-        if prefix is not None:
-            dirs.insert(0, prefix)
-
-        def _find_include():
-            for d in dirs:
-                for sd in ('include/pcap', 'include', ''):
-                    if exists(join(d, sd, 'pcap.h')):
-                        return [join(d, sd)]
-
-        def _find_library():
-            for d in dirs:
-                for sd in ('lib', 'lib64', 'lib/x86_64-linux-gnu'):
-                    for lib in (('pcap', 'libpcap.a'), ('pcap', 'libpcap.so'), ('pcap', 'libpcap.dylib'), ):
-                        if exists(join(d, sd, lib[1])):
-                            return [join(d, sd)]
-
-        return _find_include(), _find_library()
 
 
 class LibtinsDep(Dependency):
@@ -175,24 +128,7 @@ class LibtinsDep(Dependency):
         self.pcap_dep = pcap_dep
         self.name = "tins"
         self.src_dir = join(self.external_dir, "libtins")
-        self.download()
         self.build()
-
-    def download(self):
-        if not exists(self.src_dir):
-            info("Fetching libtins from github in %s\n" % self.external_dir)
-            old_dir = os.getcwd()
-            os.chdir(self.external_dir)
-
-            urllib.urlretrieve("https://github.com/mfontanini/libtins/archive/v3.2.tar.gz", "v3.2.tar.gz")
-            t = tarfile.open("v3.2.tar.gz", mode='r:gz')
-            try:
-                t.extractall()
-            finally:
-                t.close()
-            os.remove("v3.2.tar.gz")
-            shutil.move("libtins-3.2", "libtins")
-            os.chdir(old_dir)
 
     def build(self):
         old_dir = os.getcwd()
@@ -210,10 +146,10 @@ class LibtinsDep(Dependency):
             if bool(os.environ["SDKROOT"]):
                 # path to the macosx SDK that was used to compile python
                 cmake_options['CMAKE_OSX_SYSROOT'] = "'{}'".format(os.environ["SDKROOT"])
-                info('CMAKE_OSX_SYSROOT: {}'.format(os.environ["SDKROOT"]))
+                _info('CMAKE_OSX_SYSROOT: {}'.format(os.environ["SDKROOT"]))
             # libtins.dylib will have install dir name using rpath
             cmake_options['CMAKE_MACOSX_RPATH'] = "'true'"
-            info('CMAKE_MACOSX_RPATH: true')
+            _info('CMAKE_MACOSX_RPATH: true')
 
         cmake_options = ' '.join(['-D{}={}'.format(opt_name, opt_value) for opt_name, opt_value in cmake_options.items()])
 
@@ -227,7 +163,10 @@ class LibtinsDep(Dependency):
             join(self.thisdir, 'cycapture', 'libtins', 'libtins.3.2.dylib'),
             join(self.thisdir, 'cycapture', 'libtins', 'libtins.dylib'),
             join(self.thisdir, 'cycapture', 'libtins', 'libtins.3.2.dylib'),
-            join(self.thisdir, 'cycapture', 'libtins', 'libtins.dylib')
+            join(self.thisdir, 'cycapture', 'libtins', 'libtins.dylib'),
+            join(self.thisdir, 'cycapture', 'libtins', 'libtins.so'),
+            join(self.thisdir, 'cycapture', 'libtins', 'libtins.so.3.2'),
+            join(self.thisdir, 'cycapture', 'libtins', 'libtins.3.2.so')
         ]
 
         for fname in files_to_remove:
@@ -246,130 +185,151 @@ class LibtinsDep(Dependency):
                 join(self.thisdir, 'cycapture', 'libtins', 'libtins.dylib')
             )
         except:
-            shutil.copy(
-                join(self.src_dir, 'build', 'lib', 'libtins.3.2.so'),
-                join(self.thisdir, 'cycapture', 'libtins')
-            )
-            os.symlink(
-                join(self.thisdir, 'cycapture', 'libtins', 'libtins.3.2.so'),
-                join(self.thisdir, 'cycapture', 'libtins', 'libtins.so')
-            )
-        self._include_dirs = [join(self.src_dir, 'include')]
-        self._library_dirs = [join(self.thisdir, 'cycapture', 'libtins')]
+            try:
+                shutil.copy(
+                    join(self.src_dir, 'build', 'lib', 'libtins.3.2.so'),
+                    join(self.thisdir, 'cycapture', 'libtins')
+                )
+                os.symlink(
+                    join(self.thisdir, 'cycapture', 'libtins', 'libtins.3.2.so'),
+                    join(self.thisdir, 'cycapture', 'libtins', 'libtins.so')
+                )
+            except:
+                shutil.copy(
+                    join(self.src_dir, 'build', 'lib', 'libtins.so.3.2'),
+                    join(self.thisdir, 'cycapture', 'libtins')
+                )
+                os.symlink(
+                    join(self.thisdir, 'cycapture', 'libtins', 'libtins.so.3.2'),
+                    join(self.thisdir, 'cycapture', 'libtins', 'libtins.so')
+                )
+
+        self._include_dirs = [
+            join(self.src_dir, 'include'),
+            join(self.pcap_dep.install_dir(), 'include')
+        ]
+        self._library_dirs = [
+            join(self.thisdir, 'cycapture', 'libtins'),
+            join(self.thisdir, 'cycapture', 'libpcap')
+        ]
         if IS_MACOSX:
             # all python extensions that are linked against libtins will have a proper rpath
             self._extra_link_args = ["-Wl,-rpath", "-Wl,@loader_path/"]
 
+if IS_MACOSX:
+    python_config_vars = sysconfig.get_config_vars()
+    # use the same SDK as python executable
+    if not exists(python_config_vars['UNIVERSALSDK']):
+        _info("'{}' SDK does not exist. Aborting.".format(python_config_vars['UNIVERSALSDK']))
+        sys.exit(-1)
+    _info("Building for MacOSX SDK: {}".format(python_config_vars["MACOSX_DEPLOYMENT_TARGET"]))
+    os.environ["MACOSX_DEPLOYMENT_TARGET"] = python_config_vars["MACOSX_DEPLOYMENT_TARGET"]
+    os.environ["SDKROOT"] = python_config_vars["UNIVERSALSDK"]
 
-def list_subdir(subdirname):
-    subdirname = join(here, subdirname)
+with open('README.rst') as readme_file:
+    readme = readme_file.read()
 
-    l = [(root, [
-        join(root, f) for f in files if (not f.endswith("secrets.py")) and (
-            f.endswith('.conf') or
-            f.endswith('.config') or
-            f.endswith('_plugins') or
-            f.endswith('.sample') or
-            f.endswith('.sql') or
-            f.endswith('.patterns') or
-            f.endswith('.txt'))
-    ]) for root, dirs, files in os.walk(subdirname)]
-    prefix_len = len(commonprefix(list(d[0] for d in l)))
-    l = [(root[prefix_len + 1:], list_of_files) for root, list_of_files in l if list_of_files]
-    return l
+with open('HISTORY.rst') as history_file:
+    history = history_file.read().replace('.. :changelog:', '')
 
+requirements = ['enum34']
+remove_requirements_if_rtd = []
 
-if __name__ == "__main__":
-    if IS_MACOSX:
-        python_config_vars = sysconfig.get_config_vars()
-        # use the same SDK as python executable
-        if not exists(python_config_vars['UNIVERSALSDK']):
-            info("'{}' SDK does not exist. Aborting.".format(python_config_vars['UNIVERSALSDK']))
-            sys.exit(-1)
-        info("Building for MacOSX SDK: {}".format(python_config_vars["MACOSX_DEPLOYMENT_TARGET"]))
-        os.environ["MACOSX_DEPLOYMENT_TARGET"] = python_config_vars["MACOSX_DEPLOYMENT_TARGET"]
-        os.environ["SDKROOT"] = python_config_vars["UNIVERSALSDK"]
+if on_rtd:
+    for ext in remove_requirements_if_rtd:
+        requirements.remove(ext)
 
-    with open('README.rst') as readme_file:
-        readme = readme_file.read()
+test_requirements = ['pytest']
+extensions = []
 
-    with open('HISTORY.rst') as history_file:
-        history = history_file.read().replace('.. :changelog:', '')
+if not on_rtd:
+    # utility module to make python memoryviews from char* buffers
+    make_mview_extension = Extension(
+        name="cycapture._make_mview",
+        sources=["cycapture/_make_mview.c"]
+    )
+    extensions.append(make_mview_extension)
 
-    requirements = ['enum34']
-    remove_requirements_if_rtd = []
+    pthread_extension = Extension(
+        name="cycapture._pthreadwrap",
+        sources=["cycapture/_pthreadwrap.c", "cycapture/murmur.c"]
+    )
+    extensions.append(pthread_extension)
 
-    if on_rtd:
-        for ext in remove_requirements_if_rtd:
-            requirements.remove(ext)
-
-    test_requirements = ['nose']
-    extensions = []
-    if not on_rtd:
-        # utility module to make python memoryviews from char* buffers
-        make_mview_extension = Extension(
-            name="cycapture._make_mview",
-            sources=["cycapture/_make_mview.c"]
-        )
-        extensions.append(make_mview_extension)
-
-        pthread_extension = Extension(
-            name="cycapture._pthreadwrap",
-            sources=["cycapture/_pthreadwrap.c", "cycapture/murmur.c"]
-        )
-        extensions.append(pthread_extension)
-
+    if not IS_WINDOWS:
         signal_extension = Extension(
             name="cycapture._signal",
             sources=["cycapture/_signal.c"]
         )
         extensions.append(signal_extension)
 
-        # build libpcap and the cycapture.libpcap python extension
-        pcap_extension = Extension(
-            name="cycapture.libpcap._pcap",
-            sources=["cycapture/libpcap/_pcap.c"]
-        )
-        libpcap_dep = LibpcapDep()
-        # noinspection PyTypeChecker
-        libpcap_dep.add_to_extension(pcap_extension)
-        extensions.append(pcap_extension)
+    # build libpcap and the cycapture.libpcap python extension
+    pcap_extension = Extension(
+        name="cycapture.libpcap._pcap",
+        sources=["cycapture/libpcap/_pcap.c"]
+    )
+    libpcap_dep = LibpcapDep()
+    # noinspection PyTypeChecker
+    libpcap_dep.add_to_extension(pcap_extension)
+    extensions.append(pcap_extension)
 
-        tins_dep = LibtinsDep(libpcap_dep)
+    tins_dep = LibtinsDep(libpcap_dep)
 
-        tins_exceptions_extension = Extension(
-            name="cycapture.libtins._py_exceptions",
-            sources=[
-                "cycapture/libtins/_py_exceptions.cpp",
-                "cycapture/libtins/custom_exception_handler.cpp"
-            ],
-            language="c++"
-        )
+    tins_exceptions_extension = Extension(
+        name="cycapture.libtins._py_exceptions",
+        sources=[
+            "cycapture/libtins/_py_exceptions.cpp",
+            "cycapture/libtins/custom_exception_handler.cpp"
+        ],
+        language="c++"
+    )
 
-        # noinspection PyTypeChecker
-        tins_dep.add_to_extension(tins_exceptions_extension)
-        extensions.append(tins_exceptions_extension)
+    # noinspection PyTypeChecker
+    tins_dep.add_to_extension(tins_exceptions_extension)
+    extensions.append(tins_exceptions_extension)
 
-        # build libtins and cycapture.libtins python extension
-        tins_extension = Extension(
-            name="cycapture.libtins._tins",
-            sources=[
-                "cycapture/libtins/_tins.cpp",
-                "cycapture/libtins/wrap.cpp",
-                "cycapture/libtins/py_tcp_stream_functor.cpp",
-                "cycapture/libtins/py_pdu_iterator.cpp"
-            ],
-            language="c++"
-        )
-        # noinspection PyTypeChecker
-        tins_dep.add_to_extension(tins_extension)
-        extensions.append(tins_extension)
+    # build libtins and cycapture.libtins python extension
+    tins_extension = Extension(
+        name="cycapture.libtins._tins",
+        sources=[
+            "cycapture/libtins/_tins.cpp",
+            "cycapture/libtins/wrap.cpp",
+            "cycapture/libtins/py_tcp_stream_functor.cpp",
+            "cycapture/libtins/py_pdu_iterator.cpp"
+        ],
+        language="c++"
+    )
+    # noinspection PyTypeChecker
+    tins_dep.add_to_extension(tins_extension)
+    extensions.append(tins_extension)
 
-    data_files = []
 
+def check_cmake():
+    try:
+        subprocess.call(['cmake', '--version'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    except OSError:
+        return False
+    return True
+
+def check_flex():
+    try:
+        subprocess.call(['flex', '--version'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    except OSError:
+        return False
+    return True
+
+def check_yacc():
+    try:
+        subprocess.call(['yacc', '--version'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    except OSError:
+        return False
+    return True
+
+
+def run_setup():
     setup(
         name='cycapture',
-        version='0.2',
+        version='0.3',
         description='Cython bindings for libpcap and libtins',
         long_description=readme + '\n\n' + history,
         author='Stephane Martin',
@@ -399,10 +359,21 @@ if __name__ == "__main__":
             'console_scripts': []
         },
 
-        data_files=data_files,
+        data_files=[],
         test_suite='tests',
         tests_require=test_requirements,
         ext_modules=extensions
-
     )
 
+if __name__ == '__main__':
+    if not check_cmake():
+        _info("Please install cmake first")
+        sys.exit(1)
+    if not check_flex():
+        _info("Please install flex first")
+        sys.exit(1)
+    if not check_yacc():
+        _info("Please install yacc first")
+        sys.exit(1)
+
+    run_setup()

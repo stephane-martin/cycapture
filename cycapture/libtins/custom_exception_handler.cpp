@@ -30,7 +30,7 @@
 
 namespace Tins {
 
-void custom_exception_handler() {
+void my_custom_exception_handler() {
     // Catch a handful of different errors here and turn them into the
     // equivalent Python errors.
     try {
