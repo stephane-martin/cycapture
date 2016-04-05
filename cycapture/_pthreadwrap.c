@@ -456,26 +456,13 @@ static const char *__pyx_f[] = {
 
 /*--- Type declarations ---*/
 struct __pyx_obj_9cycapture_12_pthreadwrap_PThread;
-struct __pyx_opt_args_9cycapture_12_pthreadwrap_pthread_hash;
 
-/* "cycapture/_pthreadwrap.pxd":71
- *     int pthread_kill(pthread_t thread, int sig)
+/* "cycapture/_pthreadwrap.pxd":84
  * 
- * cdef uint32_t pthread_hash(const pthread_t* t=?) nogil             # <<<<<<<<<<<<<<
- * cdef pthread_mutex_t* create_error_check_lock()
- * cdef destroy_error_check_lock(pthread_mutex_t* l)
- */
-struct __pyx_opt_args_9cycapture_12_pthreadwrap_pthread_hash {
-  int __pyx_n;
-  pthread_t const *t;
-};
-
-/* "cycapture/_pthreadwrap.pxd":75
- * cdef destroy_error_check_lock(pthread_mutex_t* l)
  * 
  * cdef class PThread(object):             # <<<<<<<<<<<<<<
- *     cdef pthread_t* thread_ptr
- *     cdef void cprint(self) nogil
+ *     IF ON_WINDOWS:
+ *         pass
  */
 struct __pyx_obj_9cycapture_12_pthreadwrap_PThread {
   PyObject_HEAD
@@ -485,7 +472,7 @@ struct __pyx_obj_9cycapture_12_pthreadwrap_PThread {
 
 
 
-/* "cycapture/_pthreadwrap.pyx":29
+/* "cycapture/_pthreadwrap.pyx":27
  * 
  * 
  * cdef class PThread(object):             # <<<<<<<<<<<<<<
@@ -494,11 +481,11 @@ struct __pyx_obj_9cycapture_12_pthreadwrap_PThread {
  */
 
 struct __pyx_vtabstruct_9cycapture_12_pthreadwrap_PThread {
+  PyObject *(*factory)(pthread_t *);
   void (*cprint)(struct __pyx_obj_9cycapture_12_pthreadwrap_PThread *);
   PyObject *(*tobytes)(struct __pyx_obj_9cycapture_12_pthreadwrap_PThread *, int __pyx_skip_dispatch);
   PyObject *(*equals)(struct __pyx_obj_9cycapture_12_pthreadwrap_PThread *, PyObject *);
   int (*kill)(struct __pyx_obj_9cycapture_12_pthreadwrap_PThread *, int);
-  PyObject *(*factory)(pthread_t *);
 };
 static struct __pyx_vtabstruct_9cycapture_12_pthreadwrap_PThread *__pyx_vtabptr_9cycapture_12_pthreadwrap_PThread;
 
@@ -666,7 +653,6 @@ static int __pyx_f_9cycapture_12_pthreadwrap_7PThread_kill(struct __pyx_obj_9cyc
 
 /* Module declarations from 'cycapture._pthreadwrap' */
 static PyTypeObject *__pyx_ptype_9cycapture_12_pthreadwrap_PThread = 0;
-static uint32_t __pyx_f_9cycapture_12_pthreadwrap_pthread_hash(struct __pyx_opt_args_9cycapture_12_pthreadwrap_pthread_hash *__pyx_optional_args); /*proto*/
 #define __Pyx_MODULE_NAME "cycapture._pthreadwrap"
 int __pyx_module_is_main_cycapture___pthreadwrap = 0;
 
@@ -704,78 +690,43 @@ static PyObject *__pyx_int_3;
 static PyObject *__pyx_tuple__2;
 static PyObject *__pyx_tuple__3;
 
-/* "cycapture/_pthreadwrap.pyx":5
+/* "cycapture/_pthreadwrap.pyx":7
  * from libc.stdio cimport printf, puts
  * 
- * cdef uint32_t pthread_hash(const pthread_t* t=NULL) nogil:             # <<<<<<<<<<<<<<
+ * cdef uint32_t pthread_hash() nogil:             # <<<<<<<<<<<<<<
  *     cdef pthread_t tid = pthread_self()
- *     if t is NULL:
+ *     return qhashmurmur3_32(<void*> tid, sizeof(pthread_t))
  */
 
-static uint32_t __pyx_f_9cycapture_12_pthreadwrap_pthread_hash(struct __pyx_opt_args_9cycapture_12_pthreadwrap_pthread_hash *__pyx_optional_args) {
-  pthread_t const *__pyx_v_t = ((pthread_t const *)NULL);
+static uint32_t __pyx_f_9cycapture_12_pthreadwrap_pthread_hash(void) {
   pthread_t __pyx_v_tid;
   uint32_t __pyx_r;
-  int __pyx_t_1;
-  if (__pyx_optional_args) {
-    if (__pyx_optional_args->__pyx_n > 0) {
-      __pyx_v_t = __pyx_optional_args->t;
-    }
-  }
 
-  /* "cycapture/_pthreadwrap.pyx":6
+  /* "cycapture/_pthreadwrap.pyx":8
  * 
- * cdef uint32_t pthread_hash(const pthread_t* t=NULL) nogil:
+ * cdef uint32_t pthread_hash() nogil:
  *     cdef pthread_t tid = pthread_self()             # <<<<<<<<<<<<<<
- *     if t is NULL:
- *         t = &tid
+ *     return qhashmurmur3_32(<void*> tid, sizeof(pthread_t))
+ * 
  */
   __pyx_v_tid = pthread_self();
 
-  /* "cycapture/_pthreadwrap.pyx":7
- * cdef uint32_t pthread_hash(const pthread_t* t=NULL) nogil:
- *     cdef pthread_t tid = pthread_self()
- *     if t is NULL:             # <<<<<<<<<<<<<<
- *         t = &tid
- *     return qhashmurmur3_32(<void*> t, sizeof(tid))
- */
-  __pyx_t_1 = ((__pyx_v_t == NULL) != 0);
-  if (__pyx_t_1) {
-
-    /* "cycapture/_pthreadwrap.pyx":8
- *     cdef pthread_t tid = pthread_self()
- *     if t is NULL:
- *         t = &tid             # <<<<<<<<<<<<<<
- *     return qhashmurmur3_32(<void*> t, sizeof(tid))
- * 
- */
-    __pyx_v_t = (&__pyx_v_tid);
-
-    /* "cycapture/_pthreadwrap.pyx":7
- * cdef uint32_t pthread_hash(const pthread_t* t=NULL) nogil:
- *     cdef pthread_t tid = pthread_self()
- *     if t is NULL:             # <<<<<<<<<<<<<<
- *         t = &tid
- *     return qhashmurmur3_32(<void*> t, sizeof(tid))
- */
-  }
-
   /* "cycapture/_pthreadwrap.pyx":9
- *     if t is NULL:
- *         t = &tid
- *     return qhashmurmur3_32(<void*> t, sizeof(tid))             # <<<<<<<<<<<<<<
+ * cdef uint32_t pthread_hash() nogil:
+ *     cdef pthread_t tid = pthread_self()
+ *     return qhashmurmur3_32(<void*> tid, sizeof(pthread_t))             # <<<<<<<<<<<<<<
  * 
- * 
+ * cdef pthread_mutex_t* create_error_check_lock():
  */
-  __pyx_r = qhashmurmur3_32(((void *)__pyx_v_t), (sizeof(__pyx_v_tid)));
+  __pyx_r = qhashmurmur3_32(((void *)__pyx_v_tid), (sizeof(pthread_t)));
   goto __pyx_L0;
 
-  /* "cycapture/_pthreadwrap.pyx":5
+  /* "cycapture/_pthreadwrap.pyx":7
  * from libc.stdio cimport printf, puts
  * 
- * cdef uint32_t pthread_hash(const pthread_t* t=NULL) nogil:             # <<<<<<<<<<<<<<
+ * cdef uint32_t pthread_hash() nogil:             # <<<<<<<<<<<<<<
  *     cdef pthread_t tid = pthread_self()
- *     if t is NULL:
+ *     return qhashmurmur3_32(<void*> tid, sizeof(pthread_t))
  */
 
   /* function exit code */
@@ -783,8 +734,8 @@ static uint32_t __pyx_f_9cycapture_12_pthreadwrap_pthread_hash(struct __pyx_opt_
   return __pyx_r;
 }
 
-/* "cycapture/_pthreadwrap.pyx":13
- * 
+/* "cycapture/_pthreadwrap.pyx":11
+ *     return qhashmurmur3_32(<void*> tid, sizeof(pthread_t))
  * 
  * cdef pthread_mutex_t* create_error_check_lock():             # <<<<<<<<<<<<<<
  *     cdef pthread_mutex_t* lock = <pthread_mutex_t*> malloc(sizeof(pthread_mutex_t))
@@ -799,7 +750,7 @@ static pthread_mutex_t *__pyx_f_9cycapture_12_pthreadwrap_create_error_check_loc
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("create_error_check_lock", 0);
 
-  /* "cycapture/_pthreadwrap.pyx":14
+  /* "cycapture/_pthreadwrap.pyx":12
  * 
  * cdef pthread_mutex_t* create_error_check_lock():
  *     cdef pthread_mutex_t* lock = <pthread_mutex_t*> malloc(sizeof(pthread_mutex_t))             # <<<<<<<<<<<<<<
@@ -808,7 +759,7 @@ static pthread_mutex_t *__pyx_f_9cycapture_12_pthreadwrap_create_error_check_loc
  */
   __pyx_v_lock = ((pthread_mutex_t *)malloc((sizeof(pthread_mutex_t))));
 
-  /* "cycapture/_pthreadwrap.pyx":15
+  /* "cycapture/_pthreadwrap.pyx":13
  * cdef pthread_mutex_t* create_error_check_lock():
  *     cdef pthread_mutex_t* lock = <pthread_mutex_t*> malloc(sizeof(pthread_mutex_t))
  *     cdef pthread_mutexattr_t* mattr = <pthread_mutexattr_t*> malloc(sizeof(pthread_mutexattr_t))             # <<<<<<<<<<<<<<
@@ -817,7 +768,7 @@ static pthread_mutex_t *__pyx_f_9cycapture_12_pthreadwrap_create_error_check_loc
  */
   __pyx_v_mattr = ((pthread_mutexattr_t *)malloc((sizeof(pthread_mutexattr_t))));
 
-  /* "cycapture/_pthreadwrap.pyx":17
+  /* "cycapture/_pthreadwrap.pyx":15
  *     cdef pthread_mutexattr_t* mattr = <pthread_mutexattr_t*> malloc(sizeof(pthread_mutexattr_t))
  *     cdef int res
  *     res = pthread_mutexattr_init(mattr)             # <<<<<<<<<<<<<<
@@ -826,7 +777,7 @@ static pthread_mutex_t *__pyx_f_9cycapture_12_pthreadwrap_create_error_check_loc
  */
   __pyx_v_res = pthread_mutexattr_init(__pyx_v_mattr);
 
-  /* "cycapture/_pthreadwrap.pyx":18
+  /* "cycapture/_pthreadwrap.pyx":16
  *     cdef int res
  *     res = pthread_mutexattr_init(mattr)
  *     res = pthread_mutexattr_settype(mattr, PTHREAD_MUTEX_ERRORCHECK)             # <<<<<<<<<<<<<<
@@ -835,7 +786,7 @@ static pthread_mutex_t *__pyx_f_9cycapture_12_pthreadwrap_create_error_check_loc
  */
   __pyx_v_res = pthread_mutexattr_settype(__pyx_v_mattr, PTHREAD_MUTEX_ERRORCHECK);
 
-  /* "cycapture/_pthreadwrap.pyx":19
+  /* "cycapture/_pthreadwrap.pyx":17
  *     res = pthread_mutexattr_init(mattr)
  *     res = pthread_mutexattr_settype(mattr, PTHREAD_MUTEX_ERRORCHECK)
  *     res = pthread_mutex_init(lock, mattr)             # <<<<<<<<<<<<<<
@@ -844,7 +795,7 @@ static pthread_mutex_t *__pyx_f_9cycapture_12_pthreadwrap_create_error_check_loc
  */
   __pyx_v_res = pthread_mutex_init(__pyx_v_lock, __pyx_v_mattr);
 
-  /* "cycapture/_pthreadwrap.pyx":20
+  /* "cycapture/_pthreadwrap.pyx":18
  *     res = pthread_mutexattr_settype(mattr, PTHREAD_MUTEX_ERRORCHECK)
  *     res = pthread_mutex_init(lock, mattr)
  *     pthread_mutexattr_destroy(mattr)             # <<<<<<<<<<<<<<
@@ -853,7 +804,7 @@ static pthread_mutex_t *__pyx_f_9cycapture_12_pthreadwrap_create_error_check_loc
  */
   pthread_mutexattr_destroy(__pyx_v_mattr);
 
-  /* "cycapture/_pthreadwrap.pyx":21
+  /* "cycapture/_pthreadwrap.pyx":19
  *     res = pthread_mutex_init(lock, mattr)
  *     pthread_mutexattr_destroy(mattr)
  *     free(mattr)             # <<<<<<<<<<<<<<
@@ -862,7 +813,7 @@ static pthread_mutex_t *__pyx_f_9cycapture_12_pthreadwrap_create_error_check_loc
  */
   free(__pyx_v_mattr);
 
-  /* "cycapture/_pthreadwrap.pyx":22
+  /* "cycapture/_pthreadwrap.pyx":20
  *     pthread_mutexattr_destroy(mattr)
  *     free(mattr)
  *     return lock             # <<<<<<<<<<<<<<
@@ -872,8 +823,8 @@ static pthread_mutex_t *__pyx_f_9cycapture_12_pthreadwrap_create_error_check_loc
   __pyx_r = __pyx_v_lock;
   goto __pyx_L0;
 
-  /* "cycapture/_pthreadwrap.pyx":13
- * 
+  /* "cycapture/_pthreadwrap.pyx":11
+ *     return qhashmurmur3_32(<void*> tid, sizeof(pthread_t))
  * 
  * cdef pthread_mutex_t* create_error_check_lock():             # <<<<<<<<<<<<<<
  *     cdef pthread_mutex_t* lock = <pthread_mutex_t*> malloc(sizeof(pthread_mutex_t))
@@ -886,7 +837,7 @@ static pthread_mutex_t *__pyx_f_9cycapture_12_pthreadwrap_create_error_check_loc
   return __pyx_r;
 }
 
-/* "cycapture/_pthreadwrap.pyx":24
+/* "cycapture/_pthreadwrap.pyx":22
  *     return lock
  * 
  * cdef destroy_error_check_lock(pthread_mutex_t* l):             # <<<<<<<<<<<<<<
@@ -899,7 +850,7 @@ static PyObject *__pyx_f_9cycapture_12_pthreadwrap_destroy_error_check_lock(pthr
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("destroy_error_check_lock", 0);
 
-  /* "cycapture/_pthreadwrap.pyx":25
+  /* "cycapture/_pthreadwrap.pyx":23
  * 
  * cdef destroy_error_check_lock(pthread_mutex_t* l):
  *     pthread_mutex_destroy(l)             # <<<<<<<<<<<<<<
@@ -908,7 +859,7 @@ static PyObject *__pyx_f_9cycapture_12_pthreadwrap_destroy_error_check_lock(pthr
  */
   pthread_mutex_destroy(__pyx_v_l);
 
-  /* "cycapture/_pthreadwrap.pyx":26
+  /* "cycapture/_pthreadwrap.pyx":24
  * cdef destroy_error_check_lock(pthread_mutex_t* l):
  *     pthread_mutex_destroy(l)
  *     free(l)             # <<<<<<<<<<<<<<
@@ -917,7 +868,7 @@ static PyObject *__pyx_f_9cycapture_12_pthreadwrap_destroy_error_check_lock(pthr
  */
   free(__pyx_v_l);
 
-  /* "cycapture/_pthreadwrap.pyx":24
+  /* "cycapture/_pthreadwrap.pyx":22
  *     return lock
  * 
  * cdef destroy_error_check_lock(pthread_mutex_t* l):             # <<<<<<<<<<<<<<
@@ -932,7 +883,7 @@ static PyObject *__pyx_f_9cycapture_12_pthreadwrap_destroy_error_check_lock(pthr
   return __pyx_r;
 }
 
-/* "cycapture/_pthreadwrap.pyx":30
+/* "cycapture/_pthreadwrap.pyx":28
  * 
  * cdef class PThread(object):
  *     def __cinit__(self):             # <<<<<<<<<<<<<<
@@ -961,7 +912,7 @@ static int __pyx_pf_9cycapture_12_pthreadwrap_7PThread___cinit__(struct __pyx_ob
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__cinit__", 0);
 
-  /* "cycapture/_pthreadwrap.pyx":31
+  /* "cycapture/_pthreadwrap.pyx":29
  * cdef class PThread(object):
  *     def __cinit__(self):
  *         self.thread_ptr = <pthread_t*> malloc(sizeof(pthread_t))             # <<<<<<<<<<<<<<
@@ -970,7 +921,7 @@ static int __pyx_pf_9cycapture_12_pthreadwrap_7PThread___cinit__(struct __pyx_ob
  */
   __pyx_v_self->thread_ptr = ((pthread_t *)malloc((sizeof(pthread_t))));
 
-  /* "cycapture/_pthreadwrap.pyx":32
+  /* "cycapture/_pthreadwrap.pyx":30
  *     def __cinit__(self):
  *         self.thread_ptr = <pthread_t*> malloc(sizeof(pthread_t))
  *         self.thread_ptr[0] = pthread_self()             # <<<<<<<<<<<<<<
@@ -979,7 +930,7 @@ static int __pyx_pf_9cycapture_12_pthreadwrap_7PThread___cinit__(struct __pyx_ob
  */
   (__pyx_v_self->thread_ptr[0]) = pthread_self();
 
-  /* "cycapture/_pthreadwrap.pyx":30
+  /* "cycapture/_pthreadwrap.pyx":28
  * 
  * cdef class PThread(object):
  *     def __cinit__(self):             # <<<<<<<<<<<<<<
@@ -993,7 +944,7 @@ static int __pyx_pf_9cycapture_12_pthreadwrap_7PThread___cinit__(struct __pyx_ob
   return __pyx_r;
 }
 
-/* "cycapture/_pthreadwrap.pyx":34
+/* "cycapture/_pthreadwrap.pyx":32
  *         self.thread_ptr[0] = pthread_self()
  * 
  *     def __init__(self):             # <<<<<<<<<<<<<<
@@ -1028,7 +979,7 @@ static int __pyx_pf_9cycapture_12_pthreadwrap_7PThread_2__init__(CYTHON_UNUSED s
   return __pyx_r;
 }
 
-/* "cycapture/_pthreadwrap.pyx":37
+/* "cycapture/_pthreadwrap.pyx":35
  *         pass
  * 
  *     def __dealloc__(self):             # <<<<<<<<<<<<<<
@@ -1052,7 +1003,7 @@ static void __pyx_pf_9cycapture_12_pthreadwrap_7PThread_4__dealloc__(struct __py
   int __pyx_t_1;
   __Pyx_RefNannySetupContext("__dealloc__", 0);
 
-  /* "cycapture/_pthreadwrap.pyx":38
+  /* "cycapture/_pthreadwrap.pyx":36
  * 
  *     def __dealloc__(self):
  *         if self.thread_ptr is not NULL:             # <<<<<<<<<<<<<<
@@ -1062,7 +1013,7 @@ static void __pyx_pf_9cycapture_12_pthreadwrap_7PThread_4__dealloc__(struct __py
   __pyx_t_1 = ((__pyx_v_self->thread_ptr != NULL) != 0);
   if (__pyx_t_1) {
 
-    /* "cycapture/_pthreadwrap.pyx":39
+    /* "cycapture/_pthreadwrap.pyx":37
  *     def __dealloc__(self):
  *         if self.thread_ptr is not NULL:
  *             free(self.thread_ptr)             # <<<<<<<<<<<<<<
@@ -1071,7 +1022,7 @@ static void __pyx_pf_9cycapture_12_pthreadwrap_7PThread_4__dealloc__(struct __py
  */
     free(__pyx_v_self->thread_ptr);
 
-    /* "cycapture/_pthreadwrap.pyx":40
+    /* "cycapture/_pthreadwrap.pyx":38
  *         if self.thread_ptr is not NULL:
  *             free(self.thread_ptr)
  *             self.thread_ptr = NULL             # <<<<<<<<<<<<<<
@@ -1080,7 +1031,7 @@ static void __pyx_pf_9cycapture_12_pthreadwrap_7PThread_4__dealloc__(struct __py
  */
     __pyx_v_self->thread_ptr = NULL;
 
-    /* "cycapture/_pthreadwrap.pyx":38
+    /* "cycapture/_pthreadwrap.pyx":36
  * 
  *     def __dealloc__(self):
  *         if self.thread_ptr is not NULL:             # <<<<<<<<<<<<<<
@@ -1089,7 +1040,7 @@ static void __pyx_pf_9cycapture_12_pthreadwrap_7PThread_4__dealloc__(struct __py
  */
   }
 
-  /* "cycapture/_pthreadwrap.pyx":37
+  /* "cycapture/_pthreadwrap.pyx":35
  *         pass
  * 
  *     def __dealloc__(self):             # <<<<<<<<<<<<<<
@@ -1101,7 +1052,7 @@ static void __pyx_pf_9cycapture_12_pthreadwrap_7PThread_4__dealloc__(struct __py
   __Pyx_RefNannyFinishContext();
 }
 
-/* "cycapture/_pthreadwrap.pyx":42
+/* "cycapture/_pthreadwrap.pyx":40
  *             self.thread_ptr = NULL
  * 
  *     cdef void cprint(self) nogil:             # <<<<<<<<<<<<<<
@@ -1114,7 +1065,7 @@ static void __pyx_f_9cycapture_12_pthreadwrap_7PThread_cprint(struct __pyx_obj_9
   unsigned char *__pyx_v_ptc;
   int __pyx_t_1;
 
-  /* "cycapture/_pthreadwrap.pyx":43
+  /* "cycapture/_pthreadwrap.pyx":41
  * 
  *     cdef void cprint(self) nogil:
  *         cdef size_t i = 0             # <<<<<<<<<<<<<<
@@ -1123,7 +1074,7 @@ static void __pyx_f_9cycapture_12_pthreadwrap_7PThread_cprint(struct __pyx_obj_9
  */
   __pyx_v_i = 0;
 
-  /* "cycapture/_pthreadwrap.pyx":44
+  /* "cycapture/_pthreadwrap.pyx":42
  *     cdef void cprint(self) nogil:
  *         cdef size_t i = 0
  *         cdef unsigned char *ptc = <unsigned char*> self.thread_ptr             # <<<<<<<<<<<<<<
@@ -1132,7 +1083,7 @@ static void __pyx_f_9cycapture_12_pthreadwrap_7PThread_cprint(struct __pyx_obj_9
  */
   __pyx_v_ptc = ((unsigned char *)__pyx_v_self->thread_ptr);
 
-  /* "cycapture/_pthreadwrap.pyx":45
+  /* "cycapture/_pthreadwrap.pyx":43
  *         cdef size_t i = 0
  *         cdef unsigned char *ptc = <unsigned char*> self.thread_ptr
  *         while i < sizeof(pthread_t):             # <<<<<<<<<<<<<<
@@ -1143,7 +1094,7 @@ static void __pyx_f_9cycapture_12_pthreadwrap_7PThread_cprint(struct __pyx_obj_9
     __pyx_t_1 = ((__pyx_v_i < (sizeof(pthread_t))) != 0);
     if (!__pyx_t_1) break;
 
-    /* "cycapture/_pthreadwrap.pyx":46
+    /* "cycapture/_pthreadwrap.pyx":44
  *         cdef unsigned char *ptc = <unsigned char*> self.thread_ptr
  *         while i < sizeof(pthread_t):
  *             printf("%02x", <unsigned>(ptc[i]))             # <<<<<<<<<<<<<<
@@ -1152,7 +1103,7 @@ static void __pyx_f_9cycapture_12_pthreadwrap_7PThread_cprint(struct __pyx_obj_9
  */
     printf(__pyx_k_02x, ((unsigned int)(__pyx_v_ptc[__pyx_v_i])));
 
-    /* "cycapture/_pthreadwrap.pyx":47
+    /* "cycapture/_pthreadwrap.pyx":45
  *         while i < sizeof(pthread_t):
  *             printf("%02x", <unsigned>(ptc[i]))
  *             i += 1             # <<<<<<<<<<<<<<
@@ -1162,7 +1113,7 @@ static void __pyx_f_9cycapture_12_pthreadwrap_7PThread_cprint(struct __pyx_obj_9
     __pyx_v_i = (__pyx_v_i + 1);
   }
 
-  /* "cycapture/_pthreadwrap.pyx":48
+  /* "cycapture/_pthreadwrap.pyx":46
  *             printf("%02x", <unsigned>(ptc[i]))
  *             i += 1
  *         puts('\n')             # <<<<<<<<<<<<<<
@@ -1171,7 +1122,7 @@ static void __pyx_f_9cycapture_12_pthreadwrap_7PThread_cprint(struct __pyx_obj_9
  */
   puts(__pyx_k_);
 
-  /* "cycapture/_pthreadwrap.pyx":42
+  /* "cycapture/_pthreadwrap.pyx":40
  *             self.thread_ptr = NULL
  * 
  *     cdef void cprint(self) nogil:             # <<<<<<<<<<<<<<
@@ -1182,7 +1133,7 @@ static void __pyx_f_9cycapture_12_pthreadwrap_7PThread_cprint(struct __pyx_obj_9
   /* function exit code */
 }
 
-/* "cycapture/_pthreadwrap.pyx":50
+/* "cycapture/_pthreadwrap.pyx":48
  *         puts('\n')
  * 
  *     def __str__(self):             # <<<<<<<<<<<<<<
@@ -1212,7 +1163,7 @@ static PyObject *__pyx_pf_9cycapture_12_pthreadwrap_7PThread_6__str__(struct __p
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("__str__", 0);
 
-  /* "cycapture/_pthreadwrap.pyx":51
+  /* "cycapture/_pthreadwrap.pyx":49
  * 
  *     def __str__(self):
  *         return (<PThread> self).tobytes()             # <<<<<<<<<<<<<<
@@ -1220,13 +1171,13 @@ static PyObject *__pyx_pf_9cycapture_12_pthreadwrap_7PThread_6__str__(struct __p
  *     cpdef tobytes(self):
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = ((struct __pyx_vtabstruct_9cycapture_12_pthreadwrap_PThread *)((struct __pyx_obj_9cycapture_12_pthreadwrap_PThread *)__pyx_v_self)->__pyx_vtab)->tobytes(((struct __pyx_obj_9cycapture_12_pthreadwrap_PThread *)__pyx_v_self), 0); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 51; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = ((struct __pyx_vtabstruct_9cycapture_12_pthreadwrap_PThread *)((struct __pyx_obj_9cycapture_12_pthreadwrap_PThread *)__pyx_v_self)->__pyx_vtab)->tobytes(((struct __pyx_obj_9cycapture_12_pthreadwrap_PThread *)__pyx_v_self), 0); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 49; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "cycapture/_pthreadwrap.pyx":50
+  /* "cycapture/_pthreadwrap.pyx":48
  *         puts('\n')
  * 
  *     def __str__(self):             # <<<<<<<<<<<<<<
@@ -1245,7 +1196,7 @@ static PyObject *__pyx_pf_9cycapture_12_pthreadwrap_7PThread_6__str__(struct __p
   return __pyx_r;
 }
 
-/* "cycapture/_pthreadwrap.pyx":53
+/* "cycapture/_pthreadwrap.pyx":51
  *         return (<PThread> self).tobytes()
  * 
  *     cpdef tobytes(self):             # <<<<<<<<<<<<<<
@@ -1269,7 +1220,7 @@ static PyObject *__pyx_f_9cycapture_12_pthreadwrap_7PThread_tobytes(struct __pyx
   if (unlikely(__pyx_skip_dispatch)) ;
   /* Check if overridden in Python */
   else if (unlikely(Py_TYPE(((PyObject *)__pyx_v_self))->tp_dictoffset != 0)) {
-    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_tobytes); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 53; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_tobytes); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 51; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
     if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_9cycapture_12_pthreadwrap_7PThread_9tobytes)) {
       __Pyx_XDECREF(__pyx_r);
@@ -1285,10 +1236,10 @@ static PyObject *__pyx_f_9cycapture_12_pthreadwrap_7PThread_tobytes(struct __pyx
         }
       }
       if (__pyx_t_4) {
-        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_t_4); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 53; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_t_4); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 51; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
       } else {
-        __pyx_t_2 = __Pyx_PyObject_CallNoArg(__pyx_t_3); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 53; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_2 = __Pyx_PyObject_CallNoArg(__pyx_t_3); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 51; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       }
       __Pyx_GOTREF(__pyx_t_2);
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
@@ -1300,7 +1251,7 @@ static PyObject *__pyx_f_9cycapture_12_pthreadwrap_7PThread_tobytes(struct __pyx
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   }
 
-  /* "cycapture/_pthreadwrap.pyx":54
+  /* "cycapture/_pthreadwrap.pyx":52
  * 
  *     cpdef tobytes(self):
  *         return <bytes> ((<unsigned char*> self.thread_ptr)[:sizeof(pthread_t)])             # <<<<<<<<<<<<<<
@@ -1308,14 +1259,14 @@ static PyObject *__pyx_f_9cycapture_12_pthreadwrap_7PThread_tobytes(struct __pyx
  *     def __hash__(self):
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __Pyx_PyBytes_FromStringAndSize(((const char*)((unsigned char *)__pyx_v_self->thread_ptr)) + 0, (sizeof(pthread_t)) - 0); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 54; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = __Pyx_PyBytes_FromStringAndSize(((const char*)((unsigned char *)__pyx_v_self->thread_ptr)) + 0, (sizeof(pthread_t)) - 0); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 52; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_INCREF(((PyObject*)__pyx_t_1));
   __pyx_r = __pyx_t_1;
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "cycapture/_pthreadwrap.pyx":53
+  /* "cycapture/_pthreadwrap.pyx":51
  *         return (<PThread> self).tobytes()
  * 
  *     cpdef tobytes(self):             # <<<<<<<<<<<<<<
@@ -1359,7 +1310,7 @@ static PyObject *__pyx_pf_9cycapture_12_pthreadwrap_7PThread_8tobytes(struct __p
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("tobytes", 0);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __pyx_f_9cycapture_12_pthreadwrap_7PThread_tobytes(__pyx_v_self, 1); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 53; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = __pyx_f_9cycapture_12_pthreadwrap_7PThread_tobytes(__pyx_v_self, 1); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 51; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -1376,11 +1327,11 @@ static PyObject *__pyx_pf_9cycapture_12_pthreadwrap_7PThread_8tobytes(struct __p
   return __pyx_r;
 }
 
-/* "cycapture/_pthreadwrap.pyx":56
+/* "cycapture/_pthreadwrap.pyx":54
  *         return <bytes> ((<unsigned char*> self.thread_ptr)[:sizeof(pthread_t)])
  * 
  *     def __hash__(self):             # <<<<<<<<<<<<<<
- *         return pthread_hash(self.thread_ptr)
+ *         return qhashmurmur3_32(<void*> self.thread_ptr, sizeof(pthread_t))
  * 
  */
 
@@ -1400,28 +1351,23 @@ static Py_hash_t __pyx_pw_9cycapture_12_pthreadwrap_7PThread_11__hash__(PyObject
 static Py_hash_t __pyx_pf_9cycapture_12_pthreadwrap_7PThread_10__hash__(struct __pyx_obj_9cycapture_12_pthreadwrap_PThread *__pyx_v_self) {
   Py_hash_t __pyx_r;
   __Pyx_RefNannyDeclarations
-  uint32_t __pyx_t_1;
-  struct __pyx_opt_args_9cycapture_12_pthreadwrap_pthread_hash __pyx_t_2;
   __Pyx_RefNannySetupContext("__hash__", 0);
 
-  /* "cycapture/_pthreadwrap.pyx":57
+  /* "cycapture/_pthreadwrap.pyx":55
  * 
  *     def __hash__(self):
- *         return pthread_hash(self.thread_ptr)             # <<<<<<<<<<<<<<
+ *         return qhashmurmur3_32(<void*> self.thread_ptr, sizeof(pthread_t))             # <<<<<<<<<<<<<<
  * 
  *     def __richcmp__(self, other, op):
  */
-  __pyx_t_2.__pyx_n = 1;
-  __pyx_t_2.t = __pyx_v_self->thread_ptr;
-  __pyx_t_1 = __pyx_f_9cycapture_12_pthreadwrap_pthread_hash(&__pyx_t_2); 
-  __pyx_r = __pyx_t_1;
+  __pyx_r = qhashmurmur3_32(((void *)__pyx_v_self->thread_ptr), (sizeof(pthread_t)));
   goto __pyx_L0;
 
-  /* "cycapture/_pthreadwrap.pyx":56
+  /* "cycapture/_pthreadwrap.pyx":54
  *         return <bytes> ((<unsigned char*> self.thread_ptr)[:sizeof(pthread_t)])
  * 
  *     def __hash__(self):             # <<<<<<<<<<<<<<
- *         return pthread_hash(self.thread_ptr)
+ *         return qhashmurmur3_32(<void*> self.thread_ptr, sizeof(pthread_t))
  * 
  */
 
@@ -1432,8 +1378,8 @@ static Py_hash_t __pyx_pf_9cycapture_12_pthreadwrap_7PThread_10__hash__(struct _
   return __pyx_r;
 }
 
-/* "cycapture/_pthreadwrap.pyx":59
- *         return pthread_hash(self.thread_ptr)
+/* "cycapture/_pthreadwrap.pyx":57
+ *         return qhashmurmur3_32(<void*> self.thread_ptr, sizeof(pthread_t))
  * 
  *     def __richcmp__(self, other, op):             # <<<<<<<<<<<<<<
  *         if op == 2:
@@ -1450,7 +1396,7 @@ static PyObject *__pyx_pw_9cycapture_12_pthreadwrap_7PThread_13__richcmp__(PyObj
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__richcmp__ (wrapper)", 0);
-  __pyx_v_op = __Pyx_PyInt_From_int(__pyx_arg_op); if (unlikely(!__pyx_v_op)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 59; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+  __pyx_v_op = __Pyx_PyInt_From_int(__pyx_arg_op); if (unlikely(!__pyx_v_op)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 57; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
   __Pyx_GOTREF(__pyx_v_op);
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
@@ -1476,20 +1422,20 @@ static PyObject *__pyx_pf_9cycapture_12_pthreadwrap_7PThread_12__richcmp__(PyObj
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("__richcmp__", 0);
 
-  /* "cycapture/_pthreadwrap.pyx":60
+  /* "cycapture/_pthreadwrap.pyx":58
  * 
  *     def __richcmp__(self, other, op):
  *         if op == 2:             # <<<<<<<<<<<<<<
  *             return (<PThread> self).equals(other)
  *         elif op == 3:
  */
-  __pyx_t_1 = __Pyx_PyInt_EqObjC(__pyx_v_op, __pyx_int_2, 2, 0); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 60; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = __Pyx_PyInt_EqObjC(__pyx_v_op, __pyx_int_2, 2, 0); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 58; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = __Pyx_PyObject_IsTrue(__pyx_t_1); if (unlikely(__pyx_t_2 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 60; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = __Pyx_PyObject_IsTrue(__pyx_t_1); if (unlikely(__pyx_t_2 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 58; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   if (__pyx_t_2) {
 
-    /* "cycapture/_pthreadwrap.pyx":61
+    /* "cycapture/_pthreadwrap.pyx":59
  *     def __richcmp__(self, other, op):
  *         if op == 2:
  *             return (<PThread> self).equals(other)             # <<<<<<<<<<<<<<
@@ -1497,13 +1443,13 @@ static PyObject *__pyx_pf_9cycapture_12_pthreadwrap_7PThread_12__richcmp__(PyObj
  *             return not (<PThread> self).equals(other)
  */
     __Pyx_XDECREF(__pyx_r);
-    __pyx_t_1 = ((struct __pyx_vtabstruct_9cycapture_12_pthreadwrap_PThread *)((struct __pyx_obj_9cycapture_12_pthreadwrap_PThread *)__pyx_v_self)->__pyx_vtab)->equals(((struct __pyx_obj_9cycapture_12_pthreadwrap_PThread *)__pyx_v_self), __pyx_v_other); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 61; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_1 = ((struct __pyx_vtabstruct_9cycapture_12_pthreadwrap_PThread *)((struct __pyx_obj_9cycapture_12_pthreadwrap_PThread *)__pyx_v_self)->__pyx_vtab)->equals(((struct __pyx_obj_9cycapture_12_pthreadwrap_PThread *)__pyx_v_self), __pyx_v_other); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 59; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
     __pyx_r = __pyx_t_1;
     __pyx_t_1 = 0;
     goto __pyx_L0;
 
-    /* "cycapture/_pthreadwrap.pyx":60
+    /* "cycapture/_pthreadwrap.pyx":58
  * 
  *     def __richcmp__(self, other, op):
  *         if op == 2:             # <<<<<<<<<<<<<<
@@ -1512,20 +1458,20 @@ static PyObject *__pyx_pf_9cycapture_12_pthreadwrap_7PThread_12__richcmp__(PyObj
  */
   }
 
-  /* "cycapture/_pthreadwrap.pyx":62
+  /* "cycapture/_pthreadwrap.pyx":60
  *         if op == 2:
  *             return (<PThread> self).equals(other)
  *         elif op == 3:             # <<<<<<<<<<<<<<
  *             return not (<PThread> self).equals(other)
  *         raise ValueError(u"unsupported operation")
  */
-  __pyx_t_1 = __Pyx_PyInt_EqObjC(__pyx_v_op, __pyx_int_3, 3, 0); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 62; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = __Pyx_PyInt_EqObjC(__pyx_v_op, __pyx_int_3, 3, 0); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 60; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = __Pyx_PyObject_IsTrue(__pyx_t_1); if (unlikely(__pyx_t_2 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 62; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = __Pyx_PyObject_IsTrue(__pyx_t_1); if (unlikely(__pyx_t_2 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 60; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   if (__pyx_t_2) {
 
-    /* "cycapture/_pthreadwrap.pyx":63
+    /* "cycapture/_pthreadwrap.pyx":61
  *             return (<PThread> self).equals(other)
  *         elif op == 3:
  *             return not (<PThread> self).equals(other)             # <<<<<<<<<<<<<<
@@ -1533,17 +1479,17 @@ static PyObject *__pyx_pf_9cycapture_12_pthreadwrap_7PThread_12__richcmp__(PyObj
  * 
  */
     __Pyx_XDECREF(__pyx_r);
-    __pyx_t_1 = ((struct __pyx_vtabstruct_9cycapture_12_pthreadwrap_PThread *)((struct __pyx_obj_9cycapture_12_pthreadwrap_PThread *)__pyx_v_self)->__pyx_vtab)->equals(((struct __pyx_obj_9cycapture_12_pthreadwrap_PThread *)__pyx_v_self), __pyx_v_other); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 63; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_1 = ((struct __pyx_vtabstruct_9cycapture_12_pthreadwrap_PThread *)((struct __pyx_obj_9cycapture_12_pthreadwrap_PThread *)__pyx_v_self)->__pyx_vtab)->equals(((struct __pyx_obj_9cycapture_12_pthreadwrap_PThread *)__pyx_v_self), __pyx_v_other); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 61; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
-    __pyx_t_2 = __Pyx_PyObject_IsTrue(__pyx_t_1); if (unlikely(__pyx_t_2 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 63; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_2 = __Pyx_PyObject_IsTrue(__pyx_t_1); if (unlikely(__pyx_t_2 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 61; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-    __pyx_t_1 = __Pyx_PyBool_FromLong((!__pyx_t_2)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 63; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_1 = __Pyx_PyBool_FromLong((!__pyx_t_2)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 61; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
     __pyx_r = __pyx_t_1;
     __pyx_t_1 = 0;
     goto __pyx_L0;
 
-    /* "cycapture/_pthreadwrap.pyx":62
+    /* "cycapture/_pthreadwrap.pyx":60
  *         if op == 2:
  *             return (<PThread> self).equals(other)
  *         elif op == 3:             # <<<<<<<<<<<<<<
@@ -1552,21 +1498,21 @@ static PyObject *__pyx_pf_9cycapture_12_pthreadwrap_7PThread_12__richcmp__(PyObj
  */
   }
 
-  /* "cycapture/_pthreadwrap.pyx":64
+  /* "cycapture/_pthreadwrap.pyx":62
  *         elif op == 3:
  *             return not (<PThread> self).equals(other)
  *         raise ValueError(u"unsupported operation")             # <<<<<<<<<<<<<<
  * 
  *     cdef equals(self, other):
  */
-  __pyx_t_1 = __Pyx_PyObject_Call(__pyx_builtin_ValueError, __pyx_tuple__2, NULL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 64; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = __Pyx_PyObject_Call(__pyx_builtin_ValueError, __pyx_tuple__2, NULL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 62; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_Raise(__pyx_t_1, 0, 0, 0);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  {__pyx_filename = __pyx_f[0]; __pyx_lineno = 64; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  {__pyx_filename = __pyx_f[0]; __pyx_lineno = 62; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "cycapture/_pthreadwrap.pyx":59
- *         return pthread_hash(self.thread_ptr)
+  /* "cycapture/_pthreadwrap.pyx":57
+ *         return qhashmurmur3_32(<void*> self.thread_ptr, sizeof(pthread_t))
  * 
  *     def __richcmp__(self, other, op):             # <<<<<<<<<<<<<<
  *         if op == 2:
@@ -1584,7 +1530,7 @@ static PyObject *__pyx_pf_9cycapture_12_pthreadwrap_7PThread_12__richcmp__(PyObj
   return __pyx_r;
 }
 
-/* "cycapture/_pthreadwrap.pyx":66
+/* "cycapture/_pthreadwrap.pyx":64
  *         raise ValueError(u"unsupported operation")
  * 
  *     cdef equals(self, other):             # <<<<<<<<<<<<<<
@@ -1605,7 +1551,7 @@ static PyObject *__pyx_f_9cycapture_12_pthreadwrap_7PThread_equals(struct __pyx_
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("equals", 0);
 
-  /* "cycapture/_pthreadwrap.pyx":67
+  /* "cycapture/_pthreadwrap.pyx":65
  * 
  *     cdef equals(self, other):
  *         if not isinstance(other, PThread):             # <<<<<<<<<<<<<<
@@ -1616,7 +1562,7 @@ static PyObject *__pyx_f_9cycapture_12_pthreadwrap_7PThread_equals(struct __pyx_
   __pyx_t_2 = ((!(__pyx_t_1 != 0)) != 0);
   if (__pyx_t_2) {
 
-    /* "cycapture/_pthreadwrap.pyx":68
+    /* "cycapture/_pthreadwrap.pyx":66
  *     cdef equals(self, other):
  *         if not isinstance(other, PThread):
  *             return False             # <<<<<<<<<<<<<<
@@ -1628,7 +1574,7 @@ static PyObject *__pyx_f_9cycapture_12_pthreadwrap_7PThread_equals(struct __pyx_
     __pyx_r = Py_False;
     goto __pyx_L0;
 
-    /* "cycapture/_pthreadwrap.pyx":67
+    /* "cycapture/_pthreadwrap.pyx":65
  * 
  *     cdef equals(self, other):
  *         if not isinstance(other, PThread):             # <<<<<<<<<<<<<<
@@ -1637,7 +1583,7 @@ static PyObject *__pyx_f_9cycapture_12_pthreadwrap_7PThread_equals(struct __pyx_
  */
   }
 
-  /* "cycapture/_pthreadwrap.pyx":69
+  /* "cycapture/_pthreadwrap.pyx":67
  *         if not isinstance(other, PThread):
  *             return False
  *         return str(self) == str(other)             # <<<<<<<<<<<<<<
@@ -1645,30 +1591,30 @@ static PyObject *__pyx_f_9cycapture_12_pthreadwrap_7PThread_equals(struct __pyx_
  *     @staticmethod
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_3 = PyTuple_New(1); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 69; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_3 = PyTuple_New(1); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 67; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_INCREF(((PyObject *)__pyx_v_self));
   __Pyx_GIVEREF(((PyObject *)__pyx_v_self));
   PyTuple_SET_ITEM(__pyx_t_3, 0, ((PyObject *)__pyx_v_self));
-  __pyx_t_4 = __Pyx_PyObject_Call(((PyObject *)(&PyString_Type)), __pyx_t_3, NULL); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 69; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_4 = __Pyx_PyObject_Call(((PyObject *)(&PyString_Type)), __pyx_t_3, NULL); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 67; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-  __pyx_t_3 = PyTuple_New(1); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 69; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_3 = PyTuple_New(1); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 67; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_INCREF(__pyx_v_other);
   __Pyx_GIVEREF(__pyx_v_other);
   PyTuple_SET_ITEM(__pyx_t_3, 0, __pyx_v_other);
-  __pyx_t_5 = __Pyx_PyObject_Call(((PyObject *)(&PyString_Type)), __pyx_t_3, NULL); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 69; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_5 = __Pyx_PyObject_Call(((PyObject *)(&PyString_Type)), __pyx_t_3, NULL); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 67; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_5);
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-  __pyx_t_3 = PyObject_RichCompare(__pyx_t_4, __pyx_t_5, Py_EQ); __Pyx_XGOTREF(__pyx_t_3); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 69; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_3 = PyObject_RichCompare(__pyx_t_4, __pyx_t_5, Py_EQ); __Pyx_XGOTREF(__pyx_t_3); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 67; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
   __pyx_r = __pyx_t_3;
   __pyx_t_3 = 0;
   goto __pyx_L0;
 
-  /* "cycapture/_pthreadwrap.pyx":66
+  /* "cycapture/_pthreadwrap.pyx":64
  *         raise ValueError(u"unsupported operation")
  * 
  *     cdef equals(self, other):             # <<<<<<<<<<<<<<
@@ -1689,7 +1635,7 @@ static PyObject *__pyx_f_9cycapture_12_pthreadwrap_7PThread_equals(struct __pyx_
   return __pyx_r;
 }
 
-/* "cycapture/_pthreadwrap.pyx":72
+/* "cycapture/_pthreadwrap.pyx":70
  * 
  *     @staticmethod
  *     cdef factory(pthread_t* other):             # <<<<<<<<<<<<<<
@@ -1708,7 +1654,7 @@ static PyObject *__pyx_f_9cycapture_12_pthreadwrap_7PThread_factory(pthread_t *_
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("factory", 0);
 
-  /* "cycapture/_pthreadwrap.pyx":73
+  /* "cycapture/_pthreadwrap.pyx":71
  *     @staticmethod
  *     cdef factory(pthread_t* other):
  *         if other is NULL:             # <<<<<<<<<<<<<<
@@ -1718,20 +1664,20 @@ static PyObject *__pyx_f_9cycapture_12_pthreadwrap_7PThread_factory(pthread_t *_
   __pyx_t_1 = ((__pyx_v_other == NULL) != 0);
   if (__pyx_t_1) {
 
-    /* "cycapture/_pthreadwrap.pyx":74
+    /* "cycapture/_pthreadwrap.pyx":72
  *     cdef factory(pthread_t* other):
  *         if other is NULL:
  *             raise RuntimeError(u"NULL ptr")             # <<<<<<<<<<<<<<
  *         t = PThread()
  *         memcpy(t.thread_ptr, other, sizeof(pthread_t))
  */
-    __pyx_t_2 = __Pyx_PyObject_Call(__pyx_builtin_RuntimeError, __pyx_tuple__3, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 74; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_2 = __Pyx_PyObject_Call(__pyx_builtin_RuntimeError, __pyx_tuple__3, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 72; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_Raise(__pyx_t_2, 0, 0, 0);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 74; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 72; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-    /* "cycapture/_pthreadwrap.pyx":73
+    /* "cycapture/_pthreadwrap.pyx":71
  *     @staticmethod
  *     cdef factory(pthread_t* other):
  *         if other is NULL:             # <<<<<<<<<<<<<<
@@ -1740,19 +1686,19 @@ static PyObject *__pyx_f_9cycapture_12_pthreadwrap_7PThread_factory(pthread_t *_
  */
   }
 
-  /* "cycapture/_pthreadwrap.pyx":75
+  /* "cycapture/_pthreadwrap.pyx":73
  *         if other is NULL:
  *             raise RuntimeError(u"NULL ptr")
  *         t = PThread()             # <<<<<<<<<<<<<<
  *         memcpy(t.thread_ptr, other, sizeof(pthread_t))
  *         return t
  */
-  __pyx_t_2 = __Pyx_PyObject_Call(((PyObject *)__pyx_ptype_9cycapture_12_pthreadwrap_PThread), __pyx_empty_tuple, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 75; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = __Pyx_PyObject_Call(((PyObject *)__pyx_ptype_9cycapture_12_pthreadwrap_PThread), __pyx_empty_tuple, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 73; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
   __pyx_v_t = ((struct __pyx_obj_9cycapture_12_pthreadwrap_PThread *)__pyx_t_2);
   __pyx_t_2 = 0;
 
-  /* "cycapture/_pthreadwrap.pyx":76
+  /* "cycapture/_pthreadwrap.pyx":74
  *             raise RuntimeError(u"NULL ptr")
  *         t = PThread()
  *         memcpy(t.thread_ptr, other, sizeof(pthread_t))             # <<<<<<<<<<<<<<
@@ -1761,7 +1707,7 @@ static PyObject *__pyx_f_9cycapture_12_pthreadwrap_7PThread_factory(pthread_t *_
  */
   memcpy(__pyx_v_t->thread_ptr, __pyx_v_other, (sizeof(pthread_t)));
 
-  /* "cycapture/_pthreadwrap.pyx":77
+  /* "cycapture/_pthreadwrap.pyx":75
  *         t = PThread()
  *         memcpy(t.thread_ptr, other, sizeof(pthread_t))
  *         return t             # <<<<<<<<<<<<<<
@@ -1773,7 +1719,7 @@ static PyObject *__pyx_f_9cycapture_12_pthreadwrap_7PThread_factory(pthread_t *_
   __pyx_r = ((PyObject *)__pyx_v_t);
   goto __pyx_L0;
 
-  /* "cycapture/_pthreadwrap.pyx":72
+  /* "cycapture/_pthreadwrap.pyx":70
  * 
  *     @staticmethod
  *     cdef factory(pthread_t* other):             # <<<<<<<<<<<<<<
@@ -1793,7 +1739,7 @@ static PyObject *__pyx_f_9cycapture_12_pthreadwrap_7PThread_factory(pthread_t *_
   return __pyx_r;
 }
 
-/* "cycapture/_pthreadwrap.pyx":79
+/* "cycapture/_pthreadwrap.pyx":77
  *         return t
  * 
  *     cdef int kill(self, int signum) nogil:             # <<<<<<<<<<<<<<
@@ -1803,7 +1749,7 @@ static PyObject *__pyx_f_9cycapture_12_pthreadwrap_7PThread_factory(pthread_t *_
 static int __pyx_f_9cycapture_12_pthreadwrap_7PThread_kill(struct __pyx_obj_9cycapture_12_pthreadwrap_PThread *__pyx_v_self, int __pyx_v_signum) {
   int __pyx_r;
 
-  /* "cycapture/_pthreadwrap.pyx":80
+  /* "cycapture/_pthreadwrap.pyx":78
  * 
  *     cdef int kill(self, int signum) nogil:
  *         return pthread_kill(self.thread_ptr[0], signum)             # <<<<<<<<<<<<<<
@@ -1811,7 +1757,7 @@ static int __pyx_f_9cycapture_12_pthreadwrap_7PThread_kill(struct __pyx_obj_9cyc
   __pyx_r = pthread_kill((__pyx_v_self->thread_ptr[0]), __pyx_v_signum);
   goto __pyx_L0;
 
-  /* "cycapture/_pthreadwrap.pyx":79
+  /* "cycapture/_pthreadwrap.pyx":77
  *         return t
  * 
  *     cdef int kill(self, int signum) nogil:             # <<<<<<<<<<<<<<
@@ -1955,8 +1901,8 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {0, 0, 0, 0, 0, 0, 0}
 };
 static int __Pyx_InitCachedBuiltins(void) {
-  __pyx_builtin_ValueError = __Pyx_GetBuiltinName(__pyx_n_s_ValueError); if (!__pyx_builtin_ValueError) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 64; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_builtin_RuntimeError = __Pyx_GetBuiltinName(__pyx_n_s_RuntimeError); if (!__pyx_builtin_RuntimeError) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 74; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_builtin_ValueError = __Pyx_GetBuiltinName(__pyx_n_s_ValueError); if (!__pyx_builtin_ValueError) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 62; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_builtin_RuntimeError = __Pyx_GetBuiltinName(__pyx_n_s_RuntimeError); if (!__pyx_builtin_RuntimeError) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 72; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   return 0;
   __pyx_L1_error:;
   return -1;
@@ -1966,25 +1912,25 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__Pyx_InitCachedConstants", 0);
 
-  /* "cycapture/_pthreadwrap.pyx":64
+  /* "cycapture/_pthreadwrap.pyx":62
  *         elif op == 3:
  *             return not (<PThread> self).equals(other)
  *         raise ValueError(u"unsupported operation")             # <<<<<<<<<<<<<<
  * 
  *     cdef equals(self, other):
  */
-  __pyx_tuple__2 = PyTuple_Pack(1, __pyx_kp_u_unsupported_operation); if (unlikely(!__pyx_tuple__2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 64; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_tuple__2 = PyTuple_Pack(1, __pyx_kp_u_unsupported_operation); if (unlikely(!__pyx_tuple__2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 62; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__2);
   __Pyx_GIVEREF(__pyx_tuple__2);
 
-  /* "cycapture/_pthreadwrap.pyx":74
+  /* "cycapture/_pthreadwrap.pyx":72
  *     cdef factory(pthread_t* other):
  *         if other is NULL:
  *             raise RuntimeError(u"NULL ptr")             # <<<<<<<<<<<<<<
  *         t = PThread()
  *         memcpy(t.thread_ptr, other, sizeof(pthread_t))
  */
-  __pyx_tuple__3 = PyTuple_Pack(1, __pyx_kp_u_NULL_ptr); if (unlikely(!__pyx_tuple__3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 74; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_tuple__3 = PyTuple_Pack(1, __pyx_kp_u_NULL_ptr); if (unlikely(!__pyx_tuple__3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 72; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__3);
   __Pyx_GIVEREF(__pyx_tuple__3);
   __Pyx_RefNannyFinishContext();
@@ -2088,20 +2034,20 @@ PyMODINIT_FUNC PyInit__pthreadwrap(void)
   /*--- Global init code ---*/
   /*--- Variable export code ---*/
   /*--- Function export code ---*/
-  if (__Pyx_ExportFunction("pthread_hash", (void (*)(void))__pyx_f_9cycapture_12_pthreadwrap_pthread_hash, "uint32_t (struct __pyx_opt_args_9cycapture_12_pthreadwrap_pthread_hash *__pyx_optional_args)") < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   if (__Pyx_ExportFunction("create_error_check_lock", (void (*)(void))__pyx_f_9cycapture_12_pthreadwrap_create_error_check_lock, "pthread_mutex_t *(void)") < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   if (__Pyx_ExportFunction("destroy_error_check_lock", (void (*)(void))__pyx_f_9cycapture_12_pthreadwrap_destroy_error_check_lock, "PyObject *(pthread_mutex_t *)") < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (__Pyx_ExportFunction("pthread_hash", (void (*)(void))__pyx_f_9cycapture_12_pthreadwrap_pthread_hash, "uint32_t (void)") < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   /*--- Type init code ---*/
   __pyx_vtabptr_9cycapture_12_pthreadwrap_PThread = &__pyx_vtable_9cycapture_12_pthreadwrap_PThread;
+  __pyx_vtable_9cycapture_12_pthreadwrap_PThread.factory = (PyObject *(*)(pthread_t *))__pyx_f_9cycapture_12_pthreadwrap_7PThread_factory;
   __pyx_vtable_9cycapture_12_pthreadwrap_PThread.cprint = (void (*)(struct __pyx_obj_9cycapture_12_pthreadwrap_PThread *))__pyx_f_9cycapture_12_pthreadwrap_7PThread_cprint;
   __pyx_vtable_9cycapture_12_pthreadwrap_PThread.tobytes = (PyObject *(*)(struct __pyx_obj_9cycapture_12_pthreadwrap_PThread *, int __pyx_skip_dispatch))__pyx_f_9cycapture_12_pthreadwrap_7PThread_tobytes;
   __pyx_vtable_9cycapture_12_pthreadwrap_PThread.equals = (PyObject *(*)(struct __pyx_obj_9cycapture_12_pthreadwrap_PThread *, PyObject *))__pyx_f_9cycapture_12_pthreadwrap_7PThread_equals;
   __pyx_vtable_9cycapture_12_pthreadwrap_PThread.kill = (int (*)(struct __pyx_obj_9cycapture_12_pthreadwrap_PThread *, int))__pyx_f_9cycapture_12_pthreadwrap_7PThread_kill;
-  __pyx_vtable_9cycapture_12_pthreadwrap_PThread.factory = (PyObject *(*)(pthread_t *))__pyx_f_9cycapture_12_pthreadwrap_7PThread_factory;
-  if (PyType_Ready(&__pyx_type_9cycapture_12_pthreadwrap_PThread) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 29; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (PyType_Ready(&__pyx_type_9cycapture_12_pthreadwrap_PThread) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 27; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_type_9cycapture_12_pthreadwrap_PThread.tp_print = 0;
-  if (__Pyx_SetVtable(__pyx_type_9cycapture_12_pthreadwrap_PThread.tp_dict, __pyx_vtabptr_9cycapture_12_pthreadwrap_PThread) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 29; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  if (PyObject_SetAttrString(__pyx_m, "PThread", (PyObject *)&__pyx_type_9cycapture_12_pthreadwrap_PThread) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 29; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (__Pyx_SetVtable(__pyx_type_9cycapture_12_pthreadwrap_PThread.tp_dict, __pyx_vtabptr_9cycapture_12_pthreadwrap_PThread) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 27; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (PyObject_SetAttrString(__pyx_m, "PThread", (PyObject *)&__pyx_type_9cycapture_12_pthreadwrap_PThread) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 27; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_ptype_9cycapture_12_pthreadwrap_PThread = &__pyx_type_9cycapture_12_pthreadwrap_PThread;
   /*--- Type import code ---*/
   /*--- Variable import code ---*/
@@ -2114,7 +2060,7 @@ PyMODINIT_FUNC PyInit__pthreadwrap(void)
   /* "cycapture/_pthreadwrap.pyx":1
  * # -*- coding: utf-8 -*-             # <<<<<<<<<<<<<<
  * 
- * from libc.stdio cimport printf, puts
+ * DEF ON_WINDOWS = UNAME_SYSNAME == "Windows"
  */
   __pyx_t_1 = PyDict_New(); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);

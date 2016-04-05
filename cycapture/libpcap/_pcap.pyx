@@ -4,6 +4,8 @@
 Small cython wrapper around libpcap
 """
 
+DEF ON_WINDOWS = UNAME_SYSNAME == "Windows"
+
 import logging
 import struct as struct_module
 import threading
@@ -34,10 +36,12 @@ include "definitions.pyx.pxi"
 include "pcap_registry.pyx.pxi"
 include "utils_func.pyx.pxi"
 include "sniffer.pyx.pxi"
+include "blocking_sniffer.pyx.pxi"
+IF not ON_WINDOWS:
+    include "nonblocking_sniffer.pyx.pxi"
 include "writer.pyx.pxi"
 include "iterator.pyx.pxi"
 include "offline_filter.pyx.pxi"
-
 
 logger = logging.getLogger('cycapture')
 libpcap_version = <bytes> pcap_lib_version()

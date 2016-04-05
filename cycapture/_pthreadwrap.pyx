@@ -1,14 +1,12 @@
 # -*- coding: utf-8 -*-
 
+DEF ON_WINDOWS = UNAME_SYSNAME == "Windows"
+
 from libc.stdio cimport printf, puts
 
-cdef uint32_t pthread_hash(const pthread_t* t=NULL) nogil:
+cdef uint32_t pthread_hash() nogil:
     cdef pthread_t tid = pthread_self()
-    if t is NULL:
-        t = &tid
-    return qhashmurmur3_32(<void*> t, sizeof(tid))
-
-
+    return qhashmurmur3_32(<void*> tid, sizeof(pthread_t))
 
 cdef pthread_mutex_t* create_error_check_lock():
     cdef pthread_mutex_t* lock = <pthread_mutex_t*> malloc(sizeof(pthread_mutex_t))
@@ -54,7 +52,7 @@ cdef class PThread(object):
         return <bytes> ((<unsigned char*> self.thread_ptr)[:sizeof(pthread_t)])
 
     def __hash__(self):
-        return pthread_hash(self.thread_ptr)
+        return qhashmurmur3_32(<void*> self.thread_ptr, sizeof(pthread_t))
 
     def __richcmp__(self, other, op):
         if op == 2:
