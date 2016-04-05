@@ -100,6 +100,9 @@ cdef class BaseSniffer(object):
         self.direction = direction
         self.filter = b''
         self._datalink = -1
+        self.ps_recv = 0
+        self.ps_drop = 0
+        self.ps_ifdrop = 0
 
     cdef _set_pcap_handle(self):
         if self._handle != NULL:
@@ -286,7 +289,6 @@ cdef class BaseSniffer(object):
             if res != 0:
                 raise PcapException(bytes(pcap_geterr(self._handle)))
 
-
     property datalink:
         """
         PCAP datalink type (:py:class:`~.BaseSniffer.DLT`)
@@ -362,6 +364,9 @@ cdef class BaseSniffer(object):
         self._apply_direction()
         self._apply_datalink()
         self._apply_filter()
+        self.ps_recv = 0
+        self.ps_drop = 0
+        self.ps_ifdrop = 0
 
     cdef activate(self):
         if self.activated:
@@ -381,6 +386,14 @@ cdef class BaseSniffer(object):
 
         self._post_activate()
 
+    cdef void update_stats(self) nogil:
+        if pcap_stats(self._handle, &self._stats) == 0:
+            self.ps_recv = self._stats.ps_recv
+            self.ps_drop = self._stats.ps_drop
+            self.ps_ifdrop = self._stats.ps_ifdrop
+
+
+
 
 cdef class ActivationHelper(object):
 
@@ -396,5 +409,4 @@ cdef class ActivationHelper(object):
         if not self.old_status:
             self.sniffer_obj.close()
 
-include "blocking_sniffer.pyx.pxi"
-include "nonblocking_sniffer.pyx.pxi"
+

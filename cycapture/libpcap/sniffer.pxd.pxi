@@ -26,6 +26,13 @@ cdef class BaseSniffer(object):
     cdef bytes _filter
     cdef int _datalink
 
+    cdef readonly uint32_t ps_recv
+    cdef readonly uint32_t ps_drop
+    cdef readonly uint32_t ps_ifdrop
+    cdef pcap_stat _stats
+
+    cdef void update_stats(self) nogil
+
     cpdef close(self)
     cpdef list_datalinks(self)
 
@@ -42,11 +49,6 @@ cdef class BaseSniffer(object):
     cdef _pre_activate(self)
     cdef _post_activate(self)
     cdef activate(self)
-
-include "blocking_sniffer.pxd.pxi"
-include "nonblocking_sniffer.pxd.pxi"
-
-
 
 
 
