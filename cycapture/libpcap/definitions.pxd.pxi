@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 
 ctypedef struct packet_node:
     list_head link
