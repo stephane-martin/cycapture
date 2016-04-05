@@ -73,8 +73,13 @@
 <span class="kn">from</span> <span class="nn">.exceptions</span> <span class="kn">import</span> <span class="n">SetSnapshotLengthError</span><span class="p">,</span> <span class="n">SetPromiscModeError</span><span class="p">,</span> <span class="n">SetMonitorModeError</span><span class="p">,</span> <span class="n">SetNonblockingModeError</span>
 <span class="kn">from</span> <span class="nn">.exceptions</span> <span class="kn">import</span> <span class="n">ActivationError</span><span class="p">,</span> <span class="n">NotActivatedError</span><span class="p">,</span> <span class="n">SniffingError</span><span class="p">,</span> <span class="n">PermissionDenied</span><span class="p">,</span> <span class="n">PromiscPermissionDenied</span>
 
-<span class="kn">from</span> <span class="nn">._pcap</span> <span class="kn">import</span> <span class="n">BlockingSniffer</span><span class="p">,</span> <span class="n">NonBlockingSniffer</span><span class="p">,</span> <span class="n">PacketWriter</span><span class="p">,</span> <span class="n">NonBlockingPacketWriter</span><span class="p">,</span> <span class="n">DLT</span><span class="p">,</span> <span class="n">OfflineFilter</span>
+<span class="kn">from</span> <span class="nn">._pcap</span> <span class="kn">import</span> <span class="n">BlockingSniffer</span><span class="p">,</span> <span class="n">PacketWriter</span><span class="p">,</span> <span class="n">NonBlockingPacketWriter</span><span class="p">,</span> <span class="n">OfflineFilter</span>
 <span class="kn">from</span> <span class="nn">._pcap</span> <span class="kn">import</span> <span class="n">lookupdev</span><span class="p">,</span> <span class="n">lookupnet</span><span class="p">,</span> <span class="n">libpcap_version</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">._pcap</span> <span class="kn">import</span> <span class="n">NonBlockingSniffer</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="n">NonBlockingSniffer</span> <span class="o">=</span> <span class="bp">None</span>
 </pre></div>
 
           </div>
@@ -89,12 +94,8 @@
 <li class="toctree-l2"><a class="reference internal" href="../../installation.html#install-with-pip">Install with pip</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../../authors.html">Credits</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../authors.html#cycapture">cycapture</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../authors.html#libtins">libtins</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../authors.html#contributors">Contributors</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="../../faq.html">Frequently asked questions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../authors.html">Credits</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../history.html">History</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../api.html">API documentation</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../api/libpcap.html">libpcap bindings</a><ul>
@@ -129,6 +130,7 @@
     &copy; Copyright 2015, Stephane Martin.
     Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
   </div>
+  <div id="logo"><img src="../../_static/cycapture.png" /></div>
   
   </body>
 </html>

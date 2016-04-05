@@ -10,6 +10,7 @@ cycapture's documentation
    :maxdepth: 3
 
    installation
+   faq
    authors
    history
    api

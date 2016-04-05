@@ -27,8 +27,6 @@ Offline filter
 
 Utils
 =====
-.. autoclass:: cycapture.libpcap._pcap.DLT
-.. autoclass:: cycapture.libpcap._pcap.DIRECTION
 .. autoclass:: cycapture.libpcap._pcap.SniffingIterator
 .. autoclass:: cycapture.libpcap._pcap.BaseSniffer
 .. autofunction:: cycapture.libpcap._pcap.lookupdev

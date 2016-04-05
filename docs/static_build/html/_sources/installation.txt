@@ -9,9 +9,7 @@ Prerequisites
 
 Should be compatible with python 3 too.
 
-- cython
-
-- C and C++ compiler
+- C and C++ compilers
 
 Install from sources
 ====================
