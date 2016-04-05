@@ -15,6 +15,7 @@ cdef class AsyncHandlerCallback(object):
             counted = pcap_dispatch(self.sniffer._handle, 0, _do_python_callback, self.ptr)
             if counted >= 0:
                 self.sniffer.total += counted
+                self.sniffer.update_stats()
         if 0 < self.sniffer.max_p <= self.sniffer.total:
             self.sniffer.stop()
 
@@ -72,6 +73,7 @@ cdef class AsyncHandlerStore(object):
             counted = pcap_dispatch(self.sniffer._handle, 0, _do_python_callback, self.ptr)
             if counted >= 0:
                 self.sniffer.total += counted
+                self.sniffer.update_stats()
         if 0 < self.sniffer.max_p <= self.sniffer.total:
             self.sniffer.stop()
 
