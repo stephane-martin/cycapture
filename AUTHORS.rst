@@ -2,17 +2,8 @@
 Credits
 =======
 
-cycapture
----------
+* **cycapture**: Stephane Martin (stephane `dot` martin `underscore` github `at` vesperal `dot` eu)
+* **libtins**: Matias Fontanini (http://libtins.github.io)
+* **libpcap**: http://www.tcpdump.org
 
-* Stephane Martin <stephane.martin_github@vesperal.eu>
 
-libtins
--------
-
-* Main author: Matias Fontanini (http://average-coder.blogspot.com)
-
-Contributors
-------------
-
-None yet. Why not be the first?
