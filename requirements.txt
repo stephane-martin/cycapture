@@ -1,4 +1,4 @@
-nose
+pytest
 setuptools_git
 setuptools
 twine
