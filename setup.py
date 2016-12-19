@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 import distutils.core
@@ -104,7 +105,7 @@ class LibpcapDep(Dependency):
             join(self._install_dir, 'lib', 'libpcap.so')
         ):
             _info("Building libpcap as a shared library\n")
-            subprocess.call(shlex.split("./configure --prefix='%s'" % self._install_dir))
+            subprocess.call(shlex.split("./configure --enable-bluetooth=no --prefix='%s'" % self._install_dir))
             subprocess.call("make")
             subprocess.call(shlex.split("make install"))
         self._include_dirs = [join(self._install_dir, 'include')]
